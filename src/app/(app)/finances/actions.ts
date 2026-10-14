@@ -10,8 +10,14 @@ import { todayISO } from "@/lib/format";
 
 const uuid = z.string().refine(isUuid, "Identifiant invalide");
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide.");
-const method = z.enum(["cash", "orange_money", "mtn_momo", "bank"], { message: "Choisissez le mode de paiement." });
-const amount = z.coerce.number().int("Montant invalide.").positive("Le montant doit être supérieur à zéro.").max(999_999_999);
+const method = z.enum(["cash", "orange_money", "mtn_momo", "bank"], {
+  message: "Choisissez le mode de paiement.",
+});
+const amount = z.coerce
+  .number()
+  .int("Montant invalide.")
+  .positive("Le montant doit être supérieur à zéro.")
+  .max(999_999_999);
 const NOT_ALLOWED = "Action réservée à l'administrateur.";
 
 function done(message: string): ActionResult {
@@ -24,7 +30,10 @@ function notFuture(d: string) {
   return d <= todayISO();
 }
 
-export async function recordExpense(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function recordExpense(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const parsed = z
     .object({
@@ -55,29 +64,45 @@ export async function recordExpense(_prev: ActionResult | null, formData: FormDa
   return done("Dépense enregistrée.");
 }
 
-const voidSchema = z.object({ id: uuid, reason: z.string().trim().min(5, "Indiquez un motif d'au moins 5 caractères.").max(300) });
+const voidSchema = z.object({
+  id: uuid,
+  reason: z.string().trim().min(5, "Indiquez un motif d'au moins 5 caractères.").max(300),
+});
 
-export async function voidExpense(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function voidExpense(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const parsed = voidSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
   const supabase = await createClient();
-  const { error } = await supabase.rpc("void_expense", { p_expense_id: parsed.data.id, p_reason: parsed.data.reason });
+  const { error } = await supabase.rpc("void_expense", {
+    p_expense_id: parsed.data.id,
+    p_reason: parsed.data.reason,
+  });
   if (error) return fail(friendlyError(error));
   return done("Dépense annulée.");
 }
 
-export async function addCategory(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function addCategory(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const name = String(formData.get("name") ?? "").trim();
   if (name.length < 2 || name.length > 60) return fail("Nom de catégorie invalide.");
   const supabase = await createClient();
   const { error } = await supabase.from("expense_categories").insert({ name });
-  if (error) return fail(error.code === "23505" ? "Cette catégorie existe déjà." : friendlyError(error));
+  if (error)
+    return fail(error.code === "23505" ? "Cette catégorie existe déjà." : friendlyError(error));
   return done(`Catégorie « ${name} » ajoutée.`);
 }
 
-export async function recordIncome(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function recordIncome(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const parsed = z
     .object({
@@ -102,17 +127,26 @@ export async function recordIncome(_prev: ActionResult | null, formData: FormDat
   return done("Revenu enregistré.");
 }
 
-export async function voidIncome(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function voidIncome(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const parsed = voidSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
   const supabase = await createClient();
-  const { error } = await supabase.rpc("void_other_income", { p_income_id: parsed.data.id, p_reason: parsed.data.reason });
+  const { error } = await supabase.rpc("void_other_income", {
+    p_income_id: parsed.data.id,
+    p_reason: parsed.data.reason,
+  });
   if (error) return fail(friendlyError(error));
   return done("Revenu annulé.");
 }
 
-export async function closeDay(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function closeDay(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const parsed = z
     .object({
@@ -122,7 +156,8 @@ export async function closeDay(_prev: ActionResult | null, formData: FormData): 
       note: z.string().trim().max(300).optional(),
     })
     .safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Saisissez le montant compté.");
+  if (!parsed.success)
+    return fail(parsed.error.issues[0]?.message ?? "Saisissez le montant compté.");
   const v = parsed.data;
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("close_day", {
@@ -133,10 +168,15 @@ export async function closeDay(_prev: ActionResult | null, formData: FormData): 
   });
   if (error) return fail(friendlyError(error));
   const diff = (data as { difference?: number } | null)?.difference ?? 0;
-  return done(diff === 0 ? "Caisse clôturée, aucun écart." : `Caisse clôturée avec un écart de ${diff} FCFA.`);
+  return done(
+    diff === 0 ? "Caisse clôturée, aucun écart." : `Caisse clôturée avec un écart de ${diff} FCFA.`,
+  );
 }
 
-export async function lockMonth(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function lockMonth(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const month = String(formData.get("month") ?? "");
   if (!/^\d{4}-\d{2}-01$/.test(month)) return fail("Mois invalide.");
@@ -146,7 +186,10 @@ export async function lockMonth(_prev: ActionResult | null, formData: FormData):
   return done("Mois verrouillé.");
 }
 
-export async function recordAdjustment(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function recordAdjustment(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageFinance"))) return fail(NOT_ALLOWED);
   const parsed = z
     .object({

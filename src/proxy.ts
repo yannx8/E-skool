@@ -3,7 +3,14 @@ import { createServerClient } from "@supabase/ssr";
 import { publicEnv } from "@/lib/env";
 
 // Paths reachable without a session.
-const PUBLIC_PREFIXES = ["/connexion", "/mot-de-passe-oublie", "/auth/", "/p/", "/api/cron/", "/acces-refuse"];
+const PUBLIC_PREFIXES = [
+  "/connexion",
+  "/mot-de-passe-oublie",
+  "/auth/",
+  "/p/",
+  "/api/cron/",
+  "/acces-refuse",
+];
 
 // FR-A3: a login is valid for 30 days, then the user signs in again.
 const MAX_SESSION_SECONDS = 30 * 24 * 60 * 60;
@@ -24,7 +31,8 @@ export async function proxy(request: NextRequest) {
       setAll(cookiesToSet, headers) {
         for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
         response = NextResponse.next({ request });
-        for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
+        for (const { name, value, options } of cookiesToSet)
+          response.cookies.set(name, value, options);
         for (const [key, value] of Object.entries(headers ?? {})) response.headers.set(key, value);
       },
     },
@@ -71,5 +79,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|webp|ico|csv)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|webp|ico|csv)$).*)",
+  ],
 };

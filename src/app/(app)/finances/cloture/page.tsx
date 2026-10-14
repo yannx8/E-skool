@@ -22,7 +22,11 @@ export default async function ClosingPage() {
   const supabase = await createClient();
   const [cash, { data: closings }, names] = await Promise.all([
     getCashPosition(today),
-    supabase.from("cash_closings").select("*").order("closing_date", { ascending: false }).limit(60),
+    supabase
+      .from("cash_closings")
+      .select("*")
+      .order("closing_date", { ascending: false })
+      .limit(60),
     getUserNames(),
   ]);
   const closedToday = closings?.some((c) => c.closing_date === today);
@@ -30,7 +34,10 @@ export default async function ClosingPage() {
 
   return (
     <>
-      <PageHeader title="Clôture de caisse" description="Comptez les espèces en fin de journée et comparez avec l'attendu." />
+      <PageHeader
+        title="Clôture de caisse"
+        description="Comptez les espèces en fin de journée et comparez avec l'attendu."
+      />
       <div className="grid gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader title={`Aujourd'hui, ${formatDate(today)}`} />
@@ -42,7 +49,9 @@ export default async function ClosingPage() {
                   <dd className="tabular">{formatFCFA(cash.opening_cash)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-slate-600">Entrées espèces{cash.since ? ` depuis le ${formatDate(cash.since)}` : ""}</dt>
+                  <dt className="text-slate-600">
+                    Entrées espèces{cash.since ? ` depuis le ${formatDate(cash.since)}` : ""}
+                  </dt>
                   <dd className="tabular">+ {formatFCFA(cash.cash_in)}</dd>
                 </div>
                 <div className="flex justify-between">
@@ -76,7 +85,8 @@ export default async function ClosingPage() {
                   <Input id="note" name="note" maxLength={300} />
                 </Field>
                 <Alert tone="warning">
-                  Après la clôture, aucune opération datée d&apos;aujourd&apos;hui ou avant ne pourra être ajoutée ni annulée.
+                  Après la clôture, aucune opération datée d&apos;aujourd&apos;hui ou avant ne
+                  pourra être ajoutée ni annulée.
                 </Alert>
                 <ActionSubmit>
                   <Lock aria-hidden /> Clôturer la journée
@@ -113,7 +123,9 @@ export default async function ClosingPage() {
                     </Td>
                     <Td className="tabular text-right">{formatFCFA(c.expected_cash)}</Td>
                     <Td className="tabular text-right">{formatFCFA(c.counted_cash)}</Td>
-                    <Td className={`tabular text-right font-semibold ${c.difference === 0 ? "text-success" : "text-danger"}`}>
+                    <Td
+                      className={`tabular text-right font-semibold ${c.difference === 0 ? "text-success" : "text-danger"}`}
+                    >
                       {formatSignedFCFA(c.difference ?? 0)}
                     </Td>
                     <Td className="tabular text-right">{formatFCFA(c.removed_cash)}</Td>

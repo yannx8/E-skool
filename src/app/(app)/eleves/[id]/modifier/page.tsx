@@ -21,14 +21,22 @@ export default async function EditPupilPage({ params }: { params: IdParams }) {
   const [{ data: pupil }, { data: enrollment }] = await Promise.all([
     supabase.from("pupils").select("*").eq("id", id).maybeSingle(),
     year
-      ? supabase.from("enrollments").select("class_id").eq("pupil_id", id).eq("school_year_id", year.id).maybeSingle()
+      ? supabase
+          .from("enrollments")
+          .select("class_id")
+          .eq("pupil_id", id)
+          .eq("school_year_id", year.id)
+          .maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
   if (!pupil) notFound();
 
   return (
     <>
-      <PageHeader title={`Modifier ${fullName(pupil)}`} back={{ href: `/eleves/${id}`, label: "Fiche élève" }} />
+      <PageHeader
+        title={`Modifier ${fullName(pupil)}`}
+        back={{ href: `/eleves/${id}`, label: "Fiche élève" }}
+      />
       <Card className="max-w-3xl">
         <CardBody>
           <PupilForm

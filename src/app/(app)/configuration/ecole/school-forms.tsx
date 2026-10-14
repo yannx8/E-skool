@@ -7,7 +7,12 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Field, Input, Select, Textarea } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { ActionFeedback, SubmitButton, useFormAction, useUnsavedChangesWarning } from "@/components/ui/client";
+import {
+  ActionFeedback,
+  SubmitButton,
+  useFormAction,
+  useUnsavedChangesWarning,
+} from "@/components/ui/client";
 import { createClient } from "@/lib/supabase/client";
 import { downscaleImage } from "@/lib/image";
 import { REMINDER_VARIABLES, renderReminderMessage } from "@/lib/reminder";
@@ -48,7 +53,11 @@ export function SchoolForm({ settings }: { settings: Settings }) {
     });
   }
 
-  const preview = renderReminderMessage(template, { ...SAMPLE, ecole: name, telephone_ecole: phone });
+  const preview = renderReminderMessage(template, {
+    ...SAMPLE,
+    ecole: name,
+    telephone_ecole: phone,
+  });
 
   return (
     <form
@@ -61,16 +70,42 @@ export function SchoolForm({ settings }: { settings: Settings }) {
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nom de l'école" htmlFor="school_name">
-          <Input id="school_name" name="school_name" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            id="school_name"
+            name="school_name"
+            required
+            maxLength={120}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </Field>
         <Field label="Téléphone" htmlFor="phone">
-          <Input id="phone" name="phone" type="tel" maxLength={40} value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            maxLength={40}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
         </Field>
         <Field label="Adresse" htmlFor="address">
-          <Input id="address" name="address" maxLength={200} defaultValue={settings.address ?? ""} placeholder="Quartier, ville" />
+          <Input
+            id="address"
+            name="address"
+            maxLength={200}
+            defaultValue={settings.address ?? ""}
+            placeholder="Quartier, ville"
+          />
         </Field>
         <Field label="Email" htmlFor="email">
-          <Input id="email" name="email" type="email" maxLength={120} defaultValue={settings.email ?? ""} />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            maxLength={120}
+            defaultValue={settings.email ?? ""}
+          />
         </Field>
       </div>
 
@@ -82,19 +117,46 @@ export function SchoolForm({ settings }: { settings: Settings }) {
             <option value="thermal">Ticket 80 mm</option>
           </Select>
         </Field>
-        <Field label="Nom des périodes de paiement" htmlFor="term_label" hint="Tranche, Trimestre, Mois…">
-          <Input id="term_label" name="term_label" required maxLength={30} defaultValue={settings.term_label} />
+        <Field
+          label="Nom des périodes de paiement"
+          htmlFor="term_label"
+          hint="Tranche, Trimestre, Mois…"
+        >
+          <Input
+            id="term_label"
+            name="term_label"
+            required
+            maxLength={30}
+            defaultValue={settings.term_label}
+          />
         </Field>
         <Field label="Nombre de périodes par an" htmlFor="terms_count">
-          <Input id="terms_count" name="terms_count" type="number" min={1} max={12} required defaultValue={settings.terms_count} />
+          <Input
+            id="terms_count"
+            name="terms_count"
+            type="number"
+            min={1}
+            max={12}
+            required
+            defaultValue={settings.terms_count}
+          />
         </Field>
       </div>
       <Field label="Pied de page des reçus" htmlFor="receipt_footer">
-        <Input id="receipt_footer" name="receipt_footer" maxLength={200} defaultValue={settings.receipt_footer ?? ""} />
+        <Input
+          id="receipt_footer"
+          name="receipt_footer"
+          maxLength={200}
+          defaultValue={settings.receipt_footer ?? ""}
+        />
       </Field>
 
       <div>
-        <Field label="Message de relance WhatsApp" htmlFor="reminder_template" hint="Touchez une variable pour l'insérer.">
+        <Field
+          label="Message de relance WhatsApp"
+          htmlFor="reminder_template"
+          hint="Touchez une variable pour l'insérer."
+        >
           <Textarea
             ref={templateRef}
             id="reminder_template"
@@ -161,13 +223,26 @@ export function LogoUploader({ logoUrl }: { logoUrl: string | null }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
       <div className="flex size-24 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-        {logoUrl ? <img src={logoUrl} alt="Logo actuel" className="size-full object-contain" /> : <span className="text-sm text-slate-400">Aucun logo</span>}
+        {logoUrl ? (
+          <img src={logoUrl} alt="Logo actuel" className="size-full object-contain" />
+        ) : (
+          <span className="text-sm text-slate-400">Aucun logo</span>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 font-medium hover:bg-slate-50">
-          {pending ? <Loader2 className="size-5 animate-spin" aria-hidden /> : <Upload className="size-5" aria-hidden />}
+          {pending ? (
+            <Loader2 className="size-5 animate-spin" aria-hidden />
+          ) : (
+            <Upload className="size-5" aria-hidden />
+          )}
           Choisir une image
-          <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => upload(e.target.files?.[0])} />
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="sr-only"
+            onChange={(e) => upload(e.target.files?.[0])}
+          />
         </label>
         {logoUrl && (
           <Button

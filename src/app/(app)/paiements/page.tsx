@@ -37,7 +37,11 @@ type Row = {
 export default async function PaymentsPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const user = await requireUser();
-  const [settings, year, classes] = await Promise.all([getSettings(), getActiveYear(), getClasses()]);
+  const [settings, year, classes] = await Promise.all([
+    getSettings(),
+    getActiveYear(),
+    getClasses(),
+  ]);
   if (!year) return <NoYear canSetup={can(user.role, "manageSetup")} />;
 
   const f = readPaymentFilters(sp);
@@ -55,7 +59,13 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
   const rows = (data ?? []) as unknown as Row[];
   const total = totalRows.filter((r) => !r.voided).reduce((s, r) => s + r.amount, 0);
 
-  const filterQs = { du: f.from, au: f.to, mode: f.method, classe: f.classId, statut: f.status === "valid" ? "" : f.status };
+  const filterQs = {
+    du: f.from,
+    au: f.to,
+    mode: f.method,
+    classe: f.classId,
+    statut: f.status === "valid" ? "" : f.status,
+  };
 
   return (
     <>
@@ -109,7 +119,11 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
         </div>
         <div>
           <Label htmlFor="statut">Statut</Label>
-          <AutoSubmitSelect id="statut" name="statut" defaultValue={f.status === "valid" ? "" : f.status}>
+          <AutoSubmitSelect
+            id="statut"
+            name="statut"
+            defaultValue={f.status === "valid" ? "" : f.status}
+          >
             <option value="">Valides</option>
             <option value="voided">Annulés</option>
             <option value="all">Tous</option>
@@ -123,14 +137,18 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
             Réinitialiser
           </Link>
           <p className="ml-auto self-center text-sm text-slate-600">
-            {count ?? 0} paiement{(count ?? 0) > 1 ? "s" : ""} · Total valide <strong className="tabular">{formatFCFA(total)}</strong>
+            {count ?? 0} paiement{(count ?? 0) > 1 ? "s" : ""} · Total valide{" "}
+            <strong className="tabular">{formatFCFA(total)}</strong>
           </p>
         </div>
       </form>
 
       <Card>
         {rows.length === 0 ? (
-          <EmptyState title="Aucun paiement" description="Aucun paiement ne correspond à ces filtres." />
+          <EmptyState
+            title="Aucun paiement"
+            description="Aucun paiement ne correspond à ces filtres."
+          />
         ) : (
           <>
             {/* Desktop table */}
@@ -150,7 +168,10 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
                   {rows.map((p) => (
                     <tr key={p.id} className={p.voided ? "text-slate-400" : "hover:bg-slate-50"}>
                       <Td>
-                        <Link href={`/recu/${p.id}`} className="font-mono text-primary underline-offset-4 hover:underline">
+                        <Link
+                          href={`/recu/${p.id}`}
+                          className="font-mono text-primary underline-offset-4 hover:underline"
+                        >
                           {p.receipt_number}
                         </Link>
                         {p.voided && (
@@ -161,7 +182,10 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
                       </Td>
                       <Td>{formatDate(p.paid_at)}</Td>
                       <Td>
-                        <Link href={`/eleves/${p.pupil_id}`} className={p.voided ? "line-through" : "hover:underline"}>
+                        <Link
+                          href={`/eleves/${p.pupil_id}`}
+                          className={p.voided ? "line-through" : "hover:underline"}
+                        >
                           {p.pupils ? fullName(p.pupils) : "-"}
                         </Link>
                       </Td>
@@ -170,7 +194,11 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
                         {PAYMENT_METHODS[p.method]}
                         {p.reference && <div className="text-sm text-slate-500">{p.reference}</div>}
                       </Td>
-                      <Td className={`tabular text-right font-semibold ${p.voided ? "line-through" : ""}`}>{formatFCFA(p.amount)}</Td>
+                      <Td
+                        className={`tabular text-right font-semibold ${p.voided ? "line-through" : ""}`}
+                      >
+                        {formatFCFA(p.amount)}
+                      </Td>
                     </tr>
                   ))}
                 </tbody>
@@ -180,18 +208,29 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Sea
             <ul className="divide-y divide-slate-100 md:hidden">
               {rows.map((p) => (
                 <li key={p.id}>
-                  <Link href={`/recu/${p.id}`} className="flex items-start justify-between gap-3 px-4 py-3">
+                  <Link
+                    href={`/recu/${p.id}`}
+                    className="flex items-start justify-between gap-3 px-4 py-3"
+                  >
                     <div className="min-w-0">
-                      <p className={`truncate font-medium ${p.voided ? "text-slate-400 line-through" : ""}`}>
+                      <p
+                        className={`truncate font-medium ${p.voided ? "text-slate-400 line-through" : ""}`}
+                      >
                         {p.pupils ? fullName(p.pupils) : "-"}
                       </p>
                       <p className="text-sm text-slate-500">
                         {formatDate(p.paid_at)} · {PAYMENT_METHODS[p.method]} · {p.receipt_number}
                       </p>
-                      <p className="text-sm text-slate-500">{feeLineName(p.fee, p.term, settings.term_label)}</p>
+                      <p className="text-sm text-slate-500">
+                        {feeLineName(p.fee, p.term, settings.term_label)}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className={`tabular font-semibold ${p.voided ? "text-slate-400 line-through" : ""}`}>{formatFCFA(p.amount)}</p>
+                      <p
+                        className={`tabular font-semibold ${p.voided ? "text-slate-400 line-through" : ""}`}
+                      >
+                        {formatFCFA(p.amount)}
+                      </p>
                       {p.voided && <Badge tone="danger">Annulé</Badge>}
                     </div>
                   </Link>

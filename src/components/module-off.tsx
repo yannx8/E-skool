@@ -10,8 +10,16 @@ export function ModuleOff({ name, canEnable }: { name: string; canEnable: boolea
       <EmptyState
         icon={<PowerOff aria-hidden />}
         title={`Le module ${name} est désactivé`}
-        description={canEnable ? "Activez-le dans Configuration > Modules." : "Demandez à l'administrateur de l'activer."}
-        action={canEnable ? <LinkButton href="/configuration/modules">Gérer les modules</LinkButton> : undefined}
+        description={
+          canEnable
+            ? "Activez-le dans Configuration > Modules."
+            : "Demandez à l'administrateur de l'activer."
+        }
+        action={
+          canEnable ? (
+            <LinkButton href="/configuration/modules">Gérer les modules</LinkButton>
+          ) : undefined
+        }
       />
     </Card>
   );

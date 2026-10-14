@@ -90,7 +90,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
   const setupSteps = [
     { done: s.classes > 0, label: "Créer les classes", href: "/configuration/classes" },
-    { done: s.fee_schedules > 0, label: "Saisir les frais de scolarité", href: "/configuration/frais" },
+    {
+      done: s.fee_schedules > 0,
+      label: "Saisir les frais de scolarité",
+      href: "/configuration/frais",
+    },
     { done: s.pupils > 0, label: "Ajouter ou importer les élèves", href: "/eleves/importer" },
   ];
   const setupDone = setupSteps.every((step) => step.done);
@@ -106,7 +110,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
       {!setupDone && (
         <Card className="mb-6">
-          <CardHeader title="Pour commencer" description="Trois étapes avant d'enregistrer le premier paiement." />
+          <CardHeader
+            title="Pour commencer"
+            description="Trois étapes avant d'enregistrer le premier paiement."
+          />
           <CardBody>
             <ol className="space-y-2">
               {setupSteps.map((step) => (
@@ -120,7 +127,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     ) : (
                       <Circle className="size-6 text-slate-400" aria-label="À faire" />
                     )}
-                    <span className={step.done ? "text-slate-500 line-through" : "font-medium"}>{step.label}</span>
+                    <span className={step.done ? "text-slate-500 line-through" : "font-medium"}>
+                      {step.label}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -130,9 +139,22 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       )}
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Attendu sur l'année" value={formatFCFA(s.due)} hint={`${s.pupils} élèves actifs`} />
-        <Stat label="Encaissé" value={formatFCFA(s.paid)} tone="success" hint={`${rate(s.applied, s.due)} % des frais de l'année`} />
-        <Stat label="Reste à payer" value={formatFCFA(s.remaining)} tone={s.remaining > 0 ? "warning" : "default"} />
+        <Stat
+          label="Attendu sur l'année"
+          value={formatFCFA(s.due)}
+          hint={`${s.pupils} élèves actifs`}
+        />
+        <Stat
+          label="Encaissé"
+          value={formatFCFA(s.paid)}
+          tone="success"
+          hint={`${rate(s.applied, s.due)} % des frais de l'année`}
+        />
+        <Stat
+          label="Reste à payer"
+          value={formatFCFA(s.remaining)}
+          tone={s.remaining > 0 ? "warning" : "default"}
+        />
         <Stat
           label="Échéances passées payées"
           value={`${rate(s.applied_to_date, s.due_to_date)} %`}
@@ -143,9 +165,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title={`Situation par ${settings.term_label.toLowerCase()}`} description="Cliquez sur une ligne pour voir les impayés." />
+          <CardHeader
+            title={`Situation par ${settings.term_label.toLowerCase()}`}
+            description="Cliquez sur une ligne pour voir les impayés."
+          />
           {s.terms.length === 0 ? (
-            <EmptyState title="Aucun frais configuré" description="Saisissez les frais dans Configuration > Frais." />
+            <EmptyState
+              title="Aucun frais configuré"
+              description="Saisissez les frais dans Configuration > Frais."
+            />
           ) : (
             <Table>
               <thead>
@@ -166,7 +194,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       >
                         {termName(t.term, settings.term_label)}
                       </Link>
-                      <div className="text-sm text-slate-500">Échéance {formatDate(t.due_date)}</div>
+                      <div className="text-sm text-slate-500">
+                        Échéance {formatDate(t.due_date)}
+                      </div>
                     </Td>
                     <Td className="tabular text-right">
                       {formatFCFA(t.applied)}
@@ -177,8 +207,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       <div className="flex flex-wrap gap-1">
                         <Badge tone="success">{t.solvable} solvables</Badge>
                         {t.partiel > 0 && <Badge tone="warning">{t.partiel} partiels</Badge>}
-                        {t.insolvable > 0 && <Badge tone="danger">{t.insolvable} insolvables</Badge>}
-                        {t.pas_encore_du > 0 && <Badge tone="muted">{t.pas_encore_du} pas encore dû</Badge>}
+                        {t.insolvable > 0 && (
+                          <Badge tone="danger">{t.insolvable} insolvables</Badge>
+                        )}
+                        {t.pas_encore_du > 0 && (
+                          <Badge tone="muted">{t.pas_encore_du} pas encore dû</Badge>
+                        )}
                       </div>
                     </Td>
                   </tr>
@@ -193,7 +227,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             title="Derniers paiements"
             description={`Aujourd'hui : ${s.today_count} paiement${s.today_count > 1 ? "s" : ""}, ${formatFCFA(s.today_amount)}`}
             actions={
-              <Link href="/paiements" className="inline-flex min-h-11 items-center text-sm font-medium text-primary">
+              <Link
+                href="/paiements"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-primary"
+              >
                 Tout voir
               </Link>
             }
@@ -202,16 +239,29 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             <ul className="divide-y divide-slate-100">
               {lastPayments.map((p) => (
                 <li key={p.id}>
-                  <Link href={`/recu/${p.id}`} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50">
+                  <Link
+                    href={`/recu/${p.id}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50"
+                  >
                     <div className="min-w-0">
-                      <p className={p.voided ? "truncate font-medium text-slate-400 line-through" : "truncate font-medium"}>
+                      <p
+                        className={
+                          p.voided
+                            ? "truncate font-medium text-slate-400 line-through"
+                            : "truncate font-medium"
+                        }
+                      >
                         {p.pupils ? fullName(p.pupils) : "-"}
                       </p>
                       <p className="text-sm text-slate-500">
                         {formatDate(p.paid_at)} · {PAYMENT_METHODS[p.method]}
                       </p>
                     </div>
-                    <span className={p.voided ? "tabular text-slate-400 line-through" : "tabular font-semibold"}>
+                    <span
+                      className={
+                        p.voided ? "tabular text-slate-400 line-through" : "tabular font-semibold"
+                      }
+                    >
                       {formatFCFA(p.amount)}
                     </span>
                   </Link>
@@ -219,7 +269,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
               ))}
             </ul>
           ) : (
-            <EmptyState title="Aucun paiement" description="Les paiements enregistrés apparaîtront ici." />
+            <EmptyState
+              title="Aucun paiement"
+              description="Les paiements enregistrés apparaîtront ici."
+            />
           )}
         </Card>
       </div>

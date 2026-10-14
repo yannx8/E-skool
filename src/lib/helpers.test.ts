@@ -120,7 +120,9 @@ describe("reminders", () => {
   });
 
   it("collapses gaps left by empty variables", () => {
-    expect(renderReminderMessage("Bonjour {parent} , merci", { parent: "" })).toBe("Bonjour , merci");
+    expect(renderReminderMessage("Bonjour {parent} , merci", { parent: "" })).toBe(
+      "Bonjour , merci",
+    );
   });
 
   it("builds a wa.me link", () => {
@@ -132,7 +134,13 @@ describe("reminders", () => {
 
 describe("csv", () => {
   it("escapes separators, quotes and formulas", () => {
-    const csv = toCSV(["a", "b"], [["x;y", 'say "hi"'], ["=1+1", 5]]);
+    const csv = toCSV(
+      ["a", "b"],
+      [
+        ["x;y", 'say "hi"'],
+        ["=1+1", 5],
+      ],
+    );
     expect(csv).toBe('﻿a;b\r\n"x;y";"say ""hi"""\r\n\'=1+1;5\r\n');
   });
 });

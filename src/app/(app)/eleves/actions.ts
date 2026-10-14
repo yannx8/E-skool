@@ -22,7 +22,10 @@ const optionalPhone = (label: string) =>
       if (!v) return null;
       const n = normalizeCameroonPhone(v);
       if (!n) {
-        ctx.addIssue({ code: "custom", message: `${label} : numéro mobile camerounais attendu (ex. 6 77 12 34 56).` });
+        ctx.addIssue({
+          code: "custom",
+          message: `${label} : numéro mobile camerounais attendu (ex. 6 77 12 34 56).`,
+        });
         return z.NEVER;
       }
       return n;
@@ -47,7 +50,10 @@ function fieldErrors(error: z.ZodError): Record<string, string> {
   return out;
 }
 
-export async function createPupil(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function createPupil(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const user = await userWithPermission("editPupils");
   if (!user) return fail("Action non autorisée pour votre rôle.");
   const year = await getActiveYear();
@@ -69,10 +75,15 @@ export async function createPupil(_prev: ActionResult | null, formData: FormData
   });
   if (error) return fail(friendlyError(error));
   revalidatePath("/eleves");
-  redirect(formData.get("then") === "payer" ? `/paiements/nouveau?eleve=${id}` : `/eleves/${id}?cree=1`);
+  redirect(
+    formData.get("then") === "payer" ? `/paiements/nouveau?eleve=${id}` : `/eleves/${id}?cree=1`,
+  );
 }
 
-export async function updatePupil(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function updatePupil(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const user = await userWithPermission("editPupils");
   if (!user) return fail("Action non autorisée pour votre rôle.");
   const year = await getActiveYear();
@@ -104,7 +115,10 @@ export async function updatePupil(_prev: ActionResult | null, formData: FormData
       .eq("school_year_id", year.id)
       .maybeSingle();
     if (enrollment && enrollment.class_id !== v.class_id) {
-      const { error: e2 } = await supabase.from("enrollments").update({ class_id: v.class_id }).eq("id", enrollment.id);
+      const { error: e2 } = await supabase
+        .from("enrollments")
+        .update({ class_id: v.class_id })
+        .eq("id", enrollment.id);
       if (e2) return fail(friendlyError(e2));
     } else if (!enrollment) {
       const { error: e3 } = await supabase
@@ -120,11 +134,17 @@ export async function updatePupil(_prev: ActionResult | null, formData: FormData
 const leaveSchema = z.object({
   id: uuid,
   left_reason: z.string().trim().min(3, "Indiquez la raison du départ.").max(300),
-  left_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  left_on: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 /** FR-P5: a pupil is never deleted, only marked as gone. */
-export async function deactivatePupil(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function deactivatePupil(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const user = await userWithPermission("editPupils");
   if (!user) return fail("Action non autorisée pour votre rôle.");
   const parsed = leaveSchema.safeParse(Object.fromEntries(formData));
@@ -132,7 +152,11 @@ export async function deactivatePupil(_prev: ActionResult | null, formData: Form
   const supabase = await createClient();
   const { error } = await supabase
     .from("pupils")
-    .update({ is_active: false, left_reason: parsed.data.left_reason, left_on: parsed.data.left_on || todayISO() })
+    .update({
+      is_active: false,
+      left_reason: parsed.data.left_reason,
+      left_on: parsed.data.left_on || todayISO(),
+    })
     .eq("id", parsed.data.id);
   if (error) return fail(friendlyError(error));
   revalidatePath("/", "layout");
@@ -144,7 +168,10 @@ export async function reactivatePupil(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!user || !isUuid(id)) return;
   const supabase = await createClient();
-  await supabase.from("pupils").update({ is_active: true, left_on: null, left_reason: null }).eq("id", id);
+  await supabase
+    .from("pupils")
+    .update({ is_active: true, left_on: null, left_reason: null })
+    .eq("id", id);
   revalidatePath("/", "layout");
 }
 
@@ -157,7 +184,10 @@ const discountSchema = z.object({
   reason: z.string().trim().min(3, "Indiquez le motif de la réduction.").max(200),
 });
 
-export async function addDiscount(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function addDiscount(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const user = await userWithPermission("manageDiscounts");
   if (!user) return fail("Seul l'administrateur peut accorder une réduction.");
   const year = await getActiveYear();
@@ -165,7 +195,8 @@ export async function addDiscount(_prev: ActionResult | null, formData: FormData
   const parsed = discountSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
   const v = parsed.data;
-  if (v.kind === "percent" && v.value > 100) return fail("Un pourcentage ne peut pas dépasser 100.");
+  if (v.kind === "percent" && v.value > 100)
+    return fail("Un pourcentage ne peut pas dépasser 100.");
   const supabase = await createClient();
   const { error } = await supabase.from("discounts").insert({
     pupil_id: v.pupil_id,
@@ -201,7 +232,11 @@ export async function regeneratePortalLink(formData: FormData) {
 }
 
 /** FR-B5: logs a WhatsApp reminder click (not its delivery). */
-export async function logReminder(input: { pupilId: string; term: number | null; amountDue: number }) {
+export async function logReminder(input: {
+  pupilId: string;
+  term: number | null;
+  amountDue: number;
+}) {
   const user = await userWithPermission("sendReminders");
   if (!user || !isUuid(input.pupilId)) return { ok: false };
   const year = await getActiveYear();
@@ -263,7 +298,9 @@ export async function promotePupils(
   const user = await userWithPermission("promotePupils");
   if (!user) return fail("Seul l'administrateur peut faire le passage de classe.");
   if (!isUuid(toYearId)) return fail("Année de destination invalide.");
-  const valid = decisions.filter((d) => isUuid(d.pupil_id) && (d.class_id === null || isUuid(d.class_id)));
+  const valid = decisions.filter(
+    (d) => isUuid(d.pupil_id) && (d.class_id === null || isUuid(d.class_id)),
+  );
   if (valid.length === 0) return fail("Aucun élève sélectionné.");
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("promote_pupils", {

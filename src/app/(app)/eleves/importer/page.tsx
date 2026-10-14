@@ -22,7 +22,10 @@ export default async function ImportPage() {
       />
       <Card className="max-w-5xl">
         <CardBody>
-          <ImportClient classNames={classes.filter((c) => c.is_active).map((c) => c.name)} yearLabel={year.label} />
+          <ImportClient
+            classNames={classes.filter((c) => c.is_active).map((c) => c.name)}
+            yearLabel={year.label}
+          />
         </CardBody>
       </Card>
     </>

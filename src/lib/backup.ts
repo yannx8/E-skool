@@ -51,15 +51,18 @@ function rowsToCsv(rows: Record<string, unknown>[]): string {
  * Zip with one CSV per table (FR-X2, FR-X3). With a user client, RLS limits
  * what is exported; with the service-role client, everything is.
  */
-export async function buildBackupZip(client: SupabaseClient<Database>): Promise<{ zip: Uint8Array; filename: string; counts: Record<string, number> }> {
+export async function buildBackupZip(
+  client: SupabaseClient<Database>,
+): Promise<{ zip: Uint8Array; filename: string; counts: Record<string, number> }> {
   const files: Record<string, Uint8Array> = {};
   const counts: Record<string, number> = {};
   for (const t of TABLES) {
-    const rows = await fetchAll<Record<string, unknown>>((from, to) =>
-      client.from(t.name).select("*").order(t.order).range(from, to) as unknown as PromiseLike<{
-        data: Record<string, unknown>[] | null;
-        error: { message: string } | null;
-      }>,
+    const rows = await fetchAll<Record<string, unknown>>(
+      (from, to) =>
+        client.from(t.name).select("*").order(t.order).range(from, to) as unknown as PromiseLike<{
+          data: Record<string, unknown>[] | null;
+          error: { message: string } | null;
+        }>,
     );
     counts[t.name] = rows.length;
     files[`${t.name}.csv`] = strToU8(rowsToCsv(rows));
@@ -75,5 +78,9 @@ export async function buildBackupZip(client: SupabaseClient<Database>): Promise<
       ...Object.entries(counts).map(([k, v]) => `  ${k} : ${v}`),
     ].join("\r\n"),
   );
-  return { zip: zipSync(files, { level: 6 }), filename: `eskool-sauvegarde-${todayISO()}.zip`, counts };
+  return {
+    zip: zipSync(files, { level: 6 }),
+    filename: `eskool-sauvegarde-${todayISO()}.zip`,
+    counts,
+  };
 }

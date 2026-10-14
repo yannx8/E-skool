@@ -17,13 +17,23 @@ export default async function NewPupilPage() {
   const active = classes.filter((c) => c.is_active);
   return (
     <>
-      <PageHeader title="Nouvel élève" description={`Inscription pour ${year.label}`} back={{ href: "/eleves", label: "Élèves" }} />
+      <PageHeader
+        title="Nouvel élève"
+        description={`Inscription pour ${year.label}`}
+        back={{ href: "/eleves", label: "Élèves" }}
+      />
       <Card className="max-w-3xl">
         <CardBody>
           {active.length === 0 ? (
-            <Alert tone="warning">Créez d&apos;abord les classes dans Configuration &gt; Classes.</Alert>
+            <Alert tone="warning">
+              Créez d&apos;abord les classes dans Configuration &gt; Classes.
+            </Alert>
           ) : (
-            <PupilForm action={createPupil} classes={active} canPay={can(user.role, "recordPayment")} />
+            <PupilForm
+              action={createPupil}
+              classes={active}
+              canPay={can(user.role, "recordPayment")}
+            />
           )}
         </CardBody>
       </Card>

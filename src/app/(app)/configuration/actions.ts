@@ -15,25 +15,42 @@ const NOT_ALLOWED = "Action réservée à l'administrateur.";
 // ----------------------------------------------------------------- years
 
 const yearSchema = z
-  .object({ label: z.string().trim().regex(/^\d{4}-\d{4}$/, "Format attendu : 2026-2027.") })
-  .refine((v) => Number(v.label.slice(5)) === Number(v.label.slice(0, 4)) + 1, "La deuxième année doit suivre la première.");
+  .object({
+    label: z
+      .string()
+      .trim()
+      .regex(/^\d{4}-\d{4}$/, "Format attendu : 2026-2027."),
+  })
+  .refine(
+    (v) => Number(v.label.slice(5)) === Number(v.label.slice(0, 4)) + 1,
+    "La deuxième année doit suivre la première.",
+  );
 
-export async function createYear(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function createYear(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const parsed = yearSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Année invalide.");
   const supabase = await createClient();
-  const { count } = await supabase.from("school_years").select("id", { count: "exact", head: true });
+  const { count } = await supabase
+    .from("school_years")
+    .select("id", { count: "exact", head: true });
   const { data, error } = await supabase
     .from("school_years")
     .insert({ label: parsed.data.label, is_current: (count ?? 0) === 0 })
     .select("id")
     .single();
-  if (error) return fail(error.code === "23505" ? "Cette année existe déjà." : friendlyError(error));
+  if (error)
+    return fail(error.code === "23505" ? "Cette année existe déjà." : friendlyError(error));
 
   const copyFrom = String(formData.get("copy_from") ?? "");
   if (isUuid(copyFrom)) {
-    const { error: e2 } = await supabase.rpc("copy_fee_schedules", { p_from_year: copyFrom, p_to_year: data.id });
+    const { error: e2 } = await supabase.rpc("copy_fee_schedules", {
+      p_from_year: copyFrom,
+      p_to_year: data.id,
+    });
     if (e2) return fail(`Année créée, mais la copie des frais a échoué : ${friendlyError(e2)}`);
   }
   revalidatePath("/", "layout");
@@ -50,25 +67,44 @@ export async function setCurrentYear(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
-export async function copyFees(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function copyFees(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const parsed = z.object({ from: uuid, to: uuid }).safeParse(Object.fromEntries(formData));
-  if (!parsed.success || parsed.data.from === parsed.data.to) return fail("Choisissez deux années différentes.");
+  if (!parsed.success || parsed.data.from === parsed.data.to)
+    return fail("Choisissez deux années différentes.");
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("copy_fee_schedules", { p_from_year: parsed.data.from, p_to_year: parsed.data.to });
+  const { data, error } = await supabase.rpc("copy_fee_schedules", {
+    p_from_year: parsed.data.from,
+    p_to_year: parsed.data.to,
+  });
   if (error) return fail(friendlyError(error));
   revalidatePath("/", "layout");
-  return { ok: true, message: data ? `${data} ligne(s) de frais copiée(s).` : "Aucune ligne à copier (déjà présentes)." };
+  return {
+    ok: true,
+    message: data
+      ? `${data} ligne(s) de frais copiée(s).`
+      : "Aucune ligne à copier (déjà présentes).",
+  };
 }
 
-export async function deleteYear(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function deleteYear(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) return fail("Année introuvable.");
   const supabase = await createClient();
   const { error } = await supabase.from("school_years").delete().eq("id", id);
   if (error) {
-    return fail(error.code === "23503" ? "Cette année contient des frais, élèves ou paiements : impossible de la supprimer." : friendlyError(error));
+    return fail(
+      error.code === "23503"
+        ? "Cette année contient des frais, élèves ou paiements : impossible de la supprimer."
+        : friendlyError(error),
+    );
   }
   revalidatePath("/", "layout");
   return { ok: true, message: "Année supprimée." };
@@ -81,18 +117,25 @@ const classSchema = z.object({
   sort_order: z.coerce.number().int().min(0).max(999).default(0),
 });
 
-export async function createClass(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function createClass(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const parsed = classSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Classe invalide.");
   const supabase = await createClient();
   const { error } = await supabase.from("classes").insert(parsed.data);
-  if (error) return fail(error.code === "23505" ? "Cette classe existe déjà." : friendlyError(error));
+  if (error)
+    return fail(error.code === "23505" ? "Cette classe existe déjà." : friendlyError(error));
   revalidatePath("/", "layout");
   return { ok: true, message: `Classe ${parsed.data.name} ajoutée.` };
 }
 
-export async function updateClass(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function updateClass(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const parsed = classSchema
     .extend({ id: uuid, is_active: z.string().optional() })
@@ -104,19 +147,29 @@ export async function updateClass(_prev: ActionResult | null, formData: FormData
     .from("classes")
     .update({ ...rest, is_active: is_active === "on" })
     .eq("id", id);
-  if (error) return fail(error.code === "23505" ? "Une autre classe porte déjà ce nom." : friendlyError(error));
+  if (error)
+    return fail(
+      error.code === "23505" ? "Une autre classe porte déjà ce nom." : friendlyError(error),
+    );
   revalidatePath("/", "layout");
   return { ok: true, message: "Classe enregistrée." };
 }
 
-export async function deleteClass(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function deleteClass(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) return fail("Classe introuvable.");
   const supabase = await createClient();
   const { error } = await supabase.from("classes").delete().eq("id", id);
   if (error) {
-    return fail(error.code === "23503" ? "Cette classe a des élèves ou des frais : désactivez-la plutôt." : friendlyError(error));
+    return fail(
+      error.code === "23503"
+        ? "Cette classe a des élèves ou des frais : désactivez-la plutôt."
+        : friendlyError(error),
+    );
   }
   revalidatePath("/", "layout");
   return { ok: true, message: "Classe supprimée." };
@@ -164,7 +217,10 @@ const schoolSchema = z.object({
   reminder_template: z.string().trim().min(10, "Le message est trop court.").max(1000),
 });
 
-export async function saveSchool(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function saveSchool(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const parsed = schoolSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
@@ -208,7 +264,10 @@ const modulesSchema = z.object({
   auto_reminder_interval_days: z.coerce.number().int().min(1).max(60),
 });
 
-export async function saveModules(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function saveModules(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageSetup"))) return fail(NOT_ALLOWED);
   const parsed = modulesSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
@@ -238,7 +297,10 @@ const userSchema = z.object({
   password: z.string().min(10, "Mot de passe : 10 caractères minimum."),
 });
 
-export async function createUser(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function createUser(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const me = await userWithPermission("manageUsers");
   if (!me) return fail(NOT_ALLOWED);
   const parsed = userSchema.safeParse(Object.fromEntries(formData));
@@ -252,14 +314,21 @@ export async function createUser(_prev: ActionResult | null, formData: FormData)
     user_metadata: { full_name: v.full_name },
   });
   if (error || !data.user) {
-    return fail(error?.message?.toLowerCase().includes("already") ? "Un compte existe déjà avec cet email." : "Création du compte impossible.");
+    return fail(
+      error?.message?.toLowerCase().includes("already")
+        ? "Un compte existe déjà avec cet email."
+        : "Création du compte impossible.",
+    );
   }
   const { error: e2 } = await admin
     .from("user_roles")
     .upsert({ user_id: data.user.id, role: v.role, full_name: v.full_name, is_active: true });
   if (e2) return fail(friendlyError(e2));
   revalidatePath("/configuration/utilisateurs");
-  return { ok: true, message: `Compte créé pour ${v.full_name}. Communiquez-lui son mot de passe provisoire.` };
+  return {
+    ok: true,
+    message: `Compte créé pour ${v.full_name}. Communiquez-lui son mot de passe provisoire.`,
+  };
 }
 
 const updateUserSchema = z.object({
@@ -268,7 +337,10 @@ const updateUserSchema = z.object({
   is_active: z.string().optional(),
 });
 
-export async function updateUser(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function updateUser(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const me = await userWithPermission("manageUsers");
   if (!me) return fail(NOT_ALLOWED);
   const parsed = updateUserSchema.safeParse(Object.fromEntries(formData));
@@ -283,15 +355,23 @@ export async function updateUser(_prev: ActionResult | null, formData: FormData)
   return { ok: true, message: "Accès mis à jour." };
 }
 
-export async function resetUserPassword(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function resetUserPassword(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const me = await userWithPermission("manageUsers");
   if (!me) return fail(NOT_ALLOWED);
   const parsed = z
-    .object({ user_id: uuid, password: z.string().min(10, "Mot de passe : 10 caractères minimum.") })
+    .object({
+      user_id: uuid,
+      password: z.string().min(10, "Mot de passe : 10 caractères minimum."),
+    })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
   const admin = createAdminClient();
-  const { error } = await admin.auth.admin.updateUserById(parsed.data.user_id, { password: parsed.data.password });
+  const { error } = await admin.auth.admin.updateUserById(parsed.data.user_id, {
+    password: parsed.data.password,
+  });
   if (error) return fail("Changement de mot de passe impossible.");
   return { ok: true, message: "Mot de passe provisoire enregistré. Communiquez-le à la personne." };
 }

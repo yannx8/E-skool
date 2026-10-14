@@ -43,5 +43,7 @@ export async function getCashPosition(date: string): Promise<CashPosition | null
 
 /** Money in minus money out for the month (fees + other income + adjustments - expenses - salaries). */
 export function monthNet(r: MonthlyReport): number {
-  return r.fees_total + r.other_income_total + r.adjustments_total - r.expenses_total - r.payroll_total;
+  return (
+    r.fees_total + r.other_income_total + r.adjustments_total - r.expenses_total - r.payroll_total
+  );
 }

@@ -13,11 +13,18 @@ import { FEE_TYPES, termName, type FeeType } from "@/lib/labels";
 import { formatFCFA } from "@/lib/format";
 import { saveFees, type FeeLineInput } from "../actions";
 
-type Schedule = { class_id: string; fee: FeeType; term: number | null; amount: number; due_date: string };
+type Schedule = {
+  class_id: string;
+  fee: FeeType;
+  term: number | null;
+  amount: number;
+  due_date: string;
+};
 type ClassRow = { id: string; name: string };
 
 const ONE_OFF: FeeType[] = ["registration", "uniform", "books", "exam", "other"];
-const key = (classId: string, fee: FeeType, term: number | null) => `${classId}|${fee}|${term ?? ""}`;
+const key = (classId: string, fee: FeeType, term: number | null) =>
+  `${classId}|${fee}|${term ?? ""}`;
 
 export function FeeGrid({
   classes,
@@ -113,19 +120,39 @@ export function FeeGrid({
   }
 
   const columns: { fee: FeeType; term: number | null; label: string; dueKey: string }[] = [
-    ...terms.map((t) => ({ fee: "tuition" as FeeType, term: t, label: termName(t, termLabel), dueKey: `tuition|${t}` })),
-    ...ONE_OFF.filter((f) => enabled.has(f)).map((f) => ({ fee: f, term: null, label: FEE_TYPES[f], dueKey: f })),
+    ...terms.map((t) => ({
+      fee: "tuition" as FeeType,
+      term: t,
+      label: termName(t, termLabel),
+      dueKey: `tuition|${t}`,
+    })),
+    ...ONE_OFF.filter((f) => enabled.has(f)).map((f) => ({
+      fee: f,
+      term: null,
+      label: FEE_TYPES[f],
+      dueKey: f,
+    })),
   ];
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Échéances" description="Date limite de paiement, la même pour toutes les classes." />
+        <CardHeader
+          title="Échéances"
+          description="Date limite de paiement, la même pour toutes les classes."
+        />
         <CardBody className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {columns.map((col) => (
             <div key={col.dueKey}>
-              <Label htmlFor={`due-${col.dueKey}`}>{col.fee === "tuition" ? `Scolarité ${col.label}` : col.label}</Label>
-              <Input id={`due-${col.dueKey}`} type="date" value={dues[col.dueKey] ?? ""} onChange={(e) => setDue(col.dueKey, e.target.value)} />
+              <Label htmlFor={`due-${col.dueKey}`}>
+                {col.fee === "tuition" ? `Scolarité ${col.label}` : col.label}
+              </Label>
+              <Input
+                id={`due-${col.dueKey}`}
+                type="date"
+                value={dues[col.dueKey] ?? ""}
+                onChange={(e) => setDue(col.dueKey, e.target.value)}
+              />
             </div>
           ))}
         </CardBody>
@@ -152,7 +179,10 @@ export function FeeGrid({
 
       <div className="space-y-4">
         {classes.map((c, i) => {
-          const total = columns.reduce((s, col) => s + (amounts[key(c.id, col.fee, col.term)] ?? 0), 0);
+          const total = columns.reduce(
+            (s, col) => s + (amounts[key(c.id, col.fee, col.term)] ?? 0),
+            0,
+          );
           return (
             <Card key={c.id}>
               <CardHeader title={c.name} description={`Total de l'année : ${formatFCFA(total)}`} />
@@ -175,7 +205,13 @@ export function FeeGrid({
                           </button>
                         )}
                       </div>
-                      <MoneyInput id={`amt-${k}`} name={`amt-${k}`} value={amounts[k] ?? null} onValueChange={(v) => setAmount(k, v)} placeholder="Vide = non dû" />
+                      <MoneyInput
+                        id={`amt-${k}`}
+                        name={`amt-${k}`}
+                        value={amounts[k] ?? null}
+                        onValueChange={(v) => setAmount(k, v)}
+                        placeholder="Vide = non dû"
+                      />
                     </div>
                   );
                 })}
@@ -187,7 +223,9 @@ export function FeeGrid({
 
       {error && <Alert tone="danger">{error}</Alert>}
       <div className="sticky bottom-20 z-10 flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-lg md:bottom-4">
-        <p className="text-sm text-slate-600">{dirty ? "Modifications non enregistrées" : "Tout est enregistré"}</p>
+        <p className="text-sm text-slate-600">
+          {dirty ? "Modifications non enregistrées" : "Tout est enregistré"}
+        </p>
         <Button className="ml-auto" onClick={save} disabled={pending || !dirty}>
           {pending && <Loader2 className="animate-spin" aria-hidden />}
           Enregistrer les frais

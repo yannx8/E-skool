@@ -20,7 +20,8 @@ export default async function PayrollPage({ searchParams }: { searchParams: Sear
   const sp = await searchParams;
   const user = await requirePermission("viewHr");
   const settings = await getSettings();
-  if (!settings.module_hr) return <ModuleOff name="Personnel" canEnable={can(user.role, "manageSetup")} />;
+  if (!settings.module_hr)
+    return <ModuleOff name="Personnel" canEnable={can(user.role, "manageSetup")} />;
 
   const month = parseMonthParam(param(sp, "mois"), currentMonthISO());
   const supabase = await createClient();
@@ -53,12 +54,20 @@ export default async function PayrollPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageHeader title="Paie du personnel" back={{ href: "/personnel", label: "Personnel" }} actions={<MonthNav month={month} basePath="/personnel/paie" />} />
+      <PageHeader
+        title="Paie du personnel"
+        back={{ href: "/personnel", label: "Personnel" }}
+        actions={<MonthNav month={month} basePath="/personnel/paie" />}
+      />
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
         <Stat label="Total net du mois" value={formatFCFA(total)} />
         <Stat label="Déjà payé" value={formatFCFA(paid)} tone="success" />
-        <Stat label="Reste à payer" value={formatFCFA(total - paid)} tone={total - paid > 0 ? "warning" : "default"} />
+        <Stat
+          label="Reste à payer"
+          value={formatFCFA(total - paid)}
+          tone={total - paid > 0 ? "warning" : "default"}
+        />
       </div>
 
       {canManage && (
@@ -67,7 +76,8 @@ export default async function PayrollPage({ searchParams }: { searchParams: Sear
             <ActionForm action={preparePayroll} className="flex flex-wrap items-center gap-3">
               <input type="hidden" name="month" value={month} />
               <p className="text-slate-700">
-                Crée une ligne pour chaque membre actif du personnel avec son salaire de {formatMonth(month)}. Les lignes existantes sont conservées.
+                Crée une ligne pour chaque membre actif du personnel avec son salaire de{" "}
+                {formatMonth(month)}. Les lignes existantes sont conservées.
               </p>
               <ActionSubmit>
                 <CalendarCheck aria-hidden /> Préparer la paie
@@ -78,13 +88,17 @@ export default async function PayrollPage({ searchParams }: { searchParams: Sear
       )}
 
       <Alert tone="info" className="mb-4">
-        Une avance remise en espèces pendant le mois s&apos;enregistre comme dépense « Avances sur salaire », puis se déduit ici
-        dans « Avances déjà versées ». Les cotisations sociales et impôts ne sont pas calculés : voyez-les avec le comptable.
+        Une avance remise en espèces pendant le mois s&apos;enregistre comme dépense « Avances sur
+        salaire », puis se déduit ici dans « Avances déjà versées ». Les cotisations sociales et
+        impôts ne sont pas calculés : voyez-les avec le comptable.
       </Alert>
 
       <Card>
         {rows.length === 0 ? (
-          <EmptyState title="Aucune ligne de paie pour ce mois" description={canManage ? "Cliquez sur « Préparer la paie »." : undefined} />
+          <EmptyState
+            title="Aucune ligne de paie pour ce mois"
+            description={canManage ? "Cliquez sur « Préparer la paie »." : undefined}
+          />
         ) : (
           <ul className="divide-y divide-slate-100">
             {rows.map((r) => (

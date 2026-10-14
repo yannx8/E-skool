@@ -15,7 +15,9 @@ export default async function ClassesPage() {
   await requirePermission("manageSetup");
   const classes = await getClasses();
   const nextOrder = (classes.at(-1)?.sort_order ?? 0) + 1;
-  const missing = SUGGESTED.filter((n) => !classes.some((c) => c.name.toLowerCase() === n.toLowerCase()));
+  const missing = SUGGESTED.filter(
+    (n) => !classes.some((c) => c.name.toLowerCase() === n.toLowerCase()),
+  );
 
   return (
     <>
@@ -29,7 +31,9 @@ export default async function ClassesPage() {
           <CardHeader title={`${classes.length} classe(s)`} />
           {classes.length === 0 ? (
             <CardBody>
-              <Alert tone="info">Ajoutez les classes de l&apos;école (par exemple SIL, CP, CE1, CE2, CM1, CM2).</Alert>
+              <Alert tone="info">
+                Ajoutez les classes de l&apos;école (par exemple SIL, CP, CE1, CE2, CM1, CM2).
+              </Alert>
             </CardBody>
           ) : (
             <ul className="divide-y divide-slate-100">
@@ -38,13 +42,31 @@ export default async function ClassesPage() {
                   <ActionForm action={updateClass} className="flex flex-wrap items-end gap-3">
                     <input type="hidden" name="id" value={c.id} />
                     <Field label="Nom" htmlFor={`name-${c.id}`} className="min-w-32 flex-1">
-                      <Input id={`name-${c.id}`} name="name" defaultValue={c.name} required maxLength={40} />
+                      <Input
+                        id={`name-${c.id}`}
+                        name="name"
+                        defaultValue={c.name}
+                        required
+                        maxLength={40}
+                      />
                     </Field>
                     <Field label="Ordre" htmlFor={`order-${c.id}`} className="w-24">
-                      <Input id={`order-${c.id}`} name="sort_order" type="number" min={0} max={999} defaultValue={c.sort_order} />
+                      <Input
+                        id={`order-${c.id}`}
+                        name="sort_order"
+                        type="number"
+                        min={0}
+                        max={999}
+                        defaultValue={c.sort_order}
+                      />
                     </Field>
                     <label className="flex h-11 items-center gap-2">
-                      <input type="checkbox" name="is_active" defaultChecked={c.is_active} className="size-5 accent-primary" />
+                      <input
+                        type="checkbox"
+                        name="is_active"
+                        defaultChecked={c.is_active}
+                        className="size-5 accent-primary"
+                      />
                       Active
                     </label>
                     <ActionSubmit variant="secondary" size="sm" className="h-11">
@@ -68,15 +90,30 @@ export default async function ClassesPage() {
           <CardBody className="space-y-4">
             <ActionForm action={createClass} className="space-y-4" resetOnSuccess>
               <Field label="Nom" htmlFor="name">
-                <Input id="name" name="name" required maxLength={40} defaultValue={missing[0] ?? ""} />
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  maxLength={40}
+                  defaultValue={missing[0] ?? ""}
+                />
               </Field>
               <Field label="Ordre" htmlFor="sort_order">
-                <Input id="sort_order" name="sort_order" type="number" min={0} max={999} defaultValue={nextOrder} />
+                <Input
+                  id="sort_order"
+                  name="sort_order"
+                  type="number"
+                  min={0}
+                  max={999}
+                  defaultValue={nextOrder}
+                />
               </Field>
               <ActionSubmit>Ajouter</ActionSubmit>
             </ActionForm>
             {missing.length > 0 && classes.length === 0 && (
-              <p className="text-sm text-slate-500">Classes habituelles du primaire : {SUGGESTED.join(", ")}.</p>
+              <p className="text-sm text-slate-500">
+                Classes habituelles du primaire : {SUGGESTED.join(", ")}.
+              </p>
             )}
           </CardBody>
         </Card>

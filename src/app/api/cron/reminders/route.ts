@@ -11,7 +11,8 @@ export const maxDuration = 60;
 // Configuration > Modules AND the WhatsApp Cloud API variables are set.
 // At most 50 messages per run to cap cost.
 export async function GET(request: Request) {
-  if (!isAuthorizedCron(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!isAuthorizedCron(request))
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const admin = createAdminClient();
   const { data: settings } = await admin.from("settings").select("*").single();
   if (!settings?.auto_reminders_enabled) return NextResponse.json({ skipped: "disabled" });
@@ -26,7 +27,8 @@ export async function GET(request: Request) {
   let sent = 0;
   let failed = 0;
   for (const c of candidates ?? []) {
-    const period = c.term == null ? "frais uniques" : termName(c.term, settings.term_label).toLowerCase();
+    const period =
+      c.term == null ? "frais uniques" : termName(c.term, settings.term_label).toLowerCase();
     const params: [string, string, string, string, string] = [
       c.parent_name || "Parent",
       `${c.last_name} ${c.first_name}`.trim(),
@@ -52,7 +54,11 @@ export async function GET(request: Request) {
         job &&
           admin
             .from("message_jobs")
-            .update({ status: "sent", provider_message_id: messageId, sent_at: new Date().toISOString() })
+            .update({
+              status: "sent",
+              provider_message_id: messageId,
+              sent_at: new Date().toISOString(),
+            })
             .eq("id", job.id),
         admin.from("reminder_log").insert({
           pupil_id: c.pupil_id,
@@ -67,7 +73,10 @@ export async function GET(request: Request) {
       if (job) {
         await admin
           .from("message_jobs")
-          .update({ status: "failed", error: e instanceof Error ? e.message.slice(0, 500) : "unknown" })
+          .update({
+            status: "failed",
+            error: e instanceof Error ? e.message.slice(0, 500) : "unknown",
+          })
           .eq("id", job.id);
       }
     }

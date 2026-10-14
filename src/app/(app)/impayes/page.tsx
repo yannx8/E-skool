@@ -24,7 +24,11 @@ export const metadata: Metadata = { title: "Impayés" };
 export default async function UnpaidPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const user = await requireUser();
-  const [settings, year, classes] = await Promise.all([getSettings(), getActiveYear(), getClasses()]);
+  const [settings, year, classes] = await Promise.all([
+    getSettings(),
+    getActiveYear(),
+    getClasses(),
+  ]);
   if (!year) return <NoYear canSetup={can(user.role, "manageSetup")} />;
 
   const f = readUnpaidFilters(sp);
@@ -33,7 +37,12 @@ export default async function UnpaidPage({ searchParams }: { searchParams: Searc
   const canRemind = can(user.role, "sendReminders");
   const canPay = can(user.role, "recordPayment");
   const filterQs = { tranche: f.term, classe: f.classId, partis: f.includeLeft ? "1" : "" };
-  const periodLabel = f.term === "" ? "Échéances passées" : f.term === "unique" ? "Frais uniques" : termName(Number(f.term), settings.term_label);
+  const periodLabel =
+    f.term === ""
+      ? "Échéances passées"
+      : f.term === "unique"
+        ? "Frais uniques"
+        : termName(Number(f.term), settings.term_label);
 
   return (
     <>
@@ -72,7 +81,12 @@ export default async function UnpaidPage({ searchParams }: { searchParams: Searc
           </AutoSubmitSelect>
         </div>
         <div className="col-span-2 flex items-end gap-3">
-          <Checkbox name="partis" value="1" defaultChecked={f.includeLeft} label="Inclure les élèves partis" />
+          <Checkbox
+            name="partis"
+            value="1"
+            defaultChecked={f.includeLeft}
+            label="Inclure les élèves partis"
+          />
           <button type="submit" className={buttonClasses("secondary", "sm", "mb-1")}>
             Appliquer
           </button>
@@ -104,7 +118,10 @@ export default async function UnpaidPage({ searchParams }: { searchParams: Searc
                   {rows.map((r) => (
                     <tr key={`${r.pupil_id}-${r.term}`} className="hover:bg-slate-50">
                       <Td>
-                        <Link href={`/eleves/${r.pupil_id}`} className="font-medium text-primary underline-offset-4 hover:underline">
+                        <Link
+                          href={`/eleves/${r.pupil_id}`}
+                          className="font-medium text-primary underline-offset-4 hover:underline"
+                        >
                           {fullName(r)}
                         </Link>
                         <div className="text-sm text-slate-500">
@@ -113,14 +130,22 @@ export default async function UnpaidPage({ searchParams }: { searchParams: Searc
                       </Td>
                       <Td>
                         {r.parent_name}
-                        <div className="text-sm text-slate-500">{r.parent_phone ? formatPhone(r.parent_phone) : "Pas de téléphone"}</div>
+                        <div className="text-sm text-slate-500">
+                          {r.parent_phone ? formatPhone(r.parent_phone) : "Pas de téléphone"}
+                        </div>
                       </Td>
-                      <Td className="tabular text-right font-semibold">{formatFCFA(r.remaining)}</Td>
+                      <Td className="tabular text-right font-semibold">
+                        {formatFCFA(r.remaining)}
+                      </Td>
                       <Td>
                         <StatusBadge status={r.status} />
                       </Td>
                       <Td className="text-sm">
-                        {r.last_reminded_at ? `Relancé ${formatRelativeDay(r.last_reminded_at)}` : <span className="text-slate-400">Jamais</span>}
+                        {r.last_reminded_at ? (
+                          `Relancé ${formatRelativeDay(r.last_reminded_at)}`
+                        ) : (
+                          <span className="text-slate-400">Jamais</span>
+                        )}
                       </Td>
                       <Td>
                         <div className="flex justify-end gap-2">
@@ -133,7 +158,10 @@ export default async function UnpaidPage({ searchParams }: { searchParams: Searc
                             />
                           )}
                           {canPay && (
-                            <Link href={`/paiements/nouveau?eleve=${r.pupil_id}`} className={buttonClasses("secondary", "sm")}>
+                            <Link
+                              href={`/paiements/nouveau?eleve=${r.pupil_id}`}
+                              className={buttonClasses("secondary", "sm")}
+                            >
                               <Wallet aria-hidden /> Encaisser
                             </Link>
                           )}
@@ -162,11 +190,16 @@ export default async function UnpaidPage({ searchParams }: { searchParams: Searc
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <span className="text-sm text-slate-500">
-                      {r.last_reminded_at ? `Relancé ${formatRelativeDay(r.last_reminded_at)}` : "Jamais relancé"}
+                      {r.last_reminded_at
+                        ? `Relancé ${formatRelativeDay(r.last_reminded_at)}`
+                        : "Jamais relancé"}
                     </span>
                     <div className="flex gap-2">
                       {canPay && (
-                        <Link href={`/paiements/nouveau?eleve=${r.pupil_id}`} className={buttonClasses("secondary", "sm")}>
+                        <Link
+                          href={`/paiements/nouveau?eleve=${r.pupil_id}`}
+                          className={buttonClasses("secondary", "sm")}
+                        >
                           Encaisser
                         </Link>
                       )}

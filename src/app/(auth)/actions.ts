@@ -12,8 +12,13 @@ function safeNext(value: FormDataEntryValue | null): string {
   return v.startsWith("/") && !v.startsWith("//") && !v.startsWith("/\\") ? v : "/tableau-de-bord";
 }
 
-export async function signIn(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+export async function signIn(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return fail("Saisissez votre email et votre mot de passe.");
 
@@ -34,8 +39,13 @@ async function siteOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
-export async function requestPasswordReset(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+export async function requestPasswordReset(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(email)) return fail("Saisissez une adresse email valide.");
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {

@@ -16,7 +16,9 @@ export default async function DataPage() {
   let backups: { name: string; created_at: string; url: string; size: number }[] = [];
   if (env.serviceRoleKey) {
     const admin = createAdminClient();
-    const { data } = await admin.storage.from("backups").list("", { limit: 20, sortBy: { column: "created_at", order: "desc" } });
+    const { data } = await admin.storage
+      .from("backups")
+      .list("", { limit: 20, sortBy: { column: "created_at", order: "desc" } });
     const files = (data ?? []).filter((f) => f.name.endsWith(".zip"));
     if (files.length) {
       const { data: signed } = await admin.storage.from("backups").createSignedUrls(
@@ -41,7 +43,10 @@ export default async function DataPage() {
       />
       <div className="max-w-3xl space-y-6">
         <Card>
-          <CardHeader title="Exporter maintenant" description="Un fichier .zip avec un tableau (CSV) par type de donnée, lisible dans Excel." />
+          <CardHeader
+            title="Exporter maintenant"
+            description="Un fichier .zip avec un tableau (CSV) par type de donnée, lisible dans Excel."
+          />
           <CardBody>
             <a href="/api/export/donnees" className={buttonClasses("primary")}>
               <Download aria-hidden /> Télécharger toutes les données
@@ -60,10 +65,15 @@ export default async function DataPage() {
           />
           {!env.serviceRoleKey ? (
             <CardBody>
-              <Alert tone="warning">La clé SUPABASE_SECRET_KEY n&apos;est pas configurée sur le serveur.</Alert>
+              <Alert tone="warning">
+                La clé SUPABASE_SECRET_KEY n&apos;est pas configurée sur le serveur.
+              </Alert>
             </CardBody>
           ) : backups.length === 0 ? (
-            <EmptyState title="Aucune sauvegarde pour l'instant" description="La première sera créée lors du prochain passage automatique (lundi matin)." />
+            <EmptyState
+              title="Aucune sauvegarde pour l'instant"
+              description="La première sera créée lors du prochain passage automatique (lundi matin)."
+            />
           ) : (
             <ul className="divide-y divide-slate-100">
               {backups.map((b) => (

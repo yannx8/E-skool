@@ -10,7 +10,13 @@ import { ConfirmForm } from "@/components/confirm-form";
 import { requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { can } from "@/lib/permissions";
-import { addMonths, currentMonthISO, formatDate, formatMonth, formatSignedFCFA } from "@/lib/format";
+import {
+  addMonths,
+  currentMonthISO,
+  formatDate,
+  formatMonth,
+  formatSignedFCFA,
+} from "@/lib/format";
 import { PAYMENT_METHODS } from "@/lib/labels";
 import { lockMonth, recordAdjustment } from "../actions";
 
@@ -31,7 +37,10 @@ export default async function PeriodsPage() {
 
   return (
     <>
-      <PageHeader title="Mois et ajustements" description="Verrouillez un mois une fois vérifié avec le fondateur : il ne pourra plus être modifié." />
+      <PageHeader
+        title="Mois et ajustements"
+        description="Verrouillez un mois une fois vérifié avec le fondateur : il ne pourra plus être modifié."
+      />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader title="Mois terminés" />
@@ -67,11 +76,21 @@ export default async function PeriodsPage() {
         <div className="space-y-6">
           {canManage && (
             <Card>
-              <CardHeader title="Nouvel ajustement" description="Corrige une erreur découverte sur un mois verrouillé. Il est daté d'aujourd'hui." />
+              <CardHeader
+                title="Nouvel ajustement"
+                description="Corrige une erreur découverte sur un mois verrouillé. Il est daté d'aujourd'hui."
+              />
               <CardBody>
                 <ActionForm action={recordAdjustment} className="space-y-4" resetOnSuccess>
                   <Field label="Description" htmlFor="label">
-                    <Input id="label" name="label" required minLength={3} maxLength={200} placeholder="Dépense de septembre saisie deux fois" />
+                    <Input
+                      id="label"
+                      name="label"
+                      required
+                      minLength={3}
+                      maxLength={200}
+                      placeholder="Dépense de septembre saisie deux fois"
+                    />
                   </Field>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Sens" htmlFor="direction">
@@ -93,7 +112,12 @@ export default async function PeriodsPage() {
                       </Select>
                     </Field>
                     <Field label="Mois corrigé" htmlFor="refers_to_month">
-                      <Input id="refers_to_month" name="refers_to_month" type="month" max={addMonths(current, -1).slice(0, 7)} />
+                      <Input
+                        id="refers_to_month"
+                        name="refers_to_month"
+                        type="month"
+                        max={addMonths(current, -1).slice(0, 7)}
+                      />
                     </Field>
                   </div>
                   <ActionSubmit>Enregistrer l&apos;ajustement</ActionSubmit>
@@ -116,13 +140,19 @@ export default async function PeriodsPage() {
                         {a.refers_to_month ? ` · corrige ${formatMonth(a.refers_to_month)}` : ""}
                       </p>
                     </div>
-                    <span className={`tabular font-semibold ${a.amount > 0 ? "text-success" : "text-danger"}`}>{formatSignedFCFA(a.amount)}</span>
+                    <span
+                      className={`tabular font-semibold ${a.amount > 0 ? "text-success" : "text-danger"}`}
+                    >
+                      {formatSignedFCFA(a.amount)}
+                    </span>
                   </li>
                 ))}
               </ul>
             )}
           </Card>
-          <Alert tone="info">Une clôture de caisse verrouille aussi tous les jours jusqu&apos;à sa date.</Alert>
+          <Alert tone="info">
+            Une clôture de caisse verrouille aussi tous les jours jusqu&apos;à sa date.
+          </Alert>
         </div>
       </div>
     </>

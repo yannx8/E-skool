@@ -12,7 +12,14 @@ import { getActiveYear, getSettings, requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getUserNames } from "@/lib/queries";
 import { can } from "@/lib/permissions";
-import { formatDate, formatDateTime, formatFCFA, formatRelativeDay, fullName, todayISO } from "@/lib/format";
+import {
+  formatDate,
+  formatDateTime,
+  formatFCFA,
+  formatRelativeDay,
+  fullName,
+  todayISO,
+} from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
 import { FEE_TYPES, feeLineName, PAYMENT_METHODS, termName, type FeeType } from "@/lib/labels";
 import { isUuid, param, type IdParams, type SearchParams } from "@/lib/params";
@@ -24,58 +31,85 @@ import { CopyLinkButton, DiscountDialog, LeaveDialog } from "./pupil-actions";
 
 export const metadata: Metadata = { title: "Fiche élève" };
 
-export default async function PupilPage({ params, searchParams }: { params: IdParams; searchParams: SearchParams }) {
+export default async function PupilPage({
+  params,
+  searchParams,
+}: {
+  params: IdParams;
+  searchParams: SearchParams;
+}) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   if (!isUuid(id)) notFound();
   const user = await requireUser();
-  const [settings, year, names] = await Promise.all([getSettings(), getActiveYear(), getUserNames()]);
+  const [settings, year, names] = await Promise.all([
+    getSettings(),
+    getActiveYear(),
+    getUserNames(),
+  ]);
   const supabase = await createClient();
 
   const { data: pupil } = await supabase.from("pupils").select("*").eq("id", id).maybeSingle();
   if (!pupil) notFound();
 
   const yearId = year?.id ?? "00000000-0000-0000-0000-000000000000";
-  const [{ data: enrollments }, { data: lines }, { data: yearBalance }, { data: payments }, { data: reminders }, { data: discounts }] =
-    await Promise.all([
-      supabase
-        .from("enrollments")
-        .select("school_year_id, class_id, classes(name), school_years(label)")
-        .eq("pupil_id", id),
-      supabase
-        .from("balance_lines")
-        .select("fee, term, due_date, gross_due, discount, due, paid, applied, remaining, status")
-        .eq("pupil_id", id)
-        .eq("school_year_id", yearId)
-        .order("due_date")
-        .order("term", { nullsFirst: true }),
-      supabase.from("pupil_year_balance").select("*").eq("pupil_id", id).eq("school_year_id", yearId).maybeSingle(),
-      supabase
-        .from("payments")
-        .select("id, receipt_number, amount, method, fee, term, paid_at, reference, voided, void_reason, created_by")
-        .eq("pupil_id", id)
-        .eq("school_year_id", yearId)
-        .order("paid_at", { ascending: false })
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("reminder_log")
-        .select("id, term, channel, amount_due, created_at, created_by")
-        .eq("pupil_id", id)
-        .order("created_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("discounts")
-        .select("id, fee, term, kind, value, reason, is_active")
-        .eq("pupil_id", id)
-        .eq("school_year_id", yearId)
-        .order("created_at"),
-    ]);
+  const [
+    { data: enrollments },
+    { data: lines },
+    { data: yearBalance },
+    { data: payments },
+    { data: reminders },
+    { data: discounts },
+  ] = await Promise.all([
+    supabase
+      .from("enrollments")
+      .select("school_year_id, class_id, classes(name), school_years(label)")
+      .eq("pupil_id", id),
+    supabase
+      .from("balance_lines")
+      .select("fee, term, due_date, gross_due, discount, due, paid, applied, remaining, status")
+      .eq("pupil_id", id)
+      .eq("school_year_id", yearId)
+      .order("due_date")
+      .order("term", { nullsFirst: true }),
+    supabase
+      .from("pupil_year_balance")
+      .select("*")
+      .eq("pupil_id", id)
+      .eq("school_year_id", yearId)
+      .maybeSingle(),
+    supabase
+      .from("payments")
+      .select(
+        "id, receipt_number, amount, method, fee, term, paid_at, reference, voided, void_reason, created_by",
+      )
+      .eq("pupil_id", id)
+      .eq("school_year_id", yearId)
+      .order("paid_at", { ascending: false })
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("reminder_log")
+      .select("id, term, channel, amount_due, created_at, created_by")
+      .eq("pupil_id", id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("discounts")
+      .select("id, fee, term, kind, value, reason, is_active")
+      .eq("pupil_id", id)
+      .eq("school_year_id", yearId)
+      .order("created_at"),
+  ]);
 
   const current = enrollments?.find((e) => e.school_year_id === year?.id);
   const className = current?.classes?.name ?? "Non inscrit cette année";
-  const overdueLines = (lines ?? []).filter((l) => (l.remaining ?? 0) > 0 && (l.due_date ?? "") < todayISO());
+  const overdueLines = (lines ?? []).filter(
+    (l) => (l.remaining ?? 0) > 0 && (l.due_date ?? "") < todayISO(),
+  );
   const overdueAmount = overdueLines.reduce((s, l) => s + (l.remaining ?? 0), 0);
   const firstOverdue = overdueLines[0];
-  const portalUrl = publicEnv.siteUrl ? `${publicEnv.siteUrl}/p/${pupil.portal_token}` : `/p/${pupil.portal_token}`;
+  const portalUrl = publicEnv.siteUrl
+    ? `${publicEnv.siteUrl}/p/${pupil.portal_token}`
+    : `/p/${pupil.portal_token}`;
   const canEdit = can(user.role, "editPupils");
 
   return (
@@ -150,13 +184,20 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                     />
                   )}
                   {can(user.role, "manageDiscounts") && current && (
-                    <DiscountDialog pupilId={id} termLabel={settings.term_label} termsCount={settings.terms_count} />
+                    <DiscountDialog
+                      pupilId={id}
+                      termLabel={settings.term_label}
+                      termsCount={settings.terms_count}
+                    />
                   )}
                 </>
               }
             />
             {!lines || lines.length === 0 ? (
-              <EmptyState title="Aucun frais pour cette année" description="Vérifiez la classe de l'élève et les frais configurés." />
+              <EmptyState
+                title="Aucun frais pour cette année"
+                description="Vérifiez la classe de l'élève et les frais configurés."
+              />
             ) : (
               <Table>
                 <thead>
@@ -172,15 +213,23 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                   {lines.map((l) => (
                     <tr key={`${l.fee}-${l.term}`}>
                       <Td>
-                        <span className="font-medium">{feeLineName(l.fee as FeeType, l.term, settings.term_label)}</span>
-                        <div className="text-sm text-slate-500">Échéance {formatDate(l.due_date)}</div>
+                        <span className="font-medium">
+                          {feeLineName(l.fee as FeeType, l.term, settings.term_label)}
+                        </span>
+                        <div className="text-sm text-slate-500">
+                          Échéance {formatDate(l.due_date)}
+                        </div>
                       </Td>
                       <Td className="tabular text-right">
                         {formatFCFA(l.due)}
-                        {(l.discount ?? 0) > 0 && <div className="text-sm text-success">-{formatFCFA(l.discount)}</div>}
+                        {(l.discount ?? 0) > 0 && (
+                          <div className="text-sm text-success">-{formatFCFA(l.discount)}</div>
+                        )}
                       </Td>
                       <Td className="tabular text-right">{formatFCFA(l.applied)}</Td>
-                      <Td className="tabular text-right font-semibold">{formatFCFA(l.remaining)}</Td>
+                      <Td className="tabular text-right font-semibold">
+                        {formatFCFA(l.remaining)}
+                      </Td>
                       <Td>
                         <StatusBadge status={l.status} />
                       </Td>
@@ -192,7 +241,8 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
             {(yearBalance?.credit ?? 0) > 0 && (
               <CardBody>
                 <Alert tone="info">
-                  Crédit en faveur de la famille : {formatFCFA(yearBalance?.credit)} (trop-perçu sur la dernière période).
+                  Crédit en faveur de la famille : {formatFCFA(yearBalance?.credit)} (trop-perçu sur
+                  la dernière période).
                 </Alert>
               </CardBody>
             )}
@@ -205,9 +255,15 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
             ) : (
               <ul className="divide-y divide-slate-100">
                 {payments.map((p) => (
-                  <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                  <li
+                    key={p.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                  >
                     <div className={p.voided ? "text-slate-400" : ""}>
-                      <Link href={`/recu/${p.id}`} className="font-mono text-primary underline-offset-4 hover:underline">
+                      <Link
+                        href={`/recu/${p.id}`}
+                        className="font-mono text-primary underline-offset-4 hover:underline"
+                      >
                         {p.receipt_number}
                       </Link>
                       <span className={p.voided ? "ml-2 line-through" : "ml-2"}>
@@ -216,12 +272,18 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                       <div className="text-sm text-slate-500">
                         {formatDate(p.paid_at)} · {PAYMENT_METHODS[p.method]}
                         {p.reference ? ` · ${p.reference}` : ""}
-                        {p.created_by && names.get(p.created_by) ? ` · par ${names.get(p.created_by)}` : ""}
+                        {p.created_by && names.get(p.created_by)
+                          ? ` · par ${names.get(p.created_by)}`
+                          : ""}
                       </div>
-                      {p.voided && <div className="text-sm text-danger">Annulé : {p.void_reason}</div>}
+                      {p.voided && (
+                        <div className="text-sm text-danger">Annulé : {p.void_reason}</div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`tabular font-semibold ${p.voided ? "text-slate-400 line-through" : ""}`}>
+                      <span
+                        className={`tabular font-semibold ${p.voided ? "text-slate-400 line-through" : ""}`}
+                      >
                         {formatFCFA(p.amount)}
                       </span>
                       {!p.voided && can(user.role, "voidPayment") && (
@@ -251,7 +313,10 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                   {
                     label: "Téléphone",
                     value: pupil.parent_phone ? (
-                      <a href={`tel:+${pupil.parent_phone}`} className="inline-flex items-center gap-1 text-primary">
+                      <a
+                        href={`tel:+${pupil.parent_phone}`}
+                        className="inline-flex items-center gap-1 text-primary"
+                      >
                         <Phone className="size-4" aria-hidden /> {formatPhone(pupil.parent_phone)}
                       </a>
                     ) : null,
@@ -296,9 +361,14 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
           )}
 
           <Card>
-            <CardHeader title="Lien de suivi parent" description="Page en lecture seule : soldes et reçus, sans mot de passe." />
+            <CardHeader
+              title="Lien de suivi parent"
+              description="Page en lecture seule : soldes et reçus, sans mot de passe."
+            />
             <CardBody className="space-y-3">
-              <p className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-sm break-all">{portalUrl}</p>
+              <p className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-sm break-all">
+                {portalUrl}
+              </p>
               <div className="flex flex-wrap gap-2">
                 <CopyLinkButton url={portalUrl} />
                 {can(user.role, "manageSetup") && (
@@ -310,7 +380,9 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                   </form>
                 )}
               </div>
-              <p className="text-sm text-slate-500">« Nouveau lien » désactive l&apos;ancien (si le lien a été partagé par erreur).</p>
+              <p className="text-sm text-slate-500">
+                « Nouveau lien » désactive l&apos;ancien (si le lien a été partagé par erreur).
+              </p>
             </CardBody>
           </Card>
 
@@ -325,11 +397,16 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                     <span className="font-medium">{formatRelativeDay(r.created_at)}</span>
                     <span className="text-slate-600">
                       {" "}
-                      · {r.term == null ? "toutes périodes" : termName(r.term, settings.term_label)} · {formatFCFA(r.amount_due)}
+                      · {r.term == null
+                        ? "toutes périodes"
+                        : termName(r.term, settings.term_label)}{" "}
+                      · {formatFCFA(r.amount_due)}
                     </span>
                     <div className="text-sm text-slate-500">
-                      {r.channel === "whatsapp_api" ? "Envoi automatique" : `WhatsApp ouvert par ${names.get(r.created_by ?? "") ?? "?"}`} ·{" "}
-                      {formatDateTime(r.created_at)}
+                      {r.channel === "whatsapp_api"
+                        ? "Envoi automatique"
+                        : `WhatsApp ouvert par ${names.get(r.created_by ?? "") ?? "?"}`}{" "}
+                      · {formatDateTime(r.created_at)}
                     </div>
                   </li>
                 ))}
@@ -342,7 +419,9 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
             <ul className="divide-y divide-slate-100">
               {(enrollments ?? [])
                 .slice()
-                .sort((a, b) => (b.school_years?.label ?? "").localeCompare(a.school_years?.label ?? ""))
+                .sort((a, b) =>
+                  (b.school_years?.label ?? "").localeCompare(a.school_years?.label ?? ""),
+                )
                 .map((e) => (
                   <li key={e.school_year_id} className="flex justify-between px-4 py-2.5">
                     <span>{e.school_years?.label}</span>
@@ -357,7 +436,9 @@ export default async function PupilPage({ params, searchParams }: { params: IdPa
                 ) : (
                   <form action={reactivatePupil}>
                     <input type="hidden" name="id" value={id} />
-                    <p className="mb-2 text-sm text-slate-600">Motif du départ : {pupil.left_reason}</p>
+                    <p className="mb-2 text-sm text-slate-600">
+                      Motif du départ : {pupil.left_reason}
+                    </p>
                     <Button type="submit" variant="secondary">
                       Réintégrer l&apos;élève
                     </Button>

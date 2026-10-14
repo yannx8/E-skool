@@ -37,14 +37,23 @@ export function Dialog({
         <DialogPrimitive.Content className={cn(panel, className)}>
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <DialogPrimitive.Title className="text-xl font-semibold text-slate-900">{title}</DialogPrimitive.Title>
+              <DialogPrimitive.Title className="text-xl font-semibold text-slate-900">
+                {title}
+              </DialogPrimitive.Title>
               {description ? (
-                <DialogPrimitive.Description className="mt-1 text-slate-600">{description}</DialogPrimitive.Description>
+                <DialogPrimitive.Description className="mt-1 text-slate-600">
+                  {description}
+                </DialogPrimitive.Description>
               ) : (
-                <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>
+                <DialogPrimitive.Description className="sr-only">
+                  {title}
+                </DialogPrimitive.Description>
               )}
             </div>
-            <DialogPrimitive.Close className="-m-2 rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="Fermer">
+            <DialogPrimitive.Close
+              className="-m-2 rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              aria-label="Fermer"
+            >
               <X className="size-5" aria-hidden />
             </DialogPrimitive.Close>
           </div>
@@ -79,9 +88,13 @@ export function AlertDialog({
       <AlertPrimitive.Portal>
         <AlertPrimitive.Overlay className={overlay} />
         <AlertPrimitive.Content className={panel}>
-          <AlertPrimitive.Title className="text-xl font-semibold text-slate-900">{title}</AlertPrimitive.Title>
+          <AlertPrimitive.Title className="text-xl font-semibold text-slate-900">
+            {title}
+          </AlertPrimitive.Title>
           {description ? (
-            <AlertPrimitive.Description className="mt-1 mb-4 text-slate-600">{description}</AlertPrimitive.Description>
+            <AlertPrimitive.Description className="mt-1 mb-4 text-slate-600">
+              {description}
+            </AlertPrimitive.Description>
           ) : (
             <AlertPrimitive.Description className="sr-only">{title}</AlertPrimitive.Description>
           )}

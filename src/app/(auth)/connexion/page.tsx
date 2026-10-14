@@ -23,7 +23,10 @@ export default async function LoginPage({
       )}
       <LoginForm next={next} />
       <p className="mt-5 text-center">
-        <Link href="/mot-de-passe-oublie" className="inline-block min-h-11 py-2 text-primary underline-offset-4 hover:underline">
+        <Link
+          href="/mot-de-passe-oublie"
+          className="inline-block min-h-11 py-2 text-primary underline-offset-4 hover:underline"
+        >
           Mot de passe oublié ?
         </Link>
       </p>

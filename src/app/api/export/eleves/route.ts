@@ -11,9 +11,23 @@ export async function GET(request: NextRequest) {
   const year = await getActiveYear();
   if (!year) return NextResponse.json({ error: "Aucune année scolaire" }, { status: 404 });
 
-  const rows = await loadPupils(year.id, readPupilFilters(Object.fromEntries(request.nextUrl.searchParams)));
+  const rows = await loadPupils(
+    year.id,
+    readPupilFilters(Object.fromEntries(request.nextUrl.searchParams)),
+  );
   const csv = toCSV(
-    ["Nom", "Prénom", "Classe", "Parent", "Téléphone", "Dû (FCFA)", "Payé (FCFA)", "Reste (FCFA)", "Situation", "Présent"],
+    [
+      "Nom",
+      "Prénom",
+      "Classe",
+      "Parent",
+      "Téléphone",
+      "Dû (FCFA)",
+      "Payé (FCFA)",
+      "Reste (FCFA)",
+      "Situation",
+      "Présent",
+    ],
     rows.map((r) => [
       r.last_name,
       r.first_name,

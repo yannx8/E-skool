@@ -2,15 +2,50 @@
 // or without accents) to pupil import rows. Pure functions: unit tested.
 import { normalizeCameroonPhone } from "@/lib/phone";
 
-export type ImportField = "last_name" | "first_name" | "full_name" | "class_name" | "parent_name" | "parent_phone" | "notes";
+export type ImportField =
+  | "last_name"
+  | "first_name"
+  | "full_name"
+  | "class_name"
+  | "parent_name"
+  | "parent_phone"
+  | "notes";
 
 const HEADER_ALIASES: Record<ImportField, string[]> = {
   last_name: ["nom", "noms", "nomdefamille", "nomeleve", "nomdeleleve", "lastname"],
   first_name: ["prenom", "prenoms", "prenomeleve", "firstname"],
-  full_name: ["nometprenom", "nometprenoms", "nomsetprenoms", "nomprenom", "nomprenoms", "eleve", "nomcomplet"],
+  full_name: [
+    "nometprenom",
+    "nometprenoms",
+    "nomsetprenoms",
+    "nomprenom",
+    "nomprenoms",
+    "eleve",
+    "nomcomplet",
+  ],
   class_name: ["classe", "class", "niveau", "salle"],
-  parent_name: ["parent", "nomparent", "nomduparent", "nomdesparents", "tuteur", "nomdututeur", "parenttuteur", "nomparenttuteur"],
-  parent_phone: ["telephone", "tel", "telephoneparent", "telparent", "telephoneduparent", "phone", "contact", "numero", "portable", "mobile"],
+  parent_name: [
+    "parent",
+    "nomparent",
+    "nomduparent",
+    "nomdesparents",
+    "tuteur",
+    "nomdututeur",
+    "parenttuteur",
+    "nomparenttuteur",
+  ],
+  parent_phone: [
+    "telephone",
+    "tel",
+    "telephoneparent",
+    "telparent",
+    "telephoneduparent",
+    "phone",
+    "contact",
+    "numero",
+    "portable",
+    "mobile",
+  ],
   notes: ["notes", "note", "observation", "observations", "remarque", "remarques"],
 };
 
@@ -63,7 +98,8 @@ export type ParsedRow = {
   errors: string[];
 };
 
-const cell = (row: unknown[], i: number | undefined) => (i === undefined ? "" : String(row[i] ?? "").trim());
+const cell = (row: unknown[], i: number | undefined) =>
+  i === undefined ? "" : String(row[i] ?? "").trim();
 
 /** Turns raw rows (first row = headers) into validated import rows. */
 export function parseImportRows(
@@ -93,7 +129,8 @@ export function parseImportRows(
     const errors: string[] = [];
     if (!last) errors.push("Nom manquant");
     if (!className) errors.push("Classe manquante");
-    else if (!known.has(normalizeHeader(className))) errors.push(`Classe inconnue « ${className} »`);
+    else if (!known.has(normalizeHeader(className)))
+      errors.push(`Classe inconnue « ${className} »`);
     let phone = "";
     if (phoneRaw) {
       const n = normalizeCameroonPhone(phoneRaw);

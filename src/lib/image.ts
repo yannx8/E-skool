@@ -16,6 +16,10 @@ export async function downscaleImage(file: File, maxSide = 1600, quality = 0.82)
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode failed"))), "image/jpeg", quality),
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("encode failed"))),
+      "image/jpeg",
+      quality,
+    ),
   );
 }

@@ -31,7 +31,13 @@ const PAGE_SIZE = {
   thermal: "80mm auto",
 } as const;
 
-export default async function ReceiptPage({ params, searchParams }: { params: IdParams; searchParams: SearchParams }) {
+export default async function ReceiptPage({
+  params,
+  searchParams,
+}: {
+  params: IdParams;
+  searchParams: SearchParams;
+}) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   if (!isUuid(id)) notFound();
   const user = await requireUser();
@@ -40,7 +46,9 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
 
   const { data: p } = await supabase
     .from("payments")
-    .select("*, pupils(last_name, first_name, parent_name, parent_phone, portal_token), school_years(label)")
+    .select(
+      "*, pupils(last_name, first_name, parent_name, parent_phone, portal_token), school_years(label)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!p || !p.pupils) notFound();
@@ -63,29 +71,37 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
     .lte("created_at", p.created_at);
   paidQuery = p.term == null ? paidQuery.is("term", null) : paidQuery.eq("term", p.term);
 
-  const [{ data: enrollment }, { data: line }, { data: paidRows }, { data: recorder }] = await Promise.all([
-    supabase
-      .from("enrollments")
-      .select("classes(name)")
-      .eq("pupil_id", p.pupil_id)
-      .eq("school_year_id", p.school_year_id)
-      .maybeSingle(),
-    lineQuery.maybeSingle(),
-    paidQuery,
-    p.created_by
-      ? supabase.from("user_roles").select("full_name").eq("user_id", p.created_by).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const [{ data: enrollment }, { data: line }, { data: paidRows }, { data: recorder }] =
+    await Promise.all([
+      supabase
+        .from("enrollments")
+        .select("classes(name)")
+        .eq("pupil_id", p.pupil_id)
+        .eq("school_year_id", p.school_year_id)
+        .maybeSingle(),
+      lineQuery.maybeSingle(),
+      paidQuery,
+      p.created_by
+        ? supabase.from("user_roles").select("full_name").eq("user_id", p.created_by).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
   const paidUpTo = (paidRows ?? []).reduce((sum, r) => sum + r.amount, 0);
-  const remainingAfter = line ? Math.max(0, (line.due ?? 0) - (line.carry_in ?? 0) - paidUpTo) : null;
+  const remainingAfter = line
+    ? Math.max(0, (line.due ?? 0) - (line.carry_in ?? 0) - paidUpTo)
+    : null;
   const pupilName = fullName(p.pupils);
   const lineName = feeLineName(p.fee, p.term, settings.term_label);
-  const format = (settings.receipt_format in PAGE_SIZE ? settings.receipt_format : "a5") as keyof typeof PAGE_SIZE;
+  const format = (
+    settings.receipt_format in PAGE_SIZE ? settings.receipt_format : "a5"
+  ) as keyof typeof PAGE_SIZE;
   const thermal = format === "thermal";
   const canUndo = can(user.role, "voidPayment") && !p.voided && withinUndoWindow(p.created_at);
 
-  const portalLink = publicEnv.siteUrl && p.pupils.portal_token ? `${publicEnv.siteUrl}/p/${p.pupils.portal_token}` : "";
+  const portalLink =
+    publicEnv.siteUrl && p.pupils.portal_token
+      ? `${publicEnv.siteUrl}/p/${p.pupils.portal_token}`
+      : "";
   const shareText = [
     `${settings.school_name} - Reçu N° ${p.receipt_number}`,
     `Élève : ${pupilName}`,
@@ -103,7 +119,9 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
       <PrintToolbar
         backHref={`/eleves/${p.pupil_id}`}
         backLabel="Fiche élève"
-        whatsappHref={!p.voided && p.pupils.parent_phone ? whatsappUrl(p.pupils.parent_phone, shareText) : null}
+        whatsappHref={
+          !p.voided && p.pupils.parent_phone ? whatsappUrl(p.pupils.parent_phone, shareText) : null
+        }
       >
         {canUndo && (
           <VoidDialog
@@ -132,7 +150,9 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
       <article
         className={cn(
           "relative mx-auto overflow-hidden bg-white text-slate-900 shadow-sm print:shadow-none",
-          thermal ? "w-[76mm] p-3 text-[13px]" : "w-full max-w-[148mm] p-6 print:max-w-none print:p-0",
+          thermal
+            ? "w-[76mm] p-3 text-[13px]"
+            : "w-full max-w-[148mm] p-6 print:max-w-none print:p-0",
         )}
       >
         {p.voided && (
@@ -146,18 +166,29 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
 
         <SchoolHeader settings={settings} compact={thermal} />
 
-        <div className={cn("my-4 border-y border-slate-300 py-2", thermal ? "text-center" : "flex items-baseline justify-between")}>
+        <div
+          className={cn(
+            "my-4 border-y border-slate-300 py-2",
+            thermal ? "text-center" : "flex items-baseline justify-between",
+          )}
+        >
           <h1 className="text-lg font-bold uppercase">Reçu de paiement</h1>
           <p className="font-mono text-base font-semibold">N° {p.receipt_number}</p>
         </div>
 
         <dl className="space-y-1.5">
           <Row label="Élève" value={pupilName} />
-          <Row label="Classe" value={`${enrollment?.classes?.name ?? "-"} (${p.school_years?.label ?? ""})`} />
+          <Row
+            label="Classe"
+            value={`${enrollment?.classes?.name ?? "-"} (${p.school_years?.label ?? ""})`}
+          />
           {p.pupils.parent_name && <Row label="Parent" value={p.pupils.parent_name} />}
           <Row label="Objet" value={lineName} />
           <Row label="Date" value={formatDate(p.paid_at)} />
-          <Row label="Mode" value={`${PAYMENT_METHODS[p.method]}${p.reference ? ` (réf. ${p.reference})` : ""}`} />
+          <Row
+            label="Mode"
+            value={`${PAYMENT_METHODS[p.method]}${p.reference ? ` (réf. ${p.reference})` : ""}`}
+          />
         </dl>
 
         <div className="my-4 rounded-md border-2 border-slate-800 p-3 text-center">
@@ -167,7 +198,9 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
 
         {!p.voided && remainingAfter != null && (
           <p className="text-center font-semibold">
-            {remainingAfter > 0 ? `Reste à payer sur cette période : ${formatFCFA(remainingAfter)}` : "Période soldée. Merci !"}
+            {remainingAfter > 0
+              ? `Reste à payer sur cette période : ${formatFCFA(remainingAfter)}`
+              : "Période soldée. Merci !"}
           </p>
         )}
         {p.voided && (
@@ -177,7 +210,12 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
         )}
         {p.note && <p className="mt-2 text-sm text-slate-600">Note : {p.note}</p>}
 
-        <div className={cn("mt-8 flex gap-4 text-sm", thermal ? "flex-col" : "items-end justify-between")}>
+        <div
+          className={cn(
+            "mt-8 flex gap-4 text-sm",
+            thermal ? "flex-col" : "items-end justify-between",
+          )}
+        >
           <p className="text-slate-600">
             Encaissé par {recorder?.full_name || "l'administration"}
             <br />
@@ -189,7 +227,9 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
           </div>
         </div>
 
-        {settings.receipt_footer && <p className="mt-6 text-center text-sm text-slate-600">{settings.receipt_footer}</p>}
+        {settings.receipt_footer && (
+          <p className="mt-6 text-center text-sm text-slate-600">{settings.receipt_footer}</p>
+        )}
       </article>
     </>
   );

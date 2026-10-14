@@ -16,7 +16,20 @@ export async function GET(request: NextRequest) {
     loadUnpaid(year.id, readUnpaidFilters(Object.fromEntries(request.nextUrl.searchParams))),
   ]);
   const csv = toCSV(
-    ["Nom", "Prénom", "Classe", "Période", "Échéance", "Dû (FCFA)", "Payé (FCFA)", "Reste (FCFA)", "Situation", "Parent", "Téléphone", "Dernière relance"],
+    [
+      "Nom",
+      "Prénom",
+      "Classe",
+      "Période",
+      "Échéance",
+      "Dû (FCFA)",
+      "Payé (FCFA)",
+      "Reste (FCFA)",
+      "Situation",
+      "Parent",
+      "Téléphone",
+      "Dernière relance",
+    ],
     rows.map((r) => [
       r.last_name,
       r.first_name,

@@ -25,7 +25,12 @@ export function PrintToolbar({
       <div className="ml-auto flex flex-wrap gap-2">
         {children}
         {whatsappHref && (
-          <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className={buttonClasses("whatsapp")}>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonClasses("whatsapp")}
+          >
             <MessageCircle aria-hidden /> Envoyer
           </a>
         )}

@@ -21,7 +21,11 @@ const SIZES = {
 export type ButtonVariant = keyof typeof VARIANTS;
 export type ButtonSize = keyof typeof SIZES;
 
-export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSize = "default", className?: string) {
+export function buttonClasses(
+  variant: ButtonVariant = "primary",
+  size: ButtonSize = "default",
+  className?: string,
+) {
   return cn(
     "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors",
     "disabled:cursor-not-allowed disabled:opacity-70 [&_svg]:size-5 [&_svg]:shrink-0",

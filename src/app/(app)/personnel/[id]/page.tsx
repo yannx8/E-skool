@@ -26,12 +26,22 @@ export default async function StaffDetailPage({ params }: { params: IdParams }) 
   if (!isUuid(id)) notFound();
   const user = await requirePermission("viewHr");
   const settings = await getSettings();
-  if (!settings.module_hr) return <ModuleOff name="Personnel" canEnable={can(user.role, "manageSetup")} />;
+  if (!settings.module_hr)
+    return <ModuleOff name="Personnel" canEnable={can(user.role, "manageSetup")} />;
   const supabase = await createClient();
   const [{ data: staff }, { data: history }, { data: payroll }] = await Promise.all([
     supabase.from("staff").select("*").eq("id", id).maybeSingle(),
-    supabase.from("staff_salary_history").select("*").eq("staff_id", id).order("effective_from", { ascending: false }),
-    supabase.from("payroll_entries").select("*").eq("staff_id", id).order("month", { ascending: false }).limit(24),
+    supabase
+      .from("staff_salary_history")
+      .select("*")
+      .eq("staff_id", id)
+      .order("effective_from", { ascending: false }),
+    supabase
+      .from("payroll_entries")
+      .select("*")
+      .eq("staff_id", id)
+      .order("month", { ascending: false })
+      .limit(24),
   ]);
   if (!staff) notFound();
   const canManage = can(user.role, "manageHr");
@@ -75,7 +85,10 @@ export default async function StaffDetailPage({ params }: { params: IdParams }) 
           <Card>
             <CardHeader title="Paies" />
             {!payroll || payroll.length === 0 ? (
-              <EmptyState title="Aucune paie" description="Préparez la paie du mois dans Personnel > Paie du mois." />
+              <EmptyState
+                title="Aucune paie"
+                description="Préparez la paie du mois dans Personnel > Paie du mois."
+              />
             ) : (
               <ul className="divide-y divide-slate-100">
                 {payroll.map((p) => (
@@ -83,13 +96,18 @@ export default async function StaffDetailPage({ params }: { params: IdParams }) 
                     <div>
                       <p className="font-medium capitalize">{formatMonth(p.month)}</p>
                       <p className="text-sm text-slate-500">
-                        {p.status === "paid" ? `Payé le ${formatDate(p.paid_at)} · ${p.payslip_number}` : "En attente"}
+                        {p.status === "paid"
+                          ? `Payé le ${formatDate(p.paid_at)} · ${p.payslip_number}`
+                          : "En attente"}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="tabular font-semibold">{formatFCFA(p.net_amount)}</p>
                       {p.status === "paid" && (
-                        <Link href={`/bulletin/${p.id}`} className="text-sm text-primary underline-offset-4 hover:underline">
+                        <Link
+                          href={`/bulletin/${p.id}`}
+                          className="text-sm text-primary underline-offset-4 hover:underline"
+                        >
                           Bulletin
                         </Link>
                       )}
@@ -103,7 +121,14 @@ export default async function StaffDetailPage({ params }: { params: IdParams }) 
 
         <div className="space-y-6">
           <Card>
-            <CardHeader title="Salaire" description={current ? `Actuel : ${formatFCFA(current.monthly_amount)} / mois` : "Aucun salaire enregistré"} />
+            <CardHeader
+              title="Salaire"
+              description={
+                current
+                  ? `Actuel : ${formatFCFA(current.monthly_amount)} / mois`
+                  : "Aucun salaire enregistré"
+              }
+            />
             <ul className="divide-y divide-slate-100">
               {(history ?? []).map((h) => (
                 <li key={h.id} className="flex justify-between px-4 py-2.5">
@@ -124,10 +149,21 @@ export default async function StaffDetailPage({ params }: { params: IdParams }) 
                     <MoneyInput name="monthly_amount" id="monthly_amount" required />
                   </Field>
                   <Field label="À partir du" htmlFor="effective_from">
-                    <Input id="effective_from" name="effective_from" type="date" required defaultValue={todayISO()} />
+                    <Input
+                      id="effective_from"
+                      name="effective_from"
+                      type="date"
+                      required
+                      defaultValue={todayISO()}
+                    />
                   </Field>
                   <Field label="Motif" htmlFor="note">
-                    <Input id="note" name="note" maxLength={200} placeholder="Augmentation annuelle" />
+                    <Input
+                      id="note"
+                      name="note"
+                      maxLength={200}
+                      placeholder="Augmentation annuelle"
+                    />
                   </Field>
                   <ActionSubmit variant="secondary">Enregistrer</ActionSubmit>
                 </ActionForm>
@@ -143,7 +179,13 @@ export default async function StaffDetailPage({ params }: { params: IdParams }) 
                   <ActionForm action={endContract} className="space-y-3">
                     <input type="hidden" name="id" value={id} />
                     <Field label="Date de fin" htmlFor="end_date">
-                      <Input id="end_date" name="end_date" type="date" required defaultValue={todayISO()} />
+                      <Input
+                        id="end_date"
+                        name="end_date"
+                        type="date"
+                        required
+                        defaultValue={todayISO()}
+                      />
                     </Field>
                     <ActionSubmit variant="destructive">Enregistrer le départ</ActionSubmit>
                   </ActionForm>

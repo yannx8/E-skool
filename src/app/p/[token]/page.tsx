@@ -7,20 +7,50 @@ import { buttonClasses } from "@/components/ui/button";
 import { createAnonClient } from "@/lib/supabase/server";
 import { formatDate, formatFCFA } from "@/lib/format";
 import { formatPhone, normalizeCameroonPhone } from "@/lib/phone";
-import { FEE_TYPES, feeLineName, PAYMENT_METHODS, type FeeType, type PaymentMethod } from "@/lib/labels";
+import {
+  FEE_TYPES,
+  feeLineName,
+  PAYMENT_METHODS,
+  type FeeType,
+  type PaymentMethod,
+} from "@/lib/labels";
 import { logoUrl } from "@/lib/storage";
 import { whatsappUrl } from "@/lib/reminder";
 
-export const metadata: Metadata = { title: "Suivi des paiements", robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: "Suivi des paiements",
+  robots: { index: false, follow: false },
+};
 
 type Portal = {
-  school: { name: string; phone: string | null; address: string | null; term_label: string; logo_path: string | null };
+  school: {
+    name: string;
+    phone: string | null;
+    address: string | null;
+    term_label: string;
+    logo_path: string | null;
+  };
   pupil: { last_name: string; first_name: string; is_active: boolean };
   school_year: string | null;
   class_name: string | null;
-  lines: { fee: FeeType; term: number | null; due_date: string; due: number; applied: number; remaining: number; status: string }[];
+  lines: {
+    fee: FeeType;
+    term: number | null;
+    due_date: string;
+    due: number;
+    applied: number;
+    remaining: number;
+    status: string;
+  }[];
   credit: number;
-  payments: { paid_at: string; receipt_number: string; amount: number; method: PaymentMethod; fee: FeeType; term: number | null }[];
+  payments: {
+    paid_at: string;
+    receipt_number: string;
+    amount: number;
+    method: PaymentMethod;
+    fee: FeeType;
+    term: number | null;
+  }[];
 };
 
 // V2 parent portal: read-only, reachable only with the unguessable token
@@ -55,8 +85,16 @@ export default async function ParentPortalPage({ params }: { params: Promise<{ t
         </p>
         <div className="mt-4 rounded-lg bg-slate-50 p-3 text-center">
           <p className="text-sm text-slate-600">Reste à payer</p>
-          <p className={`tabular text-3xl font-black ${remaining > 0 ? "text-warning" : "text-success"}`}>{formatFCFA(remaining)}</p>
-          {p.credit > 0 && <p className="mt-1 text-sm text-success">Crédit en votre faveur : {formatFCFA(p.credit)}</p>}
+          <p
+            className={`tabular text-3xl font-black ${remaining > 0 ? "text-warning" : "text-success"}`}
+          >
+            {formatFCFA(remaining)}
+          </p>
+          {p.credit > 0 && (
+            <p className="mt-1 text-sm text-success">
+              Crédit en votre faveur : {formatFCFA(p.credit)}
+            </p>
+          )}
         </div>
       </section>
 
@@ -64,7 +102,10 @@ export default async function ParentPortalPage({ params }: { params: Promise<{ t
         <h2 className="border-b border-slate-100 px-4 py-3 font-semibold">Échéances</h2>
         <ul className="divide-y divide-slate-100">
           {p.lines.map((l) => (
-            <li key={`${l.fee}-${l.term}`} className="flex items-center justify-between gap-3 px-4 py-3">
+            <li
+              key={`${l.fee}-${l.term}`}
+              className="flex items-center justify-between gap-3 px-4 py-3"
+            >
               <div>
                 <p className="font-medium">{feeLineName(l.fee, l.term, p.school.term_label)}</p>
                 <p className="text-sm text-slate-500">
@@ -72,7 +113,9 @@ export default async function ParentPortalPage({ params }: { params: Promise<{ t
                 </p>
               </div>
               <div className="text-right">
-                <p className="tabular font-semibold">{l.remaining > 0 ? formatFCFA(l.remaining) : "Payé"}</p>
+                <p className="tabular font-semibold">
+                  {l.remaining > 0 ? formatFCFA(l.remaining) : "Payé"}
+                </p>
                 <StatusBadge status={l.status} />
               </div>
             </li>
@@ -87,11 +130,17 @@ export default async function ParentPortalPage({ params }: { params: Promise<{ t
         ) : (
           <ul className="divide-y divide-slate-100">
             {p.payments.map((pay) => (
-              <li key={pay.receipt_number} className="flex items-center justify-between gap-3 px-4 py-3">
+              <li
+                key={pay.receipt_number}
+                className="flex items-center justify-between gap-3 px-4 py-3"
+              >
                 <div>
                   <p className="font-medium">Reçu {pay.receipt_number}</p>
                   <p className="text-sm text-slate-500">
-                    {formatDate(pay.paid_at)} · {PAYMENT_METHODS[pay.method]} · {pay.term == null ? FEE_TYPES[pay.fee] : feeLineName(pay.fee, pay.term, p.school.term_label)}
+                    {formatDate(pay.paid_at)} · {PAYMENT_METHODS[pay.method]} ·{" "}
+                    {pay.term == null
+                      ? FEE_TYPES[pay.fee]
+                      : feeLineName(pay.fee, pay.term, p.school.term_label)}
                   </p>
                 </div>
                 <p className="tabular font-semibold">{formatFCFA(pay.amount)}</p>
@@ -113,12 +162,17 @@ export default async function ParentPortalPage({ params }: { params: Promise<{ t
               <MessageCircle aria-hidden /> Écrire à l&apos;école
             </a>
           )}
-          <a href={`tel:${schoolWhatsapp ? `+${schoolWhatsapp}` : p.school.phone}`} className={buttonClasses("secondary")}>
+          <a
+            href={`tel:${schoolWhatsapp ? `+${schoolWhatsapp}` : p.school.phone}`}
+            className={buttonClasses("secondary")}
+          >
             <Phone aria-hidden /> {formatPhone(schoolWhatsapp) || p.school.phone}
           </a>
         </div>
       )}
-      <p className="mt-8 text-center text-xs text-slate-400">Page personnelle : ne la partagez pas.</p>
+      <p className="mt-8 text-center text-xs text-slate-400">
+        Page personnelle : ne la partagez pas.
+      </p>
     </main>
   );
 }

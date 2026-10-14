@@ -20,7 +20,8 @@ export default async function StaffPage({ searchParams }: { searchParams: Search
   const sp = await searchParams;
   const user = await requirePermission("viewHr");
   const settings = await getSettings();
-  if (!settings.module_hr) return <ModuleOff name="Personnel" canEnable={can(user.role, "manageSetup")} />;
+  if (!settings.module_hr)
+    return <ModuleOff name="Personnel" canEnable={can(user.role, "manageSetup")} />;
 
   const showAll = param(sp, "tous") === "1";
   const supabase = await createClient();
@@ -31,7 +32,9 @@ export default async function StaffPage({ searchParams }: { searchParams: Search
     supabase.from("staff_current_salary").select("staff_id, monthly_amount"),
   ]);
   const salaryOf = new Map((salaries ?? []).map((s) => [s.staff_id, s.monthly_amount ?? 0]));
-  const total = (staff ?? []).filter((s) => s.is_active).reduce((sum, s) => sum + (salaryOf.get(s.id) ?? 0), 0);
+  const total = (staff ?? [])
+    .filter((s) => s.is_active)
+    .reduce((sum, s) => sum + (salaryOf.get(s.id) ?? 0), 0);
 
   return (
     <>
@@ -52,7 +55,10 @@ export default async function StaffPage({ searchParams }: { searchParams: Search
         }
       />
       <p className="mb-3 text-sm">
-        <Link href={showAll ? "/personnel" : "/personnel?tous=1"} className="inline-block min-h-11 py-2 text-primary underline-offset-4 hover:underline">
+        <Link
+          href={showAll ? "/personnel" : "/personnel?tous=1"}
+          className="inline-block min-h-11 py-2 text-primary underline-offset-4 hover:underline"
+        >
           {showAll ? "Masquer les anciens employés" : "Afficher aussi les anciens employés"}
         </Link>
       </p>
@@ -62,7 +68,11 @@ export default async function StaffPage({ searchParams }: { searchParams: Search
             icon={<Briefcase aria-hidden />}
             title="Aucun membre du personnel"
             description="Ajoutez les enseignants et le personnel avec leur salaire convenu."
-            action={can(user.role, "manageHr") ? <LinkButton href="/personnel/nouveau">Ajouter</LinkButton> : undefined}
+            action={
+              can(user.role, "manageHr") ? (
+                <LinkButton href="/personnel/nouveau">Ajouter</LinkButton>
+              ) : undefined
+            }
           />
         ) : (
           <Table>
@@ -78,7 +88,10 @@ export default async function StaffPage({ searchParams }: { searchParams: Search
               {staff.map((s) => (
                 <tr key={s.id} className="hover:bg-slate-50">
                   <Td>
-                    <Link href={`/personnel/${s.id}`} className="font-medium text-primary underline-offset-4 hover:underline">
+                    <Link
+                      href={`/personnel/${s.id}`}
+                      className="font-medium text-primary underline-offset-4 hover:underline"
+                    >
                       {s.full_name}
                     </Link>
                     {!s.is_active && (
@@ -86,11 +99,15 @@ export default async function StaffPage({ searchParams }: { searchParams: Search
                         Parti le {formatDate(s.end_date)}
                       </Badge>
                     )}
-                    {s.phone && <div className="text-sm text-slate-500">{formatPhone(s.phone)}</div>}
+                    {s.phone && (
+                      <div className="text-sm text-slate-500">{formatPhone(s.phone)}</div>
+                    )}
                   </Td>
                   <Td>{s.job_title}</Td>
                   <Td>{CONTRACT_TYPES[s.contract]}</Td>
-                  <Td className="tabular text-right font-semibold">{formatFCFA(salaryOf.get(s.id) ?? 0)}</Td>
+                  <Td className="tabular text-right font-semibold">
+                    {formatFCFA(salaryOf.get(s.id) ?? 0)}
+                  </Td>
                 </tr>
               ))}
             </tbody>

@@ -13,7 +13,11 @@ import { PromoteClient } from "./promote-client";
 
 export const metadata: Metadata = { title: "Passage de classe" };
 
-type EnrollmentRow = { pupil_id: string; class_id: string; pupils: { last_name: string; first_name: string; is_active: boolean } | null };
+type EnrollmentRow = {
+  pupil_id: string;
+  class_id: string;
+  pupils: { last_name: string; first_name: string; is_active: boolean } | null;
+};
 
 export default async function PromotePage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -21,7 +25,10 @@ export default async function PromotePage({ searchParams }: { searchParams: Sear
   const [years, classes] = await Promise.all([getSchoolYears(), getClasses()]);
   // years are sorted newest first
   const to = years.find((y) => y.id === param(sp, "vers")) ?? years[0];
-  const from = years.find((y) => y.id === param(sp, "de")) ?? years.find((y) => y.label < (to?.label ?? "")) ?? null;
+  const from =
+    years.find((y) => y.id === param(sp, "de")) ??
+    years.find((y) => y.label < (to?.label ?? "")) ??
+    null;
 
   const header = (
     <PageHeader
@@ -36,7 +43,8 @@ export default async function PromotePage({ searchParams }: { searchParams: Sear
       <>
         {header}
         <Alert tone="info" title="Créez d'abord la nouvelle année scolaire">
-          Il faut deux années : celle qui se termine et la nouvelle. Créez la nouvelle année, recopiez les frais, puis revenez ici.
+          Il faut deux années : celle qui se termine et la nouvelle. Créez la nouvelle année,
+          recopiez les frais, puis revenez ici.
         </Alert>
         <LinkButton href="/configuration/annees" className="mt-4">
           Gérer les années scolaires
@@ -56,7 +64,12 @@ export default async function PromotePage({ searchParams }: { searchParams: Sear
         .range(a, b),
     ),
     fetchAll<{ pupil_id: string }>((a, b) =>
-      supabase.from("enrollments").select("pupil_id").eq("school_year_id", to.id).order("id").range(a, b),
+      supabase
+        .from("enrollments")
+        .select("pupil_id")
+        .eq("school_year_id", to.id)
+        .order("id")
+        .range(a, b),
     ),
   ]);
   const already = new Set(target.map((t) => t.pupil_id));

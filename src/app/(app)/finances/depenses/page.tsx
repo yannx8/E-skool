@@ -9,7 +9,14 @@ import { VoidDialog } from "@/components/void-dialog";
 import { requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { can } from "@/lib/permissions";
-import { addMonths, currentMonthISO, formatDate, formatFCFA, parseMonthParam, todayISO } from "@/lib/format";
+import {
+  addMonths,
+  currentMonthISO,
+  formatDate,
+  formatFCFA,
+  parseMonthParam,
+  todayISO,
+} from "@/lib/format";
 import { PAYMENT_METHODS } from "@/lib/labels";
 import { param, type SearchParams } from "@/lib/params";
 import { addCategory, voidExpense } from "../actions";
@@ -43,7 +50,11 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <PageHeader title="Dépenses" description={`Total du mois : ${formatFCFA(total)}`} actions={<MonthNav month={month} basePath="/finances/depenses" />} />
+      <PageHeader
+        title="Dépenses"
+        description={`Total du mois : ${formatFCFA(total)}`}
+        actions={<MonthNav month={month} basePath="/finances/depenses" />}
+      />
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           {!expenses || expenses.length === 0 ? (
@@ -51,9 +62,14 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Sea
           ) : (
             <ul className="divide-y divide-slate-100">
               {expenses.map((e) => (
-                <li key={e.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+                <li
+                  key={e.id}
+                  className="flex flex-wrap items-start justify-between gap-3 px-4 py-3"
+                >
                   <div className={e.voided ? "text-slate-400" : ""}>
-                    <p className={`font-medium ${e.voided ? "line-through" : ""}`}>{e.expense_categories?.name}</p>
+                    <p className={`font-medium ${e.voided ? "line-through" : ""}`}>
+                      {e.expense_categories?.name}
+                    </p>
                     <p className="text-sm text-slate-500">
                       {formatDate(e.spent_on)} · {PAYMENT_METHODS[e.method]}
                       {e.description ? ` · ${e.description}` : ""}
@@ -71,7 +87,11 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Sea
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`tabular font-semibold ${e.voided ? "text-slate-400 line-through" : ""}`}>{formatFCFA(e.amount)}</span>
+                    <span
+                      className={`tabular font-semibold ${e.voided ? "text-slate-400 line-through" : ""}`}
+                    >
+                      {formatFCFA(e.amount)}
+                    </span>
                     {canManage && !e.voided && (
                       <VoidDialog
                         action={voidExpense}
@@ -93,7 +113,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Sea
             <Card>
               <CardHeader title="Nouvelle dépense" />
               <CardBody>
-                <ExpenseForm categories={(categories ?? []).filter((c) => c.is_active)} today={todayISO()} />
+                <ExpenseForm
+                  categories={(categories ?? []).filter((c) => c.is_active)}
+                  today={todayISO()}
+                />
               </CardBody>
             </Card>
             <Card>

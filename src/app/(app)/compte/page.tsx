@@ -30,14 +30,31 @@ export default async function AccountPage() {
           </CardBody>
         </Card>
         <Card id="mot-de-passe">
-          <CardHeader title="Changer de mot de passe" description="Utilisez au moins 10 caractères, avec des chiffres." />
+          <CardHeader
+            title="Changer de mot de passe"
+            description="Utilisez au moins 10 caractères, avec des chiffres."
+          />
           <CardBody>
             <ActionForm action={changePassword} className="space-y-4" resetOnSuccess>
               <Field label="Nouveau mot de passe" htmlFor="password">
-                <Input id="password" name="password" type="password" autoComplete="new-password" minLength={10} required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={10}
+                  required
+                />
               </Field>
               <Field label="Confirmer" htmlFor="confirm">
-                <Input id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={10} required />
+                <Input
+                  id="confirm"
+                  name="confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={10}
+                  required
+                />
               </Field>
               <ActionSubmit>Changer le mot de passe</ActionSubmit>
             </ActionForm>

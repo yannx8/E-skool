@@ -27,7 +27,9 @@ export type UnpaidRow = {
 };
 
 /** term: "" = every overdue period, "unique" = one-off fees, "1".."12" = that term. */
-export function readUnpaidFilters(sp: Record<string, string | string[] | undefined>): UnpaidFilters {
+export function readUnpaidFilters(
+  sp: Record<string, string | string[] | undefined>,
+): UnpaidFilters {
   const term = param(sp, "tranche");
   return {
     term: term === "unique" || /^\d{1,2}$/.test(term) ? term : "",
@@ -113,8 +115,12 @@ export async function loadUnpaid(yearId: string, f: UnpaidFilters): Promise<Unpa
       existing.remaining += r.remaining;
       existing.periods += 1;
       existing.term = null;
-      if (r.due_date && (!existing.due_date || r.due_date < existing.due_date)) existing.due_date = r.due_date;
-      if (r.last_reminded_at && (!existing.last_reminded_at || r.last_reminded_at > existing.last_reminded_at)) {
+      if (r.due_date && (!existing.due_date || r.due_date < existing.due_date))
+        existing.due_date = r.due_date;
+      if (
+        r.last_reminded_at &&
+        (!existing.last_reminded_at || r.last_reminded_at > existing.last_reminded_at)
+      ) {
         existing.last_reminded_at = r.last_reminded_at;
       }
       existing.status = existing.applied > 0 ? "partiel" : "insolvable";
@@ -124,5 +130,7 @@ export async function loadUnpaid(yearId: string, f: UnpaidFilters): Promise<Unpa
       return row;
     });
   }
-  return result.sort((a, b) => b.remaining - a.remaining || a.last_name.localeCompare(b.last_name, "fr"));
+  return result.sort(
+    (a, b) => b.remaining - a.remaining || a.last_name.localeCompare(b.last_name, "fr"),
+  );
 }

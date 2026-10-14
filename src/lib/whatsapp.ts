@@ -7,7 +7,10 @@ import { serverEnv } from "@/lib/env";
  *   {{1}} parent, {{2}} pupil, {{3}} amount due, {{4}} period, {{5}} school.
  * Returns the provider message id, or throws with the provider's error.
  */
-export async function sendWhatsappTemplate(to: string, params: [string, string, string, string, string]): Promise<string> {
+export async function sendWhatsappTemplate(
+  to: string,
+  params: [string, string, string, string, string],
+): Promise<string> {
   const env = serverEnv();
   if (!env.whatsappToken || !env.whatsappPhoneNumberId || !env.whatsappTemplateName) {
     throw new Error("WhatsApp Cloud API is not configured");
@@ -34,7 +37,10 @@ export async function sendWhatsappTemplate(to: string, params: [string, string, 
       }),
     },
   );
-  const body = (await res.json().catch(() => ({}))) as { messages?: { id: string }[]; error?: { message?: string } };
+  const body = (await res.json().catch(() => ({}))) as {
+    messages?: { id: string }[];
+    error?: { message?: string };
+  };
   if (!res.ok || !body.messages?.[0]?.id) {
     throw new Error(body.error?.message ?? `HTTP ${res.status}`);
   }

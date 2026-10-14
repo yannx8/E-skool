@@ -4,13 +4,18 @@ import { monthNet, type MonthlyReport } from "./report-data";
 
 /** FR-F5: monthly summary, shared by the screen and the printable version. */
 export function ReportView({ report }: { report: MonthlyReport }) {
-  const totalIn = report.fees_total + report.other_income_total + Math.max(report.adjustments_total, 0);
-  const totalOut = report.expenses_total + report.payroll_total + Math.max(-report.adjustments_total, 0);
+  const totalIn =
+    report.fees_total + report.other_income_total + Math.max(report.adjustments_total, 0);
+  const totalOut =
+    report.expenses_total + report.payroll_total + Math.max(-report.adjustments_total, 0);
   return (
     <div className="space-y-6 text-[15px]">
       <p className="text-slate-600">
         Rapport de <strong className="capitalize">{formatMonth(report.month)}</strong>
-        {report.locked ? " (mois verrouillé, chiffres définitifs)" : " (mois ouvert, chiffres provisoires)"}.
+        {report.locked
+          ? " (mois verrouillé, chiffres définitifs)"
+          : " (mois ouvert, chiffres provisoires)"}
+        .
       </p>
 
       <section>
@@ -21,7 +26,9 @@ export function ReportView({ report }: { report: MonthlyReport }) {
             <Row label="Autres revenus" value={formatFCFA(report.other_income_total)} />
             <Row label="Dépenses" value={`- ${formatFCFA(report.expenses_total)}`} />
             <Row label="Salaires payés" value={`- ${formatFCFA(report.payroll_total)}`} />
-            {report.adjustments_total !== 0 && <Row label="Ajustements" value={formatSignedFCFA(report.adjustments_total)} />}
+            {report.adjustments_total !== 0 && (
+              <Row label="Ajustements" value={formatSignedFCFA(report.adjustments_total)} />
+            )}
             <Row label="Solde du mois" value={formatSignedFCFA(monthNet(report))} strong />
           </tbody>
         </table>
@@ -64,7 +71,11 @@ export function ReportView({ report }: { report: MonthlyReport }) {
           <table className="w-full">
             <tbody>
               {Object.entries(report.in_by_method).map(([m, v]) => (
-                <Row key={m} label={PAYMENT_METHODS[m as PaymentMethod] ?? m} value={`+${formatFCFA(v.in)} / -${formatFCFA(v.out)}`} />
+                <Row
+                  key={m}
+                  label={PAYMENT_METHODS[m as PaymentMethod] ?? m}
+                  value={`+${formatFCFA(v.in)} / -${formatFCFA(v.out)}`}
+                />
               ))}
             </tbody>
           </table>

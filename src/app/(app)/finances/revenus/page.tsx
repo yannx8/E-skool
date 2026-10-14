@@ -9,7 +9,14 @@ import { VoidDialog } from "@/components/void-dialog";
 import { requirePermission } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { can } from "@/lib/permissions";
-import { addMonths, currentMonthISO, formatDate, formatFCFA, parseMonthParam, todayISO } from "@/lib/format";
+import {
+  addMonths,
+  currentMonthISO,
+  formatDate,
+  formatFCFA,
+  parseMonthParam,
+  todayISO,
+} from "@/lib/format";
 import { PAYMENT_METHODS } from "@/lib/labels";
 import { param, type SearchParams } from "@/lib/params";
 import { recordIncome, voidIncome } from "../actions";
@@ -45,7 +52,10 @@ export default async function IncomePage({ searchParams }: { searchParams: Searc
           ) : (
             <ul className="divide-y divide-slate-100">
               {rows.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+                <li
+                  key={r.id}
+                  className="flex flex-wrap items-start justify-between gap-3 px-4 py-3"
+                >
                   <div className={r.voided ? "text-slate-400" : ""}>
                     <p className={`font-medium ${r.voided ? "line-through" : ""}`}>{r.label}</p>
                     <p className="text-sm text-slate-500">
@@ -55,7 +65,11 @@ export default async function IncomePage({ searchParams }: { searchParams: Searc
                     {r.voided && <p className="text-sm text-danger">Annulé : {r.void_reason}</p>}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`tabular font-semibold ${r.voided ? "text-slate-400 line-through" : ""}`}>{formatFCFA(r.amount)}</span>
+                    <span
+                      className={`tabular font-semibold ${r.voided ? "text-slate-400 line-through" : ""}`}
+                    >
+                      {formatFCFA(r.amount)}
+                    </span>
                     {canManage && !r.voided && (
                       <VoidDialog
                         action={voidIncome}
@@ -77,7 +91,13 @@ export default async function IncomePage({ searchParams }: { searchParams: Searc
             <CardBody>
               <ActionForm action={recordIncome} className="space-y-4" resetOnSuccess>
                 <Field label="Origine" htmlFor="label">
-                  <Input id="label" name="label" required maxLength={120} placeholder="Don de l'APE" />
+                  <Input
+                    id="label"
+                    name="label"
+                    required
+                    maxLength={120}
+                    placeholder="Don de l'APE"
+                  />
                 </Field>
                 <Field label="Montant" htmlFor="amount">
                   <MoneyInput name="amount" id="amount" required />
@@ -93,7 +113,14 @@ export default async function IncomePage({ searchParams }: { searchParams: Searc
                     </Select>
                   </Field>
                   <Field label="Date" htmlFor="received_on">
-                    <Input id="received_on" name="received_on" type="date" defaultValue={today} max={today} required />
+                    <Input
+                      id="received_on"
+                      name="received_on"
+                      type="date"
+                      defaultValue={today}
+                      max={today}
+                      required
+                    />
                   </Field>
                 </div>
                 <Field label="Détails" htmlFor="description">

@@ -23,7 +23,18 @@ const UNITS = [
   "dix-huit",
   "dix-neuf",
 ];
-const TENS = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante", "quatre-vingt", "quatre-vingt"];
+const TENS = [
+  "",
+  "",
+  "vingt",
+  "trente",
+  "quarante",
+  "cinquante",
+  "soixante",
+  "soixante",
+  "quatre-vingt",
+  "quatre-vingt",
+];
 
 function below100(n: number, pluralEnd: boolean): string {
   if (n < 20) return UNITS[n];

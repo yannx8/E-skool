@@ -69,7 +69,10 @@ export const getSettings = cache(async (): Promise<Settings> => {
 
 export const getSchoolYears = cache(async (): Promise<SchoolYear[]> => {
   const supabase = await createClient();
-  const { data } = await supabase.from("school_years").select("*").order("label", { ascending: false });
+  const { data } = await supabase
+    .from("school_years")
+    .select("*")
+    .order("label", { ascending: false });
   return data ?? [];
 });
 

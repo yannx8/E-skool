@@ -12,7 +12,10 @@ import { todayISO } from "@/lib/format";
 
 const uuid = z.string().refine(isUuid, "Identifiant invalide");
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide.");
-const optionalDate = z.union([z.literal(""), date]).optional().transform((v) => v || null);
+const optionalDate = z
+  .union([z.literal(""), date])
+  .optional()
+  .transform((v) => v || null);
 const NOT_ALLOWED = "Action réservée à l'administrateur.";
 
 const staffSchema = z.object({
@@ -36,7 +39,10 @@ const staffSchema = z.object({
   notes: z.string().trim().max(1000).optional(),
 });
 
-export async function createStaff(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function createStaff(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const parsed = staffSchema
     .extend({ monthly_amount: z.coerce.number().int().min(0).max(99_999_999).optional() })
@@ -57,13 +63,17 @@ export async function createStaff(_prev: ActionResult | null, formData: FormData
       effective_from: staff.start_date ?? todayISO(),
       note: "Salaire de départ",
     });
-    if (e2) return fail(`Fiche créée, mais le salaire n'a pas été enregistré : ${friendlyError(e2)}`);
+    if (e2)
+      return fail(`Fiche créée, mais le salaire n'a pas été enregistré : ${friendlyError(e2)}`);
   }
   revalidatePath("/personnel");
   redirect(`/personnel/${data.id}`);
 }
 
-export async function updateStaff(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function updateStaff(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const parsed = staffSchema.extend({ id: uuid }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
@@ -79,7 +89,10 @@ export async function updateStaff(_prev: ActionResult | null, formData: FormData
 }
 
 /** FR-H2: staff are never deleted, only marked as gone. */
-export async function endContract(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function endContract(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const parsed = z.object({ id: uuid, end_date: date }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("Indiquez la date de fin.");
@@ -103,7 +116,10 @@ export async function reactivateStaff(formData: FormData) {
 }
 
 /** BR7: a raise is a new history row. */
-export async function addSalaryChange(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function addSalaryChange(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const parsed = z
     .object({
@@ -115,9 +131,15 @@ export async function addSalaryChange(_prev: ActionResult | null, formData: Form
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
   const supabase = await createClient();
-  const { error } = await supabase.from("staff_salary_history").insert({ ...parsed.data, note: parsed.data.note || null });
+  const { error } = await supabase
+    .from("staff_salary_history")
+    .insert({ ...parsed.data, note: parsed.data.note || null });
   if (error) {
-    return fail(error.code === "23505" ? "Un salaire existe déjà à cette date d'effet." : friendlyError(error));
+    return fail(
+      error.code === "23505"
+        ? "Un salaire existe déjà à cette date d'effet."
+        : friendlyError(error),
+    );
   }
   revalidatePath("/personnel", "layout");
   return { ok: true, message: "Nouveau salaire enregistré." };
@@ -125,7 +147,10 @@ export async function addSalaryChange(_prev: ActionResult | null, formData: Form
 
 const monthParam = z.string().regex(/^\d{4}-\d{2}-01$/, "Mois invalide.");
 
-export async function preparePayroll(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function preparePayroll(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const parsed = monthParam.safeParse(formData.get("month"));
   if (!parsed.success) return fail("Mois invalide.");
@@ -133,14 +158,26 @@ export async function preparePayroll(_prev: ActionResult | null, formData: FormD
   const { data, error } = await supabase.rpc("prepare_payroll", { p_month: parsed.data });
   if (error) return fail(friendlyError(error));
   revalidatePath("/personnel/paie");
-  return { ok: true, message: data ? `${data} ligne(s) de paie préparée(s).` : "Toutes les lignes existent déjà." };
+  return {
+    ok: true,
+    message: data ? `${data} ligne(s) de paie préparée(s).` : "Toutes les lignes existent déjà.",
+  };
 }
 
-export async function updatePayrollEntry(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function updatePayrollEntry(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const n = z.coerce.number().int().min(0).max(99_999_999);
   const parsed = z
-    .object({ id: uuid, advances: n, deductions: n, bonuses: n, notes: z.string().trim().max(300).optional() })
+    .object({
+      id: uuid,
+      advances: n,
+      deductions: n,
+      bonuses: n,
+      notes: z.string().trim().max(300).optional(),
+    })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("Montants invalides.");
   const supabase = await createClient();
@@ -152,16 +189,25 @@ export async function updatePayrollEntry(_prev: ActionResult | null, formData: F
     p_notes: parsed.data.notes ?? "",
   });
   if (error) {
-    return fail(error.code === "23514" ? "Le net à payer ne peut pas être négatif." : friendlyError(error));
+    return fail(
+      error.code === "23514" ? "Le net à payer ne peut pas être négatif." : friendlyError(error),
+    );
   }
   revalidatePath("/personnel/paie");
   return { ok: true, message: "Ligne mise à jour." };
 }
 
-export async function payPayrollEntry(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function payPayrollEntry(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const parsed = z
-    .object({ id: uuid, method: z.enum(["cash", "orange_money", "mtn_momo", "bank"]), paid_at: date })
+    .object({
+      id: uuid,
+      method: z.enum(["cash", "orange_money", "mtn_momo", "bank"]),
+      paid_at: date,
+    })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("Choisissez le mode et la date de paiement.");
   if (parsed.data.paid_at > todayISO()) return fail("La date ne peut pas être dans le futur.");
@@ -176,7 +222,10 @@ export async function payPayrollEntry(_prev: ActionResult | null, formData: Form
   return { ok: true, message: `Salaire payé. Bulletin ${data}.` };
 }
 
-export async function deletePayrollEntry(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function deletePayrollEntry(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageHr"))) return fail(NOT_ALLOWED);
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) return fail("Ligne introuvable.");

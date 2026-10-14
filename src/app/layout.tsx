@@ -20,7 +20,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className="h-full antialiased">
       <body className="min-h-full">
         {children}
-        <Toaster position="top-center" richColors closeButton toastOptions={{ style: { fontSize: 16 } }} />
+        <Toaster
+          position="top-center"
+          richColors
+          closeButton
+          toastOptions={{ style: { fontSize: 16 } }}
+        />
       </body>
     </html>
   );

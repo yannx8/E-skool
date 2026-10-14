@@ -35,7 +35,10 @@ const applicationSchema = z.object({
   notes: z.string().trim().max(1000).optional(),
 });
 
-export async function createApplication(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function createApplication(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageEnrollment"))) return fail(NOT_ALLOWED);
   const parsed = applicationSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? "Formulaire invalide.");
@@ -58,7 +61,10 @@ export async function createApplication(_prev: ActionResult | null, formData: Fo
   return { ok: true, message: "Demande enregistrée." };
 }
 
-export async function setApplicationStatus(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function setApplicationStatus(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageEnrollment"))) return fail(NOT_ALLOWED);
   const parsed = z
     .object({ id: uuid, status: z.enum(["new", "contacted", "visit", "accepted", "rejected"]) })
@@ -75,9 +81,14 @@ export async function setApplicationStatus(_prev: ActionResult | null, formData:
   return { ok: true, message: "Statut mis à jour." };
 }
 
-export async function enrollApplication(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function enrollApplication(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   if (!(await userWithPermission("manageEnrollment"))) return fail(NOT_ALLOWED);
-  const parsed = z.object({ id: uuid, class_id: uuid, school_year_id: uuid }).safeParse(Object.fromEntries(formData));
+  const parsed = z
+    .object({ id: uuid, class_id: uuid, school_year_id: uuid })
+    .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("Choisissez l'année et la classe.");
   const supabase = await createClient();
   const { data: pupilId, error } = await supabase.rpc("enroll_application", {
@@ -90,8 +101,12 @@ export async function enrollApplication(_prev: ActionResult | null, formData: Fo
   redirect(`/eleves/${pupilId}?cree=1`);
 }
 
-export async function deleteApplication(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  if (!(await userWithPermission("manageSetup"))) return fail("Seul l'administrateur peut supprimer une demande.");
+export async function deleteApplication(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!(await userWithPermission("manageSetup")))
+    return fail("Seul l'administrateur peut supprimer une demande.");
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) return fail("Demande introuvable.");
   const supabase = await createClient();

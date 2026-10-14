@@ -57,7 +57,14 @@ export function SubmitButton({
   const status = useFormStatus();
   const pending = pendingProp || status.pending;
   return (
-    <Button type="submit" variant={variant} size={size} className={className} disabled={pending || disabled} {...props}>
+    <Button
+      type="submit"
+      variant={variant}
+      size={size}
+      className={className}
+      disabled={pending || disabled}
+      {...props}
+    >
       {pending && <Loader2 className="animate-spin" aria-hidden />}
       {pending ? (pendingLabel ?? "Enregistrement…") : children}
     </Button>

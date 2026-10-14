@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "db:types": "supabase gen types typescript --db-url \"${TYPES_DB_URL:-postgresql://postgres:postgres@localhost:54329/eskool_test?sslmode=disable}\" --schema public > src/lib/database.types.ts && oxfmt src/lib/database.types.ts",
     "setup": "node --env-file-if-exists=.env.local scripts/setup.mjs",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "npm run lint && npm run typecheck && npm test",
+    "format": "oxfmt src scripts"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.2.1",
@@ -48,6 +49,6 @@
     "vitest": "^5.0.4"
   },
   "engines": {
-    "node": ">=20.9"
+    "node": ">=22.9"
   }
 }

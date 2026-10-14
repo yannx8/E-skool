@@ -13,7 +13,13 @@ export function LoginForm({ next }: { next: string }) {
         <Input id="email" name="email" type="email" autoComplete="email" required autoFocus />
       </Field>
       <Field label="Mot de passe" htmlFor="password">
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
       </Field>
       <ActionFeedback state={state} />
       <SubmitButton pending={pending} className="w-full" pendingLabel="Connexion…">

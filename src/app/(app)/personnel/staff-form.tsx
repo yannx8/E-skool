@@ -29,10 +29,23 @@ export function StaffForm({
       {staff && <input type="hidden" name="id" value={staff.id} />}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nom complet" htmlFor="full_name">
-          <Input id="full_name" name="full_name" required maxLength={120} defaultValue={staff?.full_name} autoFocus={!staff} />
+          <Input
+            id="full_name"
+            name="full_name"
+            required
+            maxLength={120}
+            defaultValue={staff?.full_name}
+            autoFocus={!staff}
+          />
         </Field>
         <Field label="Fonction" htmlFor="job_title" hint="Institutrice CP, Gardien, Cuisinière…">
-          <Input id="job_title" name="job_title" required maxLength={80} defaultValue={staff?.job_title} />
+          <Input
+            id="job_title"
+            name="job_title"
+            required
+            maxLength={80}
+            defaultValue={staff?.job_title}
+          />
         </Field>
         <Field label="Contrat" htmlFor="contract">
           <Select id="contract" name="contract" defaultValue={staff?.contract ?? "permanent"}>
@@ -47,10 +60,19 @@ export function StaffForm({
           <Input id="phone" name="phone" type="tel" defaultValue={formatPhone(staff?.phone)} />
         </Field>
         <Field label="Date d'embauche" htmlFor="start_date">
-          <Input id="start_date" name="start_date" type="date" defaultValue={staff?.start_date ?? ""} />
+          <Input
+            id="start_date"
+            name="start_date"
+            type="date"
+            defaultValue={staff?.start_date ?? ""}
+          />
         </Field>
         {!staff && (
-          <Field label="Salaire mensuel convenu" htmlFor="monthly_amount" hint="Laissez vide pour un bénévole.">
+          <Field
+            label="Salaire mensuel convenu"
+            htmlFor="monthly_amount"
+            hint="Laissez vide pour un bénévole."
+          >
             <MoneyInput name="monthly_amount" id="monthly_amount" />
           </Field>
         )}

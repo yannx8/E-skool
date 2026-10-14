@@ -15,7 +15,8 @@ const KEEP_BACKUPS = 12;
 // in the private "backups" bucket, emailed to BACKUP_EMAIL, plus the weekly
 // summary for the owner (REPORT_EMAILS).
 export async function GET(request: Request) {
-  if (!isAuthorizedCron(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!isAuthorizedCron(request))
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const env = serverEnv();
   const admin = createAdminClient();
 
@@ -26,7 +27,9 @@ export async function GET(request: Request) {
   if (uploadError) console.error("[cron/backup] upload failed", uploadError.message);
 
   // Keep only the most recent backups in storage.
-  const { data: files } = await admin.storage.from("backups").list("", { limit: 100, sortBy: { column: "name", order: "desc" } });
+  const { data: files } = await admin.storage
+    .from("backups")
+    .list("", { limit: 100, sortBy: { column: "name", order: "desc" } });
   const old = (files ?? []).filter((f) => f.name.endsWith(".zip")).slice(KEEP_BACKUPS);
   if (old.length) await admin.storage.from("backups").remove(old.map((f) => f.name));
 
@@ -43,7 +46,11 @@ export async function GET(request: Request) {
 
   const summary = await weeklySummary(admin, school);
   const emailedSummary = env.reportEmails.length
-    ? await sendEmail({ to: env.reportEmails, subject: `${school} : les chiffres de la semaine`, text: summary })
+    ? await sendEmail({
+        to: env.reportEmails,
+        subject: `${school} : les chiffres de la semaine`,
+        text: summary,
+      })
     : false;
 
   return NextResponse.json({
@@ -56,15 +63,32 @@ export async function GET(request: Request) {
   });
 }
 
-async function weeklySummary(admin: ReturnType<typeof createAdminClient>, school: string): Promise<string> {
+async function weeklySummary(
+  admin: ReturnType<typeof createAdminClient>,
+  school: string,
+): Promise<string> {
   const today = todayISO();
-  const weekAgo = new Date(Date.parse(`${today}T00:00:00Z`) - 7 * 86_400_000).toISOString().slice(0, 10);
+  const weekAgo = new Date(Date.parse(`${today}T00:00:00Z`) - 7 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
   const [payments, expenses, { data: year }] = await Promise.all([
     fetchAll<{ amount: number }>((a, b) =>
-      admin.from("payments").select("amount").eq("voided", false).gte("paid_at", weekAgo).order("id").range(a, b),
+      admin
+        .from("payments")
+        .select("amount")
+        .eq("voided", false)
+        .gte("paid_at", weekAgo)
+        .order("id")
+        .range(a, b),
     ),
     fetchAll<{ amount: number }>((a, b) =>
-      admin.from("expenses").select("amount").eq("voided", false).gte("spent_on", weekAgo).order("id").range(a, b),
+      admin
+        .from("expenses")
+        .select("amount")
+        .eq("voided", false)
+        .gte("spent_on", weekAgo)
+        .order("id")
+        .range(a, b),
     ),
     admin.from("school_years").select("id, label").eq("is_current", true).maybeSingle(),
   ]);
@@ -76,7 +100,13 @@ async function weeklySummary(admin: ReturnType<typeof createAdminClient>, school
   ];
   if (year) {
     const { data } = await admin.rpc("dashboard_stats", { p_school_year_id: year.id });
-    const s = data as { due: number; applied: number; remaining: number; due_to_date: number; applied_to_date: number } | null;
+    const s = data as {
+      due: number;
+      applied: number;
+      remaining: number;
+      due_to_date: number;
+      applied_to_date: number;
+    } | null;
     if (s) {
       const rate = s.due_to_date > 0 ? Math.round((s.applied_to_date / s.due_to_date) * 100) : 100;
       lines.push(

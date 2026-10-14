@@ -55,7 +55,12 @@ export function NewApplicationDialog({ classes }: { classes: Option[] }) {
           </Field>
         </div>
         <Field label="Comment nous a-t-il connus ?" htmlFor="source">
-          <Input id="source" name="source" maxLength={80} placeholder="Bouche à oreille, affiche…" />
+          <Input
+            id="source"
+            name="source"
+            maxLength={80}
+            placeholder="Bouche à oreille, affiche…"
+          />
         </Field>
         <Field label="Notes" htmlFor="notes">
           <Textarea id="notes" name="notes" maxLength={1000} />
@@ -99,7 +104,12 @@ export function EnrollDialog({
       <form onSubmit={onSubmit} className="space-y-4">
         <input type="hidden" name="id" value={applicationId} />
         <Field label="Année scolaire" htmlFor={`year-${applicationId}`}>
-          <Select id={`year-${applicationId}`} name="school_year_id" defaultValue={defaultYearId ?? years[0]?.id} required>
+          <Select
+            id={`year-${applicationId}`}
+            name="school_year_id"
+            defaultValue={defaultYearId ?? years[0]?.id}
+            required
+          >
             {years.map((y) => (
               <option key={y.id} value={y.id}>
                 {y.label}
@@ -108,7 +118,12 @@ export function EnrollDialog({
           </Select>
         </Field>
         <Field label="Classe" htmlFor={`class-${applicationId}`}>
-          <Select id={`class-${applicationId}`} name="class_id" defaultValue={defaultClassId ?? ""} required>
+          <Select
+            id={`class-${applicationId}`}
+            name="class_id"
+            defaultValue={defaultClassId ?? ""}
+            required
+          >
             <option value="" disabled>
               Choisir
             </option>

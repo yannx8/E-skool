@@ -11,7 +11,9 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <h1 className="mb-1 text-xl font-semibold">Mot de passe oublié</h1>
-      <p className="mb-5 text-slate-600">Recevez un lien par email pour choisir un nouveau mot de passe.</p>
+      <p className="mb-5 text-slate-600">
+        Recevez un lien par email pour choisir un nouveau mot de passe.
+      </p>
       {state?.ok ? (
         <Alert tone="success">{state.message}</Alert>
       ) : (
@@ -26,7 +28,10 @@ export default function ForgotPasswordPage() {
         </form>
       )}
       <p className="mt-5 text-center">
-        <Link href="/connexion" className="inline-block min-h-11 py-2 text-primary underline-offset-4 hover:underline">
+        <Link
+          href="/connexion"
+          className="inline-block min-h-11 py-2 text-primary underline-offset-4 hover:underline"
+        >
           Retour à la connexion
         </Link>
       </p>

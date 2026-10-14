@@ -40,7 +40,11 @@ export async function searchPupils(query: string): Promise<PupilHit[]> {
   const year = await getActiveYear();
   if (!year) return [];
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("search_pupils", { p_query: q, p_school_year_id: year.id, p_limit: 10 });
+  const { data, error } = await supabase.rpc("search_pupils", {
+    p_query: q,
+    p_school_year_id: year.id,
+    p_limit: 10,
+  });
   if (error) {
     friendlyError(error);
     return [];
@@ -87,8 +91,14 @@ const uuid = z.string().refine(isUuid, "Identifiant invalide");
 const paymentSchema = z.object({
   pupil_id: uuid,
   line: z.string().regex(/^[a-z_]+\|\d*$/, "Choisissez la période à payer."),
-  amount: z.coerce.number().int("Montant invalide.").positive("Le montant doit être supérieur à zéro.").max(999_999_999),
-  method: z.enum(["cash", "orange_money", "mtn_momo", "bank"], { message: "Choisissez le mode de paiement." }),
+  amount: z.coerce
+    .number()
+    .int("Montant invalide.")
+    .positive("Le montant doit être supérieur à zéro.")
+    .max(999_999_999),
+  method: z.enum(["cash", "orange_money", "mtn_momo", "bank"], {
+    message: "Choisissez le mode de paiement.",
+  }),
   reference: z.string().trim().max(100).optional(),
   paid_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide."),
   note: z.string().trim().max(500).optional(),
@@ -110,7 +120,10 @@ export type RecordPaymentState =
   | { ok: false; error: string; duplicates: DuplicatePayment[] }
   | null;
 
-export async function recordPayment(_prev: RecordPaymentState, formData: FormData): Promise<RecordPaymentState> {
+export async function recordPayment(
+  _prev: RecordPaymentState,
+  formData: FormData,
+): Promise<RecordPaymentState> {
   const user = await userWithPermission("recordPayment");
   if (!user) return fail("Action non autorisée pour votre rôle.");
   const year = await getActiveYear();
@@ -154,7 +167,10 @@ const voidSchema = z.object({
   reason: z.string().trim().min(5, "Indiquez un motif d'au moins 5 caractères.").max(300),
 });
 
-export async function voidPayment(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+export async function voidPayment(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
   const user = await userWithPermission("voidPayment");
   if (!user) return fail("Seul l'administrateur peut annuler un paiement.");
   const parsed = voidSchema.safeParse(Object.fromEntries(formData));

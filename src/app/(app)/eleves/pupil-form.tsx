@@ -32,7 +32,7 @@ export function PupilForm({
   const [state, onSubmit, pending] = useFormAction(action);
   const [dirty, setDirty] = useState(false);
   useUnsavedChangesWarning(dirty);
-  const err = state && !state.ok ? state.fieldErrors ?? {} : {};
+  const err = state && !state.ok ? (state.fieldErrors ?? {}) : {};
 
   return (
     <form
@@ -58,11 +58,22 @@ export function PupilForm({
           />
         </Field>
         <Field label="Prénom(s)" htmlFor="first_name" error={err.first_name}>
-          <Input id="first_name" name="first_name" maxLength={80} defaultValue={pupil?.first_name} />
+          <Input
+            id="first_name"
+            name="first_name"
+            maxLength={80}
+            defaultValue={pupil?.first_name}
+          />
         </Field>
       </div>
       <Field label="Classe" htmlFor="class_id" error={err.class_id}>
-        <Select id="class_id" name="class_id" required defaultValue={pupil?.class_id ?? ""} aria-invalid={!!err.class_id}>
+        <Select
+          id="class_id"
+          name="class_id"
+          required
+          defaultValue={pupil?.class_id ?? ""}
+          aria-invalid={!!err.class_id}
+        >
           <option value="" disabled>
             Choisir la classe
           </option>
@@ -75,9 +86,19 @@ export function PupilForm({
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nom du parent ou tuteur" htmlFor="parent_name">
-          <Input id="parent_name" name="parent_name" maxLength={120} defaultValue={pupil?.parent_name ?? ""} />
+          <Input
+            id="parent_name"
+            name="parent_name"
+            maxLength={120}
+            defaultValue={pupil?.parent_name ?? ""}
+          />
         </Field>
-        <Field label="Téléphone du parent (WhatsApp)" htmlFor="parent_phone" error={err.parent_phone} hint="Ex. 6 77 12 34 56">
+        <Field
+          label="Téléphone du parent (WhatsApp)"
+          htmlFor="parent_phone"
+          error={err.parent_phone}
+          hint="Ex. 6 77 12 34 56"
+        >
           <Input
             id="parent_phone"
             name="parent_phone"
@@ -87,7 +108,11 @@ export function PupilForm({
             aria-invalid={!!err.parent_phone}
           />
         </Field>
-        <Field label="Second téléphone (facultatif)" htmlFor="parent_phone_alt" error={err.parent_phone_alt}>
+        <Field
+          label="Second téléphone (facultatif)"
+          htmlFor="parent_phone_alt"
+          error={err.parent_phone_alt}
+        >
           <Input
             id="parent_phone_alt"
             name="parent_phone_alt"
@@ -103,7 +128,9 @@ export function PupilForm({
       </Field>
       {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
       <div className="flex flex-wrap gap-2">
-        <SubmitButton pending={pending}>{pupil ? "Enregistrer les modifications" : "Ajouter l'élève"}</SubmitButton>
+        <SubmitButton pending={pending}>
+          {pupil ? "Enregistrer les modifications" : "Ajouter l'élève"}
+        </SubmitButton>
         {!pupil && canPay && (
           <SubmitButton pending={pending} variant="secondary" name="then" value="payer">
             Ajouter et encaisser

@@ -21,7 +21,12 @@ export type PupilListRow = {
   status: BalanceStatus;
 };
 
-export type PupilFilters = { q: string; classId: string; status: string; state: "actifs" | "partis" | "tous" };
+export type PupilFilters = {
+  q: string;
+  classId: string;
+  status: string;
+  state: "actifs" | "partis" | "tous";
+};
 
 export function readPupilFilters(sp: Record<string, string | string[] | undefined>): PupilFilters {
   const state = param(sp, "etat");
@@ -110,7 +115,9 @@ export async function loadPupils(yearId: string, f: PupilFilters): Promise<Pupil
         remaining: b?.remaining ?? 0,
         overdue: b?.overdue ?? 0,
         status: yearStatus(b?.due_to_date ?? 0, b?.overdue ?? 0),
-        _search: normalizeSearch(`${p.last_name} ${p.first_name} ${p.first_name} ${p.last_name} ${p.parent_name ?? ""}`),
+        _search: normalizeSearch(
+          `${p.last_name} ${p.first_name} ${p.first_name} ${p.last_name} ${p.parent_name ?? ""}`,
+        ),
         _phones: `${p.parent_phone ?? ""} ${p.parent_phone_alt ?? ""}`,
       };
     })
@@ -119,10 +126,17 @@ export async function loadPupils(yearId: string, f: PupilFilters): Promise<Pupil
       if (f.state === "partis" && r.is_active) return false;
       if (f.classId && r.class_id !== f.classId) return false;
       if (f.status && r.status !== f.status) return false;
-      if (q && !r._search.includes(q) && !(qDigits.length >= 4 && r._phones.includes(qDigits))) return false;
+      if (q && !r._search.includes(q) && !(qDigits.length >= 4 && r._phones.includes(qDigits)))
+        return false;
       return true;
     })
-    .sort((a, b) => a.class_sort - b.class_sort || a.class_name.localeCompare(b.class_name) || a.last_name.localeCompare(b.last_name, "fr") || a.first_name.localeCompare(b.first_name, "fr"))
+    .sort(
+      (a, b) =>
+        a.class_sort - b.class_sort ||
+        a.class_name.localeCompare(b.class_name) ||
+        a.last_name.localeCompare(b.last_name, "fr") ||
+        a.first_name.localeCompare(b.first_name, "fr"),
+    )
     .map(({ _search, _phones, ...row }) => {
       void _search;
       void _phones;

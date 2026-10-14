@@ -63,7 +63,15 @@ export function ActionSubmit({
 }) {
   const pending = useContext(PendingContext);
   return (
-    <SubmitButton pending={pending} variant={variant} size={size} className={className} disabled={disabled} name={name} value={value}>
+    <SubmitButton
+      pending={pending}
+      variant={variant}
+      size={size}
+      className={className}
+      disabled={disabled}
+      name={name}
+      value={value}
+    >
       {children}
     </SubmitButton>
   );

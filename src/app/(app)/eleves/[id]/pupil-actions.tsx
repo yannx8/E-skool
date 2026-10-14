@@ -30,7 +30,14 @@ export function LeaveDialog({ pupilId, today }: { pupilId: string; today: string
       <form onSubmit={onSubmit} className="space-y-4">
         <input type="hidden" name="id" value={pupilId} />
         <Field label="Raison du départ" htmlFor="left_reason">
-          <Input id="left_reason" name="left_reason" required minLength={3} maxLength={300} placeholder="Déménagement, changement d'école…" />
+          <Input
+            id="left_reason"
+            name="left_reason"
+            required
+            minLength={3}
+            maxLength={300}
+            placeholder="Déménagement, changement d'école…"
+          />
         </Field>
         <Field label="Date du départ" htmlFor="left_on">
           <Input id="left_on" name="left_on" type="date" defaultValue={today} max={today} />
@@ -44,7 +51,15 @@ export function LeaveDialog({ pupilId, today }: { pupilId: string; today: string
   );
 }
 
-export function DiscountDialog({ pupilId, termLabel, termsCount }: { pupilId: string; termLabel: string; termsCount: number }) {
+export function DiscountDialog({
+  pupilId,
+  termLabel,
+  termsCount,
+}: {
+  pupilId: string;
+  termLabel: string;
+  termsCount: number;
+}) {
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<"percent" | "fixed">("percent");
   const [state, onSubmit, pending] = useFormAction(addDiscount);
@@ -85,17 +100,37 @@ export function DiscountDialog({ pupilId, termLabel, termsCount }: { pupilId: st
             </Select>
           </Field>
           <Field label="Type" htmlFor="kind">
-            <Select id="kind" name="kind" value={kind} onChange={(e) => setKind(e.target.value as "percent" | "fixed")}>
+            <Select
+              id="kind"
+              name="kind"
+              value={kind}
+              onChange={(e) => setKind(e.target.value as "percent" | "fixed")}
+            >
               <option value="percent">Pourcentage</option>
               <option value="fixed">Montant fixe (FCFA)</option>
             </Select>
           </Field>
           <Field label={kind === "percent" ? "Pourcentage" : "Montant par période"} htmlFor="value">
-            <Input id="value" name="value" type="number" inputMode="numeric" min={1} max={kind === "percent" ? 100 : undefined} required />
+            <Input
+              id="value"
+              name="value"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={kind === "percent" ? 100 : undefined}
+              required
+            />
           </Field>
         </div>
         <Field label="Motif" htmlFor="reason">
-          <Input id="reason" name="reason" required minLength={3} maxLength={200} placeholder="Réduction fratrie" />
+          <Input
+            id="reason"
+            name="reason"
+            required
+            minLength={3}
+            maxLength={200}
+            placeholder="Réduction fratrie"
+          />
         </Field>
         {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
         <SubmitButton pending={pending}>Enregistrer la réduction</SubmitButton>

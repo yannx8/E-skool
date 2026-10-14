@@ -11,13 +11,21 @@ export const metadata: Metadata = { title: "Plus" };
 // Mobile "Plus" tab: everything that is not in the bottom bar.
 export default async function MorePage() {
   const user = await requireUser();
-  const [settings, years, year] = await Promise.all([getSettings(), getSchoolYears(), getActiveYear()]);
+  const [settings, years, year] = await Promise.all([
+    getSettings(),
+    getSchoolYears(),
+    getActiveYear(),
+  ]);
   return (
     <>
       <PageHeader title="Plus" />
       <MoreNav
         role={user.role}
-        modules={{ hr: settings.module_hr, finance: settings.module_finance, enrollment: settings.module_enrollment }}
+        modules={{
+          hr: settings.module_hr,
+          finance: settings.module_finance,
+          enrollment: settings.module_enrollment,
+        }}
         years={years.map((y) => ({ id: y.id, label: y.label, is_current: y.is_current }))}
         activeYearId={year?.id ?? null}
       />

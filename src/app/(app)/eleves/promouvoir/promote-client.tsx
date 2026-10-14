@@ -9,7 +9,13 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { fullName } from "@/lib/format";
 import { promotePupils } from "../actions";
 
-type Pupil = { id: string; last_name: string; first_name: string; class_id: string; already: boolean };
+type Pupil = {
+  id: string;
+  last_name: string;
+  first_name: string;
+  class_id: string;
+  already: boolean;
+};
 type ClassOption = { id: string; name: string; sort_order: number };
 
 const LEAVE = "__leave__";
@@ -38,7 +44,9 @@ export function PromoteClient({
   );
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [done, setDone] = useState<{ enrolled: number; skipped: number; left: number } | null>(null);
+  const [done, setDone] = useState<{ enrolled: number; skipped: number; left: number } | null>(
+    null,
+  );
 
   const groups = classes
     .map((c) => ({ cls: c, pupils: pupils.filter((p) => p.class_id === c.id) }))
@@ -77,7 +85,8 @@ export function PromoteClient({
   if (done) {
     return (
       <Alert tone="success" title="Passage de classe terminé">
-        {done.enrolled} élève(s) inscrit(s) en {toYearLabel}, {done.left} départ(s), {done.skipped} déjà inscrit(s).{" "}
+        {done.enrolled} élève(s) inscrit(s) en {toYearLabel}, {done.left} départ(s), {done.skipped}{" "}
+        déjà inscrit(s).{" "}
         <Link href="/eleves" className="font-semibold underline">
           Voir les élèves
         </Link>

@@ -12,14 +12,23 @@ export function SchoolHeader({ settings, compact }: { settings: Settings; compac
         <img
           src={logo}
           alt=""
-          className={compact ? "mx-auto mb-1 h-12 w-12 object-contain" : "h-16 w-16 shrink-0 object-contain"}
+          className={
+            compact ? "mx-auto mb-1 h-12 w-12 object-contain" : "h-16 w-16 shrink-0 object-contain"
+          }
         />
       )}
       <div>
-        <p className={compact ? "text-base font-bold" : "text-xl font-bold"}>{settings.school_name}</p>
+        <p className={compact ? "text-base font-bold" : "text-xl font-bold"}>
+          {settings.school_name}
+        </p>
         {settings.address && <p className="text-sm text-slate-600">{settings.address}</p>}
         <p className="text-sm text-slate-600">
-          {[settings.phone && `Tél. ${formatPhone(settings.phone) || settings.phone}`, settings.email].filter(Boolean).join(" · ")}
+          {[
+            settings.phone && `Tél. ${formatPhone(settings.phone) || settings.phone}`,
+            settings.email,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
       </div>
     </div>

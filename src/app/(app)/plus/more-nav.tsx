@@ -27,7 +27,10 @@ export function MoreNav({
         <ul className="divide-y divide-slate-100">
           {items.map((item) => (
             <li key={item.href}>
-              <Link href={item.href} className="flex min-h-14 items-center gap-3 px-4 [&>svg:first-child]:size-6 [&>svg:first-child]:text-slate-500">
+              <Link
+                href={item.href}
+                className="flex min-h-14 items-center gap-3 px-4 [&>svg:first-child]:size-6 [&>svg:first-child]:text-slate-500"
+              >
                 {item.icon}
                 <span className="flex-1 font-medium">{item.label}</span>
                 <ChevronRight className="size-5 text-slate-400" aria-hidden />

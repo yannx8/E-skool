@@ -31,7 +31,13 @@ export default async function ReportPage({ searchParams }: { searchParams: Searc
         }
       />
       <Card className="max-w-4xl">
-        <CardBody>{report ? <ReportView report={report} /> : <Alert tone="danger">Rapport indisponible.</Alert>}</CardBody>
+        <CardBody>
+          {report ? (
+            <ReportView report={report} />
+          ) : (
+            <Alert tone="danger">Rapport indisponible.</Alert>
+          )}
+        </CardBody>
       </Card>
     </>
   );

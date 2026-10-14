@@ -68,7 +68,10 @@ export default async function CashBookPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <PageHeader title="Journal de caisse" description={`Du ${formatDate(from)} au ${formatDate(to)}`} />
+      <PageHeader
+        title="Journal de caisse"
+        description={`Du ${formatDate(from)} au ${formatDate(to)}`}
+      />
       <form method="get" className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         <div>
           <Label htmlFor="du">Du</Label>
@@ -128,17 +131,23 @@ export default async function CashBookPage({ searchParams }: { searchParams: Sea
             </thead>
             <tbody>
               {entries.map((e, i) => (
-                  <tr key={`${e.source}-${e.source_id}`}>
-                    <Td className="whitespace-nowrap">{formatDate(e.entry_date)}</Td>
-                    <Td>
-                      <span className="text-sm text-slate-500">{SOURCES[e.source] ?? e.source} · </span>
-                      {e.label}
-                    </Td>
-                    <Td>{PAYMENT_METHODS[e.method]}</Td>
-                    <Td className="tabular text-right text-success">{e.amount_in ? formatFCFA(e.amount_in) : ""}</Td>
-                    <Td className="tabular text-right text-warning">{e.amount_out ? formatFCFA(e.amount_out) : ""}</Td>
-                    <Td className="tabular text-right font-medium">{formatFCFA(cumulative[i])}</Td>
-                  </tr>
+                <tr key={`${e.source}-${e.source_id}`}>
+                  <Td className="whitespace-nowrap">{formatDate(e.entry_date)}</Td>
+                  <Td>
+                    <span className="text-sm text-slate-500">
+                      {SOURCES[e.source] ?? e.source} ·{" "}
+                    </span>
+                    {e.label}
+                  </Td>
+                  <Td>{PAYMENT_METHODS[e.method]}</Td>
+                  <Td className="tabular text-right text-success">
+                    {e.amount_in ? formatFCFA(e.amount_in) : ""}
+                  </Td>
+                  <Td className="tabular text-right text-warning">
+                    {e.amount_out ? formatFCFA(e.amount_out) : ""}
+                  </Td>
+                  <Td className="tabular text-right font-medium">{formatFCFA(cumulative[i])}</Td>
+                </tr>
               ))}
             </tbody>
           </Table>

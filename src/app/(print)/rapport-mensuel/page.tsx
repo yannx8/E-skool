@@ -26,8 +26,14 @@ export default async function PrintReportPage({ searchParams }: { searchParams: 
       <PrintToolbar backHref={`/finances/rapport?mois=${month.slice(0, 7)}`} backLabel="Rapport" />
       <article className="mx-auto w-full max-w-[210mm] bg-white p-8 text-slate-900 shadow-sm print:max-w-none print:p-0 print:shadow-none">
         <SchoolHeader settings={settings} />
-        <h1 className="my-6 border-y border-slate-300 py-2 text-xl font-bold capitalize">Rapport financier : {formatMonth(month)}</h1>
-        {report ? <ReportView report={report} /> : <Alert tone="danger">Rapport indisponible.</Alert>}
+        <h1 className="my-6 border-y border-slate-300 py-2 text-xl font-bold capitalize">
+          Rapport financier : {formatMonth(month)}
+        </h1>
+        {report ? (
+          <ReportView report={report} />
+        ) : (
+          <Alert tone="danger">Rapport indisponible.</Alert>
+        )}
         <p className="mt-8 text-sm text-slate-500">Généré le {generatedAt()} depuis E-skool.</p>
       </article>
     </>

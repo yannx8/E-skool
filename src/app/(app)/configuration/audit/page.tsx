@@ -45,8 +45,16 @@ const ACTIONS: Record<string, { label: string; tone: "success" | "warning" | "da
 const HIDDEN = new Set(["id", "created_at", "updated_at", "created_by", "portal_token"]);
 
 /** Field-level differences of an UPDATE, or the main fields of an INSERT/DELETE. */
-function describe(before: Record<string, unknown> | null, after: Record<string, unknown> | null): string[] {
-  const fmt = (v: unknown) => (v === null || v === undefined || v === "" ? "vide" : typeof v === "object" ? JSON.stringify(v) : String(v));
+function describe(
+  before: Record<string, unknown> | null,
+  after: Record<string, unknown> | null,
+): string[] {
+  const fmt = (v: unknown) =>
+    v === null || v === undefined || v === ""
+      ? "vide"
+      : typeof v === "object"
+        ? JSON.stringify(v)
+        : String(v);
   if (before && after) {
     return Object.keys(after)
       .filter((k) => !HIDDEN.has(k) && JSON.stringify(before[k]) !== JSON.stringify(after[k]))
@@ -99,14 +107,18 @@ export default async function AuditPage({ searchParams }: { searchParams: Search
             <ul className="divide-y divide-slate-100">
               {data.map((e) => {
                 const action = ACTIONS[e.action] ?? ACTIONS.UPDATE;
-                const lines = describe(e.before as Record<string, unknown> | null, e.after as Record<string, unknown> | null);
+                const lines = describe(
+                  e.before as Record<string, unknown> | null,
+                  e.after as Record<string, unknown> | null,
+                );
                 return (
                   <li key={e.id} className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone={action.tone}>{action.label}</Badge>
                       <span className="font-medium">{TABLES[e.table_name] ?? e.table_name}</span>
                       <span className="text-sm text-slate-500">
-                        {formatDateTime(e.created_at)} · {e.user_id ? (names.get(e.user_id) ?? "Utilisateur supprimé") : "Système"}
+                        {formatDateTime(e.created_at)} ·{" "}
+                        {e.user_id ? (names.get(e.user_id) ?? "Utilisateur supprimé") : "Système"}
                       </span>
                     </div>
                     {lines.length > 0 && (
@@ -120,7 +132,12 @@ export default async function AuditPage({ searchParams }: { searchParams: Search
                 );
               })}
             </ul>
-            <Pagination page={page} pageSize={PAGE_SIZE} total={count ?? 0} hrefFor={(n) => `/configuration/audit${qs({ table, page: n })}`} />
+            <Pagination
+              page={page}
+              pageSize={PAGE_SIZE}
+              total={count ?? 0}
+              hrefFor={(n) => `/configuration/audit${qs({ table, page: n })}`}
+            />
           </>
         )}
       </Card>

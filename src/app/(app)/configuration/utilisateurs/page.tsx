@@ -18,8 +18,13 @@ export default async function UsersPage() {
   if (!serverEnv().serviceRoleKey) {
     return (
       <>
-        <PageHeader title="Utilisateurs" back={{ href: "/configuration", label: "Configuration" }} />
-        <Alert tone="warning">La clé SUPABASE_SECRET_KEY n&apos;est pas configurée sur le serveur.</Alert>
+        <PageHeader
+          title="Utilisateurs"
+          back={{ href: "/configuration", label: "Configuration" }}
+        />
+        <Alert tone="warning">
+          La clé SUPABASE_SECRET_KEY n&apos;est pas configurée sur le serveur.
+        </Alert>
       </>
     );
   }
@@ -62,7 +67,8 @@ export default async function UsersPage() {
                         )}
                       </p>
                       <p className="text-sm text-slate-500">
-                        {u?.email} · dernière connexion {u?.last_sign_in_at ? formatDateTime(u.last_sign_in_at) : "jamais"}
+                        {u?.email} · dernière connexion{" "}
+                        {u?.last_sign_in_at ? formatDateTime(u.last_sign_in_at) : "jamais"}
                       </p>
                     </div>
                   </div>
@@ -78,7 +84,12 @@ export default async function UsersPage() {
                       </Select>
                     </Field>
                     <label className="flex h-11 items-center gap-2">
-                      <input type="checkbox" name="is_active" defaultChecked={r.is_active} className="size-5 accent-primary" />
+                      <input
+                        type="checkbox"
+                        name="is_active"
+                        defaultChecked={r.is_active}
+                        className="size-5 accent-primary"
+                      />
                       Accès actif
                     </label>
                     <ActionSubmit variant="secondary" size="sm" className="h-11">
@@ -87,11 +98,24 @@ export default async function UsersPage() {
                   </ActionForm>
                   {!isMe && (
                     <details>
-                      <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium text-primary">Définir un nouveau mot de passe</summary>
-                      <ActionForm action={resetUserPassword} className="flex flex-wrap items-end gap-3" resetOnSuccess>
+                      <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium text-primary">
+                        Définir un nouveau mot de passe
+                      </summary>
+                      <ActionForm
+                        action={resetUserPassword}
+                        className="flex flex-wrap items-end gap-3"
+                        resetOnSuccess
+                      >
                         <input type="hidden" name="user_id" value={r.user_id} />
                         <Field label="Mot de passe provisoire" htmlFor={`pwd-${r.user_id}`}>
-                          <Input id={`pwd-${r.user_id}`} name="password" type="text" minLength={10} required autoComplete="off" />
+                          <Input
+                            id={`pwd-${r.user_id}`}
+                            name="password"
+                            type="text"
+                            minLength={10}
+                            required
+                            autoComplete="off"
+                          />
                         </Field>
                         <ActionSubmit variant="secondary" size="sm" className="h-11">
                           Enregistrer
@@ -106,7 +130,10 @@ export default async function UsersPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Nouveau compte" description="Communiquez l'email et le mot de passe provisoire en main propre." />
+          <CardHeader
+            title="Nouveau compte"
+            description="Communiquez l'email et le mot de passe provisoire en main propre."
+          />
           <CardBody>
             <ActionForm action={createUser} className="space-y-4" resetOnSuccess>
               <Field label="Nom complet" htmlFor="full_name">
@@ -124,8 +151,19 @@ export default async function UsersPage() {
                   ))}
                 </Select>
               </Field>
-              <Field label="Mot de passe provisoire" htmlFor="password" hint="10 caractères minimum. La personne pourra le changer.">
-                <Input id="password" name="password" type="text" minLength={10} required autoComplete="off" />
+              <Field
+                label="Mot de passe provisoire"
+                htmlFor="password"
+                hint="10 caractères minimum. La personne pourra le changer."
+              >
+                <Input
+                  id="password"
+                  name="password"
+                  type="text"
+                  minLength={10}
+                  required
+                  autoComplete="off"
+                />
               </Field>
               <ActionSubmit>Créer le compte</ActionSubmit>
             </ActionForm>

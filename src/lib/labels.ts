@@ -65,6 +65,10 @@ export function termName(term: number | null | undefined, termLabel = "Tranche")
 }
 
 /** Fee line label: "Scolarité - Tranche 1", "Inscription". */
-export function feeLineName(fee: FeeType, term: number | null | undefined, termLabel = "Tranche"): string {
+export function feeLineName(
+  fee: FeeType,
+  term: number | null | undefined,
+  termLabel = "Tranche",
+): string {
   return term == null ? FEE_TYPES[fee] : `${FEE_TYPES[fee]} - ${termName(term, termLabel)}`;
 }

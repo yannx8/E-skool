@@ -34,18 +34,45 @@ type NavItem = {
 };
 
 const NAV: NavItem[] = [
-  { href: "/tableau-de-bord", label: "Tableau de bord", mobileLabel: "Accueil", icon: <LayoutDashboard />, mobile: true },
+  {
+    href: "/tableau-de-bord",
+    label: "Tableau de bord",
+    mobileLabel: "Accueil",
+    icon: <LayoutDashboard />,
+    mobile: true,
+  },
   { href: "/paiements", label: "Paiements", icon: <Wallet />, mobile: true },
   { href: "/eleves", label: "Élèves", icon: <Users />, mobile: true },
   { href: "/impayes", label: "Impayés", icon: <AlertCircle />, mobile: true },
-  { href: "/inscriptions", label: "Inscriptions", icon: <UserPlus />, permission: "viewEnrollment", module: "enrollment" },
-  { href: "/personnel", label: "Personnel", icon: <Briefcase />, permission: "viewHr", module: "hr" },
-  { href: "/finances", label: "Finances", icon: <Landmark />, permission: "viewFinance", module: "finance" },
+  {
+    href: "/inscriptions",
+    label: "Inscriptions",
+    icon: <UserPlus />,
+    permission: "viewEnrollment",
+    module: "enrollment",
+  },
+  {
+    href: "/personnel",
+    label: "Personnel",
+    icon: <Briefcase />,
+    permission: "viewHr",
+    module: "hr",
+  },
+  {
+    href: "/finances",
+    label: "Finances",
+    icon: <Landmark />,
+    permission: "viewFinance",
+    module: "finance",
+  },
   { href: "/configuration", label: "Configuration", icon: <Settings />, permission: "viewAudit" },
 ];
 
 export function visibleNav(role: AppRole, modules: ShellModules) {
-  return NAV.filter((item) => (!item.permission || can(role, item.permission)) && (!item.module || modules[item.module]));
+  return NAV.filter(
+    (item) =>
+      (!item.permission || can(role, item.permission)) && (!item.module || modules[item.module]),
+  );
 }
 
 function isActive(pathname: string, href: string) {
@@ -131,7 +158,8 @@ export function AppShell({
               aria-current={isActive(pathname, item.href) ? "page" : undefined}
               className={cn(
                 "flex min-h-11 items-center gap-3 rounded-lg px-3 text-base font-medium text-slate-700 hover:bg-slate-100 [&_svg]:size-5",
-                isActive(pathname, item.href) && "bg-primary-soft text-primary hover:bg-primary-soft",
+                isActive(pathname, item.href) &&
+                  "bg-primary-soft text-primary hover:bg-primary-soft",
               )}
             >
               {item.icon}
@@ -159,7 +187,9 @@ export function AppShell({
           <YearSwitcher years={years} activeYearId={activeYearId} className="hidden sm:flex" />
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-5 pb-28 md:px-8 md:pb-10">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-5 pb-28 md:px-8 md:pb-10">
+          {children}
+        </main>
       </div>
 
       {/* Mobile bottom navigation: 4 items + "Plus" */}

@@ -50,7 +50,19 @@ export async function GET(request: NextRequest) {
     p.created_by ? (names.get(p.created_by) ?? "") : "",
   ]);
   const csv = toCSV(
-    ["Reçu", "Date", "Nom", "Prénom", "Objet", "Mode", "Référence", "Montant (FCFA)", "Statut", "Motif annulation", "Saisi par"],
+    [
+      "Reçu",
+      "Date",
+      "Nom",
+      "Prénom",
+      "Objet",
+      "Mode",
+      "Référence",
+      "Montant (FCFA)",
+      "Statut",
+      "Motif annulation",
+      "Saisi par",
+    ],
     rows,
   );
   return csvResponse(`paiements-${year.label}.csv`, csv);

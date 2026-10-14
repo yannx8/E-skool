@@ -21,7 +21,13 @@ async function readFileRows(file: File): Promise<unknown[][]> {
   return parsed.data;
 }
 
-export function ImportClient({ classNames, yearLabel }: { classNames: string[]; yearLabel: string }) {
+export function ImportClient({
+  classNames,
+  yearLabel,
+}: {
+  classNames: string[];
+  yearLabel: string;
+}) {
   const [fileName, setFileName] = useState("");
   const [rows, setRows] = useState<ParsedRow[] | null>(null);
   const [parseError, setParseError] = useState("");
@@ -43,7 +49,9 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
       const raw = await readFileRows(file);
       const { rows: parsed, missingColumns } = parseImportRows(raw, classNames);
       if (missingColumns.length) {
-        setParseError(`Colonnes introuvables : ${missingColumns.join(", ")}. Utilisez le modèle ou renommez les en-têtes.`);
+        setParseError(
+          `Colonnes introuvables : ${missingColumns.join(", ")}. Utilisez le modèle ou renommez les en-têtes.`,
+        );
         return;
       }
       if (parsed.length === 0) {
@@ -56,7 +64,9 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
       }
       setRows(parsed);
     } catch {
-      setParseError("Lecture impossible. Enregistrez le fichier au format .xlsx ou .csv puis réessayez.");
+      setParseError(
+        "Lecture impossible. Enregistrez le fichier au format .xlsx ou .csv puis réessayez.",
+      );
     }
   }
 
@@ -84,7 +94,10 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
   if (result) {
     return (
       <div className="space-y-4">
-        <Alert tone={result.rejected.length ? "warning" : "success"} title={`${result.inserted} élève(s) importé(s) pour ${yearLabel}`}>
+        <Alert
+          tone={result.rejected.length ? "warning" : "success"}
+          title={`${result.inserted} élève(s) importé(s) pour ${yearLabel}`}
+        >
           {result.rejected.length > 0
             ? `${result.rejected.length} ligne(s) refusée(s) par le serveur, détail ci-dessous.`
             : "Toutes les lignes valides ont été importées."}
@@ -95,7 +108,8 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
               const src = result.sent[r.row - 1];
               return (
                 <li key={r.row}>
-                  Ligne {src?.line ?? r.row} ({src ? `${src.last_name} ${src.first_name}` : ""}) : {r.reason}
+                  Ligne {src?.line ?? r.row} ({src ? `${src.last_name} ${src.first_name}` : ""}) :{" "}
+                  {r.reason}
                 </li>
               );
             })}
@@ -121,7 +135,8 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
           <a href="/modele-eleves.csv" download className="font-medium text-primary underline">
             modèle de fichier
           </a>{" "}
-          ou utilisez votre fichier Excel : il faut au moins les colonnes <strong>Nom</strong> et <strong>Classe</strong>.
+          ou utilisez votre fichier Excel : il faut au moins les colonnes <strong>Nom</strong> et{" "}
+          <strong>Classe</strong>.
         </li>
         <li>Les classes doivent exister : {classNames.join(", ") || "aucune classe créée"}.</li>
         <li>Vérifiez l&apos;aperçu puis importez les lignes valides.</li>
@@ -181,7 +196,9 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
                     <Td>{formatPhone(r.parent_phone)}</Td>
                     <Td>
                       {r.errors.length ? (
-                        <span className="text-sm font-medium text-danger">{r.errors.join(" · ")}</span>
+                        <span className="text-sm font-medium text-danger">
+                          {r.errors.join(" · ")}
+                        </span>
                       ) : (
                         <span className="text-sm text-success">OK</span>
                       )}
@@ -191,7 +208,11 @@ export function ImportClient({ classNames, yearLabel }: { classNames: string[]; 
               </tbody>
             </Table>
           </div>
-          {rows.length > 500 && <p className="text-sm text-slate-500">Aperçu limité aux 500 premières lignes (erreurs en premier).</p>}
+          {rows.length > 500 && (
+            <p className="text-sm text-slate-500">
+              Aperçu limité aux 500 premières lignes (erreurs en premier).
+            </p>
+          )}
         </>
       )}
     </div>

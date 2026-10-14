@@ -58,7 +58,14 @@ function PayDialog({ row, today }: { row: PayrollRow; today: string }) {
           </Select>
         </Field>
         <Field label="Date du paiement" htmlFor={`paid-${row.id}`}>
-          <Input id={`paid-${row.id}`} name="paid_at" type="date" defaultValue={today} max={today} required />
+          <Input
+            id={`paid-${row.id}`}
+            name="paid_at"
+            type="date"
+            defaultValue={today}
+            max={today}
+            required
+          />
         </Field>
         {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
         <SubmitButton pending={pending}>Confirmer le paiement</SubmitButton>
@@ -67,7 +74,15 @@ function PayDialog({ row, today }: { row: PayrollRow; today: string }) {
   );
 }
 
-export function PayrollRowCard({ row, canManage, today }: { row: PayrollRow; canManage: boolean; today: string }) {
+export function PayrollRowCard({
+  row,
+  canManage,
+  today,
+}: {
+  row: PayrollRow;
+  canManage: boolean;
+  today: string;
+}) {
   const paid = row.status === "paid";
   return (
     <li className="space-y-3 px-4 py-4">
@@ -113,7 +128,9 @@ export function PayrollRowCard({ row, canManage, today }: { row: PayrollRow; can
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
             <div>
               <p className="mb-1 text-sm font-medium text-slate-700">Salaire de base</p>
-              <p className="tabular flex h-11 items-center font-semibold">{formatFCFA(row.base_amount)}</p>
+              <p className="tabular flex h-11 items-center font-semibold">
+                {formatFCFA(row.base_amount)}
+              </p>
             </div>
             <Field label="Primes" htmlFor={`bonuses-${row.id}`}>
               <MoneyInput name="bonuses" id={`bonuses-${row.id}`} defaultValue={row.bonuses} />
@@ -122,11 +139,20 @@ export function PayrollRowCard({ row, canManage, today }: { row: PayrollRow; can
               <MoneyInput name="advances" id={`advances-${row.id}`} defaultValue={row.advances} />
             </Field>
             <Field label="Retenues" htmlFor={`deductions-${row.id}`}>
-              <MoneyInput name="deductions" id={`deductions-${row.id}`} defaultValue={row.deductions} />
+              <MoneyInput
+                name="deductions"
+                id={`deductions-${row.id}`}
+                defaultValue={row.deductions}
+              />
             </Field>
           </div>
           <Field label="Note" htmlFor={`notes-${row.id}`}>
-            <Input id={`notes-${row.id}`} name="notes" maxLength={300} defaultValue={row.notes ?? ""} />
+            <Input
+              id={`notes-${row.id}`}
+              name="notes"
+              maxLength={300}
+              defaultValue={row.notes ?? ""}
+            />
           </Field>
           <div className="flex flex-wrap gap-2">
             <ActionSubmit variant="secondary" size="sm">

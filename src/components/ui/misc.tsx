@@ -18,14 +18,19 @@ export function PageHeader({
   return (
     <header className="mb-5">
       {back && (
-        <Link href={back.href} className="no-print mb-2 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary">
+        <Link
+          href={back.href}
+          className="no-print mb-2 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary"
+        >
           <ChevronLeft className="size-4" aria-hidden />
           {back.label}
         </Link>
       )}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-slate-900 md:text-[32px] md:leading-tight">{title}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 md:text-[32px] md:leading-tight">
+            {title}
+          </h1>
           {description && <p className="mt-1 text-base text-slate-600">{description}</p>}
         </div>
         {actions && <div className="no-print flex flex-wrap gap-2">{actions}</div>}
@@ -47,7 +52,9 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center px-4 py-10 text-center">
-      <div className="mb-3 rounded-full bg-slate-100 p-3 text-slate-500 [&_svg]:size-6">{icon ?? <Inbox aria-hidden />}</div>
+      <div className="mb-3 rounded-full bg-slate-100 p-3 text-slate-500 [&_svg]:size-6">
+        {icon ?? <Inbox aria-hidden />}
+      </div>
       <p className="text-lg font-semibold text-slate-900">{title}</p>
       {description && <p className="mt-1 max-w-md text-slate-600">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
@@ -77,7 +84,10 @@ export function Alert({
     success: "border-success/30 bg-success-soft text-success",
   };
   return (
-    <div role={tone === "danger" ? "alert" : "status"} className={cn("rounded-lg border px-4 py-3", tones[tone], className)}>
+    <div
+      role={tone === "danger" ? "alert" : "status"}
+      className={cn("rounded-lg border px-4 py-3", tones[tone], className)}
+    >
       {title && <p className="font-semibold">{title}</p>}
       {children && <div className={cn(title && "mt-1", "text-[15px]")}>{children}</div>}
     </div>
@@ -96,14 +106,22 @@ export function Table({ className, ...props }: ComponentProps<"table">) {
 export function Th({ className, ...props }: ComponentProps<"th">) {
   return (
     <th
-      className={cn("border-b border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold whitespace-nowrap text-slate-600", className)}
+      className={cn(
+        "border-b border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold whitespace-nowrap text-slate-600",
+        className,
+      )}
       {...props}
     />
   );
 }
 
 export function Td({ className, ...props }: ComponentProps<"td">) {
-  return <td className={cn("border-b border-slate-100 px-3 py-2.5 align-middle", className)} {...props} />;
+  return (
+    <td
+      className={cn("border-b border-slate-100 px-3 py-2.5 align-middle", className)}
+      {...props}
+    />
+  );
 }
 
 export function Pagination({
@@ -120,7 +138,10 @@ export function Pagination({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
   return (
-    <nav className="no-print flex items-center justify-between gap-2 px-4 py-3" aria-label="Pagination">
+    <nav
+      className="no-print flex items-center justify-between gap-2 px-4 py-3"
+      aria-label="Pagination"
+    >
       <span className="text-sm text-slate-600">
         Page {page} sur {pages} ({total} lignes)
       </span>
@@ -146,7 +167,9 @@ export function DefinitionList({ items }: { items: { label: ReactNode; value: Re
       {items.map((item, i) => (
         <div key={i}>
           <dt className="text-sm text-slate-500">{item.label}</dt>
-          <dd className="font-medium text-slate-900">{item.value || <span className="text-slate-400">-</span>}</dd>
+          <dd className="font-medium text-slate-900">
+            {item.value || <span className="text-slate-400">-</span>}
+          </dd>
         </div>
       ))}
     </dl>

@@ -6,7 +6,8 @@
  * with text and an icon (never color alone).
  */
 @theme {
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
   --color-primary: #1e40af;
   --color-primary-hover: #1e3a8a;

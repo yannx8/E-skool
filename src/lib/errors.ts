@@ -2,9 +2,15 @@
 // Business rules raise French messages with errcode P0001 in SQL; those are
 // shown as-is. Anything unexpected is logged server-side and hidden.
 
-type PgError = { code?: string; message?: string; details?: string | null; hint?: string | null } | null | undefined;
+type PgError =
+  | { code?: string; message?: string; details?: string | null; hint?: string | null }
+  | null
+  | undefined;
 
-export function friendlyError(error: PgError, fallback = "Une erreur est survenue. Réessayez."): string {
+export function friendlyError(
+  error: PgError,
+  fallback = "Une erreur est survenue. Réessayez.",
+): string {
   if (!error) return fallback;
   switch (error.code) {
     case "P0001":

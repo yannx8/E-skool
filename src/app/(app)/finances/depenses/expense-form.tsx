@@ -9,7 +9,13 @@ import { downscaleImage } from "@/lib/image";
 import { PAYMENT_METHODS } from "@/lib/labels";
 import { recordExpense } from "../actions";
 
-export function ExpenseForm({ categories, today }: { categories: { id: string; name: string }[]; today: string }) {
+export function ExpenseForm({
+  categories,
+  today,
+}: {
+  categories: { id: string; name: string }[];
+  today: string;
+}) {
   const [state, onSubmit, pending] = useFormAction(recordExpense);
   const [receiptPath, setReceiptPath] = useState("");
   const [uploadError, setUploadError] = useState("");
@@ -31,11 +37,15 @@ export function ExpenseForm({ categories, today }: { categories: { id: string; n
       try {
         const blob = await downscaleImage(file);
         const path = `${today.slice(0, 4)}/${today.slice(5, 7)}/${crypto.randomUUID()}.jpg`;
-        const { error } = await createClient().storage.from("expense-receipts").upload(path, blob, { contentType: "image/jpeg" });
+        const { error } = await createClient()
+          .storage.from("expense-receipts")
+          .upload(path, blob, { contentType: "image/jpeg" });
         if (error) throw error;
         setReceiptPath(path);
       } catch {
-        setUploadError("Envoi de la photo impossible. Vous pouvez enregistrer la dépense sans photo.");
+        setUploadError(
+          "Envoi de la photo impossible. Vous pouvez enregistrer la dépense sans photo.",
+        );
       }
     });
   }
@@ -69,11 +79,23 @@ export function ExpenseForm({ categories, today }: { categories: { id: string; n
           </Select>
         </Field>
         <Field label="Date" htmlFor="spent_on">
-          <Input id="spent_on" name="spent_on" type="date" defaultValue={today} max={today} required />
+          <Input
+            id="spent_on"
+            name="spent_on"
+            type="date"
+            defaultValue={today}
+            max={today}
+            required
+          />
         </Field>
       </div>
       <Field label="Description" htmlFor="description">
-        <Input id="description" name="description" maxLength={300} placeholder="Ex. 2 paquets de craie" />
+        <Input
+          id="description"
+          name="description"
+          maxLength={300}
+          placeholder="Ex. 2 paquets de craie"
+        />
       </Field>
       <div>
         <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 font-medium hover:bg-slate-50">
@@ -85,7 +107,13 @@ export function ExpenseForm({ categories, today }: { categories: { id: string; n
             <Camera className="size-5" aria-hidden />
           )}
           {receiptPath ? "Photo du reçu ajoutée" : "Photo du reçu (facultatif)"}
-          <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => upload(e.target.files?.[0])} />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="sr-only"
+            onChange={(e) => upload(e.target.files?.[0])}
+          />
         </label>
         {uploadError && <p className="mt-1 text-sm text-danger">{uploadError}</p>}
       </div>

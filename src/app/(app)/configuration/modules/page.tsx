@@ -13,7 +13,11 @@ export default async function ModulesPage() {
   await requirePermission("manageSetup");
   const settings = await getSettings();
   const env = serverEnv();
-  const whatsappReady = !!(env.whatsappToken && env.whatsappPhoneNumberId && env.whatsappTemplateName);
+  const whatsappReady = !!(
+    env.whatsappToken &&
+    env.whatsappPhoneNumberId &&
+    env.whatsappTemplateName
+  );
 
   return (
     <>
@@ -26,7 +30,11 @@ export default async function ModulesPage() {
         <Card>
           <CardHeader title="Parties de l'application" />
           <CardBody className="space-y-2">
-            <Checkbox name="module_hr" defaultChecked={settings.module_hr} label="Personnel et paie (fiches, salaires, bulletins)" />
+            <Checkbox
+              name="module_hr"
+              defaultChecked={settings.module_hr}
+              label="Personnel et paie (fiches, salaires, bulletins)"
+            />
             <Checkbox
               name="module_finance"
               defaultChecked={settings.module_finance}
@@ -48,9 +56,9 @@ export default async function ModulesPage() {
           <CardBody className="space-y-4">
             {!whatsappReady && (
               <Alert tone="info" title="Non configuré">
-                L&apos;envoi automatique nécessite un compte WhatsApp Business (API Cloud de Meta) et un modèle de message
-                approuvé. Les variables WHATSAPP_* doivent être renseignées sur le serveur. Les relances manuelles (bouton
-                « Relancer ») fonctionnent sans cela.
+                L&apos;envoi automatique nécessite un compte WhatsApp Business (API Cloud de Meta)
+                et un modèle de message approuvé. Les variables WHATSAPP_* doivent être renseignées
+                sur le serveur. Les relances manuelles (bouton « Relancer ») fonctionnent sans cela.
               </Alert>
             )}
             <Checkbox
@@ -59,7 +67,10 @@ export default async function ModulesPage() {
               disabled={!whatsappReady && !settings.auto_reminders_enabled}
               label="Activer les relances automatiques"
             />
-            <Field label="Ne pas relancer un même parent plus d'une fois tous les (jours)" htmlFor="auto_reminder_interval_days">
+            <Field
+              label="Ne pas relancer un même parent plus d'une fois tous les (jours)"
+              htmlFor="auto_reminder_interval_days"
+            >
               <Input
                 id="auto_reminder_interval_days"
                 name="auto_reminder_interval_days"

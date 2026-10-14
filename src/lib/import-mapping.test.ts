@@ -13,7 +13,10 @@ describe("import mapping", () => {
   });
 
   it("splits a combined name column on capitals", () => {
-    expect(splitFullName("MBA ONDOUA Paul Junior")).toEqual({ last_name: "MBA ONDOUA", first_name: "Paul Junior" });
+    expect(splitFullName("MBA ONDOUA Paul Junior")).toEqual({
+      last_name: "MBA ONDOUA",
+      first_name: "Paul Junior",
+    });
     expect(splitFullName("Etoa Marc")).toEqual({ last_name: "Etoa", first_name: "Marc" });
     expect(splitFullName("NGONO")).toEqual({ last_name: "NGONO", first_name: "" });
   });
@@ -30,7 +33,13 @@ describe("import mapping", () => {
     );
     expect(missingColumns).toEqual([]);
     expect(rows).toHaveLength(2);
-    expect(rows[0]).toMatchObject({ line: 2, last_name: "ABENA", first_name: "Sara", parent_phone: "237677123456", errors: [] });
+    expect(rows[0]).toMatchObject({
+      line: 2,
+      last_name: "ABENA",
+      first_name: "Sara",
+      parent_phone: "237677123456",
+      errors: [],
+    });
     expect(rows[1].errors).toEqual(["Classe inconnue « CM2 »", "Téléphone invalide « 12 »"]);
   });
 

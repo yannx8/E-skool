@@ -28,7 +28,9 @@ export function FinanceNav() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "-mb-px flex min-h-11 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap",
-                  active ? "border-primary text-primary" : "border-transparent text-slate-600 hover:text-slate-900",
+                  active
+                    ? "border-primary text-primary"
+                    : "border-transparent text-slate-600 hover:text-slate-900",
                 )}
               >
                 {t.label}

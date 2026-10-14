@@ -4,14 +4,25 @@ import { useState, useTransition } from "react";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import { PupilSearch } from "@/components/pupil-search";
 import { Field, Input, Textarea } from "@/components/ui/form";
-import { MoneyInput, SubmitButton, useFormAction, useUnsavedChangesWarning } from "@/components/ui/client";
+import {
+  MoneyInput,
+  SubmitButton,
+  useFormAction,
+  useUnsavedChangesWarning,
+} from "@/components/ui/client";
 import { Alert } from "@/components/ui/misc";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { formatDate, formatFCFA, fullName } from "@/lib/format";
 import { feeLineName, PAYMENT_METHODS, type PaymentMethod } from "@/lib/labels";
-import { pupilBalance, recordPayment, type BalanceLine, type PupilHit, type RecordPaymentState } from "../actions";
+import {
+  pupilBalance,
+  recordPayment,
+  type BalanceLine,
+  type PupilHit,
+  type RecordPaymentState,
+} from "../actions";
 
 const METHODS = Object.entries(PAYMENT_METHODS) as [PaymentMethod, string][];
 const lineKey = (l: { fee: string; term: number | null }) => `${l.fee}|${l.term ?? ""}`;
@@ -19,10 +30,18 @@ const lineKey = (l: { fee: string; term: number | null }) => `${l.fee}|${l.term 
 /** First line still owed, with its balance as the suggested amount. */
 function defaultSelection(lines: BalanceLine[]) {
   const first = lines.find((l) => l.remaining > 0) ?? lines[0];
-  return { lineValue: first ? lineKey(first) : "", amount: first && first.remaining > 0 ? first.remaining : null };
+  return {
+    lineValue: first ? lineKey(first) : "",
+    amount: first && first.remaining > 0 ? first.remaining : null,
+  };
 }
 
-type Props = { today: string; termLabel: string; initialPupil: PupilHit | null; initialLines: BalanceLine[] };
+type Props = {
+  today: string;
+  termLabel: string;
+  initialPupil: PupilHit | null;
+  initialLines: BalanceLine[];
+};
 
 /** "Ne pas enregistrer" remounts the form so every field and warning starts fresh. */
 export function PaymentForm(props: Props) {
@@ -30,14 +49,28 @@ export function PaymentForm(props: Props) {
   return run === 0 ? (
     <PaymentFormInner {...props} onReset={() => setRun(1)} />
   ) : (
-    <PaymentFormInner key={run} {...props} initialPupil={null} initialLines={[]} onReset={() => setRun((r) => r + 1)} />
+    <PaymentFormInner
+      key={run}
+      {...props}
+      initialPupil={null}
+      initialLines={[]}
+      onReset={() => setRun((r) => r + 1)}
+    />
   );
 }
 
-function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onReset }: Props & { onReset: () => void }) {
+function PaymentFormInner({
+  today,
+  termLabel,
+  initialPupil,
+  initialLines,
+  onReset,
+}: Props & { onReset: () => void }) {
   const [pupil, setPupil] = useState<PupilHit | null>(initialPupil);
   const [lines, setLines] = useState<BalanceLine[]>(initialLines);
-  const [lineValue, setLineValue] = useState<string>(() => defaultSelection(initialLines).lineValue);
+  const [lineValue, setLineValue] = useState<string>(
+    () => defaultSelection(initialLines).lineValue,
+  );
   const [amount, setAmount] = useState<number | null>(() => defaultSelection(initialLines).amount);
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [loadingLines, startLoading] = useTransition();
@@ -104,7 +137,8 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
           </p>
         ) : lines.length === 0 ? (
           <Alert tone="warning">
-            Aucun frais n&apos;est configuré pour la classe {pupil.class_name}. Ajoutez-les dans Configuration &gt; Frais.
+            Aucun frais n&apos;est configuré pour la classe {pupil.class_name}. Ajoutez-les dans
+            Configuration &gt; Frais.
           </Alert>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
@@ -115,7 +149,9 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
                   key={key}
                   className={cn(
                     "flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2",
-                    key === lineValue ? "border-primary bg-primary-soft" : "border-slate-200 bg-white",
+                    key === lineValue
+                      ? "border-primary bg-primary-soft"
+                      : "border-slate-200 bg-white",
                   )}
                 >
                   <span className="flex items-center gap-3">
@@ -131,8 +167,12 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
                       className="size-5 accent-primary"
                     />
                     <span>
-                      <span className="block font-medium">{feeLineName(l.fee, l.term, termLabel)}</span>
-                      <span className="block text-sm text-slate-500">Échéance {formatDate(l.due_date)}</span>
+                      <span className="block font-medium">
+                        {feeLineName(l.fee, l.term, termLabel)}
+                      </span>
+                      <span className="block text-sm text-slate-500">
+                        Échéance {formatDate(l.due_date)}
+                      </span>
                     </span>
                   </span>
                   <span className="text-right">
@@ -149,13 +189,18 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
       <Field
         label="Montant reçu"
         htmlFor="amount"
-        hint={selected ? `Reste à payer sur cette période : ${formatFCFA(selected.remaining)}` : undefined}
+        hint={
+          selected
+            ? `Reste à payer sur cette période : ${formatFCFA(selected.remaining)}`
+            : undefined
+        }
       >
         <MoneyInput name="amount" id="amount" value={amount} onValueChange={setAmount} required />
       </Field>
       {selected && amount != null && amount > selected.remaining && (
         <Alert tone="info">
-          Montant supérieur au reste : {formatFCFA(amount - selected.remaining)} seront reportés sur la période suivante.
+          Montant supérieur au reste : {formatFCFA(amount - selected.remaining)} seront reportés sur
+          la période suivante.
         </Alert>
       )}
 
@@ -167,7 +212,9 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
               key={value}
               className={cn(
                 "flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-3 text-center font-medium",
-                method === value ? "border-primary bg-primary text-white" : "border-slate-300 bg-white text-slate-800",
+                method === value
+                  ? "border-primary bg-primary text-white"
+                  : "border-slate-300 bg-white text-slate-800",
               )}
             >
               <input
@@ -186,17 +233,30 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
 
       <div className="grid gap-4 sm:grid-cols-2">
         {method !== "cash" && (
-          <Field label="Référence de la transaction (facultatif)" htmlFor="reference" hint="Collez l'identifiant reçu par SMS.">
+          <Field
+            label="Référence de la transaction (facultatif)"
+            htmlFor="reference"
+            hint="Collez l'identifiant reçu par SMS."
+          >
             <Input id="reference" name="reference" autoComplete="off" maxLength={100} />
           </Field>
         )}
         <Field label="Date du paiement" htmlFor="paid_at">
-          <Input id="paid_at" name="paid_at" type="date" defaultValue={today} max={today} required />
+          <Input
+            id="paid_at"
+            name="paid_at"
+            type="date"
+            defaultValue={today}
+            max={today}
+            required
+          />
         </Field>
       </div>
 
       <details className="rounded-lg border border-slate-200 bg-white px-3">
-        <summary className="min-h-11 cursor-pointer py-2.5 font-medium text-slate-700">Ajouter une note</summary>
+        <summary className="min-h-11 cursor-pointer py-2.5 font-medium text-slate-700">
+          Ajouter une note
+        </summary>
         <Textarea name="note" maxLength={500} className="mb-3" aria-label="Note" />
       </details>
 
@@ -210,8 +270,8 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
           <ul className="space-y-1 text-[15px] text-slate-800">
             {duplicates.map((d) => (
               <li key={d.id}>
-                Reçu {d.receipt_number} : {d.pupil_name}, {formatFCFA(d.amount)} le {formatDate(d.paid_at)} (
-                {PAYMENT_METHODS[d.method]}
+                Reçu {d.receipt_number} : {d.pupil_name}, {formatFCFA(d.amount)} le{" "}
+                {formatDate(d.paid_at)} ({PAYMENT_METHODS[d.method]}
                 {d.reference ? `, réf. ${d.reference}` : ""})
               </li>
             ))}
@@ -226,7 +286,12 @@ function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onRese
           </div>
         </div>
       ) : (
-        <SubmitButton pending={pending} size="lg" className="w-full sm:w-auto" disabled={!lineValue || !amount}>
+        <SubmitButton
+          pending={pending}
+          size="lg"
+          className="w-full sm:w-auto"
+          disabled={!lineValue || !amount}
+        >
           Enregistrer le paiement
         </SubmitButton>
       )}

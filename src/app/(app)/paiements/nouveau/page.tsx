@@ -23,7 +23,9 @@ export default async function NewPaymentPage({ searchParams }: { searchParams: S
     const supabase = await createClient();
     const { data } = await supabase
       .from("enrollments")
-      .select("pupil_id, classes(name), pupils(last_name, first_name, parent_name, parent_phone, is_active)")
+      .select(
+        "pupil_id, classes(name), pupils(last_name, first_name, parent_name, parent_phone, is_active)",
+      )
       .eq("pupil_id", pupilId)
       .eq("school_year_id", year.id)
       .maybeSingle();

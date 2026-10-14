@@ -60,7 +60,11 @@ export function VoidDialog({
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <input type="hidden" name={idName} value={id} />
-        <Field label="Motif de l'annulation" htmlFor={`reason-${id}`} hint="Au moins 5 caractères, par exemple « erreur de saisie ».">
+        <Field
+          label="Motif de l'annulation"
+          htmlFor={`reason-${id}`}
+          hint="Au moins 5 caractères, par exemple « erreur de saisie »."
+        >
           <Textarea
             id={`reason-${id}`}
             name="reason"
@@ -74,7 +78,12 @@ export function VoidDialog({
         {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <AlertDialogCancel className={buttonClasses("secondary")}>Retour</AlertDialogCancel>
-          <SubmitButton pending={pending} variant="destructive" disabled={reason.trim().length < 5} pendingLabel="Annulation…">
+          <SubmitButton
+            pending={pending}
+            variant="destructive"
+            disabled={reason.trim().length < 5}
+            pendingLabel="Annulation…"
+          >
             Confirmer l&apos;annulation
           </SubmitButton>
         </div>

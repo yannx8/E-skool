@@ -14,7 +14,12 @@ export const metadata: Metadata = { title: "Frais" };
 
 export default async function FeesPage() {
   await requirePermission("manageSetup");
-  const [settings, year, years, classes] = await Promise.all([getSettings(), getActiveYear(), getSchoolYears(), getClasses()]);
+  const [settings, year, years, classes] = await Promise.all([
+    getSettings(),
+    getActiveYear(),
+    getSchoolYears(),
+    getClasses(),
+  ]);
   if (!year) return <NoYear canSetup />;
   const supabase = await createClient();
   const { data: schedules } = await supabase
@@ -46,7 +51,10 @@ export default async function FeesPage() {
                 <ActionForm action={copyFees} className="flex flex-wrap items-center gap-3">
                   <input type="hidden" name="from" value={previous.id} />
                   <input type="hidden" name="to" value={year.id} />
-                  <p className="text-slate-700">Gagnez du temps : reprenez les frais de {previous.label}, puis ajustez les montants.</p>
+                  <p className="text-slate-700">
+                    Gagnez du temps : reprenez les frais de {previous.label}, puis ajustez les
+                    montants.
+                  </p>
                   <ActionSubmit variant="secondary">Copier de {previous.label}</ActionSubmit>
                 </ActionForm>
               </CardBody>

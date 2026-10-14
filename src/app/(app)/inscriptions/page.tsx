@@ -20,7 +20,14 @@ import { EnrollDialog, NewApplicationDialog } from "./application-dialogs";
 
 export const metadata: Metadata = { title: "Inscriptions" };
 
-const PIPELINE: ApplicationStatus[] = ["new", "contacted", "visit", "accepted", "enrolled", "rejected"];
+const PIPELINE: ApplicationStatus[] = [
+  "new",
+  "contacted",
+  "visit",
+  "accepted",
+  "enrolled",
+  "rejected",
+];
 const TONES: Record<ApplicationStatus, "info" | "warning" | "success" | "danger" | "muted"> = {
   new: "info",
   contacted: "warning",
@@ -35,9 +42,12 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
   const sp = await searchParams;
   const user = await requirePermission("viewEnrollment");
   const settings = await getSettings();
-  if (!settings.module_enrollment) return <ModuleOff name="Inscriptions" canEnable={can(user.role, "manageSetup")} />;
+  if (!settings.module_enrollment)
+    return <ModuleOff name="Inscriptions" canEnable={can(user.role, "manageSetup")} />;
 
-  const status = (PIPELINE as string[]).includes(param(sp, "statut")) ? (param(sp, "statut") as ApplicationStatus) : "";
+  const status = (PIPELINE as string[]).includes(param(sp, "statut"))
+    ? (param(sp, "statut") as ApplicationStatus)
+    : "";
   const supabase = await createClient();
   const [{ data: apps }, classes, years, year] = await Promise.all([
     supabase
@@ -51,7 +61,9 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
   ]);
   const counts = new Map<string, number>();
   for (const a of apps ?? []) counts.set(a.status, (counts.get(a.status) ?? 0) + 1);
-  const shown = (apps ?? []).filter((a) => (status ? a.status === status : !["enrolled", "rejected"].includes(a.status)));
+  const shown = (apps ?? []).filter((a) =>
+    status ? a.status === status : !["enrolled", "rejected"].includes(a.status),
+  );
   const canManage = can(user.role, "manageEnrollment");
   const activeClasses = classes.filter((c) => c.is_active).map((c) => ({ id: c.id, name: c.name }));
 
@@ -67,7 +79,10 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
           <li>
             <Link
               href="/inscriptions"
-              className={cn("inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium whitespace-nowrap", !status ? "border-primary bg-primary text-white" : "border-slate-300 bg-white")}
+              className={cn(
+                "inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium whitespace-nowrap",
+                !status ? "border-primary bg-primary text-white" : "border-slate-300 bg-white",
+              )}
             >
               En cours
             </Link>
@@ -76,7 +91,12 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
             <li key={s}>
               <Link
                 href={`/inscriptions?statut=${s}`}
-                className={cn("inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium whitespace-nowrap", status === s ? "border-primary bg-primary text-white" : "border-slate-300 bg-white")}
+                className={cn(
+                  "inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium whitespace-nowrap",
+                  status === s
+                    ? "border-primary bg-primary text-white"
+                    : "border-slate-300 bg-white",
+                )}
               >
                 {APPLICATION_STATUSES[s]} ({counts.get(s) ?? 0})
               </Link>
@@ -87,7 +107,11 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
 
       <Card>
         {shown.length === 0 ? (
-          <EmptyState icon={<UserPlus aria-hidden />} title="Aucune demande" description="Les demandes d'inscription des nouveaux parents apparaîtront ici." />
+          <EmptyState
+            icon={<UserPlus aria-hidden />}
+            title="Aucune demande"
+            description="Les demandes d'inscription des nouveaux parents apparaîtront ici."
+          />
         ) : (
           <ul className="divide-y divide-slate-100">
             {shown.map((a) => (
@@ -101,7 +125,9 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
                       </Badge>
                     </p>
                     <p className="text-sm text-slate-500">
-                      {a.classes?.name ? `Classe demandée : ${a.classes.name}` : "Classe non précisée"}
+                      {a.classes?.name
+                        ? `Classe demandée : ${a.classes.name}`
+                        : "Classe non précisée"}
                       {a.birth_date ? ` · né(e) le ${formatDate(a.birth_date)}` : ""}
                       {" · reçue le "}
                       {formatDateTime(a.created_at)}
@@ -109,7 +135,10 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
                     <p className="text-sm text-slate-600">
                       {a.parent_name}
                       {a.parent_phone && (
-                        <a href={`tel:+${a.parent_phone}`} className="ml-2 inline-flex items-center gap-1 text-primary">
+                        <a
+                          href={`tel:+${a.parent_phone}`}
+                          className="ml-2 inline-flex items-center gap-1 text-primary"
+                        >
                           <Phone className="size-4" aria-hidden /> {formatPhone(a.parent_phone)}
                         </a>
                       )}
@@ -117,7 +146,10 @@ export default async function ApplicationsPage({ searchParams }: { searchParams:
                     {a.notes && <p className="mt-1 text-sm text-slate-700">{a.notes}</p>}
                   </div>
                   {a.pupil_id && (
-                    <Link href={`/eleves/${a.pupil_id}`} className="text-sm font-medium text-primary">
+                    <Link
+                      href={`/eleves/${a.pupil_id}`}
+                      className="text-sm font-medium text-primary"
+                    >
                       Voir la fiche élève
                     </Link>
                   )}

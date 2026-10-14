@@ -14,7 +14,10 @@ export default async function NewStaffPage() {
   if (!settings.module_hr) return <ModuleOff name="Personnel" canEnable />;
   return (
     <>
-      <PageHeader title="Nouveau membre du personnel" back={{ href: "/personnel", label: "Personnel" }} />
+      <PageHeader
+        title="Nouveau membre du personnel"
+        back={{ href: "/personnel", label: "Personnel" }}
+      />
       <Card className="max-w-3xl">
         <CardBody>
           <StaffForm action={createStaff} />

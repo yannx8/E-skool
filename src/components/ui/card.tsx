@@ -4,7 +4,10 @@ import { cn } from "@/lib/cn";
 export function Card({ className, ...props }: ComponentProps<"section">) {
   return (
     <section
-      className={cn("rounded-[var(--radius-card)] border border-slate-200 bg-white shadow-[var(--shadow-card)]", className)}
+      className={cn(
+        "rounded-[var(--radius-card)] border border-slate-200 bg-white shadow-[var(--shadow-card)]",
+        className,
+      )}
       {...props}
     />
   );
@@ -22,7 +25,12 @@ export function CardHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-3", className)}>
+    <div
+      className={cn(
+        "flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-3",
+        className,
+      )}
+    >
       <div className="min-w-0">
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
         {description && <p className="mt-0.5 text-sm text-slate-600">{description}</p>}

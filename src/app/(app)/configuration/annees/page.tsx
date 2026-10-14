@@ -28,7 +28,8 @@ export default async function YearsPage() {
   const supabase = await createClient();
   const { data: scheduleRows } = await supabase.from("fee_schedules").select("school_year_id");
   const scheduleCount = new Map<string, number>();
-  for (const r of scheduleRows ?? []) scheduleCount.set(r.school_year_id, (scheduleCount.get(r.school_year_id) ?? 0) + 1);
+  for (const r of scheduleRows ?? [])
+    scheduleCount.set(r.school_year_id, (scheduleCount.get(r.school_year_id) ?? 0) + 1);
 
   return (
     <>
@@ -41,11 +42,16 @@ export default async function YearsPage() {
         <Card>
           <CardHeader title="Années" />
           {years.length === 0 ? (
-            <CardBody className="text-slate-600">Aucune année. Créez la première à droite.</CardBody>
+            <CardBody className="text-slate-600">
+              Aucune année. Créez la première à droite.
+            </CardBody>
           ) : (
             <ul className="divide-y divide-slate-100">
               {years.map((y) => (
-                <li key={y.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                <li
+                  key={y.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                >
                   <div>
                     <p className="text-lg font-semibold">
                       {y.label}
@@ -55,7 +61,9 @@ export default async function YearsPage() {
                         </Badge>
                       )}
                     </p>
-                    <p className="text-sm text-slate-500">{scheduleCount.get(y.id) ?? 0} ligne(s) de frais</p>
+                    <p className="text-sm text-slate-500">
+                      {scheduleCount.get(y.id) ?? 0} ligne(s) de frais
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     {!y.is_current && (
@@ -83,14 +91,27 @@ export default async function YearsPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader title="Nouvelle année" description="Par exemple au mois d'août, avant la rentrée." />
+            <CardHeader
+              title="Nouvelle année"
+              description="Par exemple au mois d'août, avant la rentrée."
+            />
             <CardBody>
               <ActionForm action={createYear} className="space-y-4" resetOnSuccess>
                 <Field label="Année scolaire" htmlFor="label" hint="Format 2026-2027">
-                  <Input id="label" name="label" required pattern="\d{4}-\d{4}" defaultValue={suggestLabel(years.map((y) => y.label))} />
+                  <Input
+                    id="label"
+                    name="label"
+                    required
+                    pattern="\d{4}-\d{4}"
+                    defaultValue={suggestLabel(years.map((y) => y.label))}
+                  />
                 </Field>
                 {years.length > 0 && (
-                  <Field label="Recopier les frais de" htmlFor="copy_from" hint="Les échéances sont décalées d'un an. Vous pourrez modifier les montants.">
+                  <Field
+                    label="Recopier les frais de"
+                    htmlFor="copy_from"
+                    hint="Les échéances sont décalées d'un an. Vous pourrez modifier les montants."
+                  >
                     <Select id="copy_from" name="copy_from" defaultValue={years[0]?.id}>
                       <option value="">Ne rien recopier</option>
                       {years.map((y) => (
@@ -108,7 +129,10 @@ export default async function YearsPage() {
 
           {years.length >= 2 && (
             <Card>
-              <CardHeader title="Recopier les frais" description="Ajoute les lignes manquantes, sans toucher aux existantes." />
+              <CardHeader
+                title="Recopier les frais"
+                description="Ajoute les lignes manquantes, sans toucher aux existantes."
+              />
               <CardBody>
                 <ActionForm action={copyFees} className="grid grid-cols-2 gap-3">
                   <Field label="De" htmlFor="from">
