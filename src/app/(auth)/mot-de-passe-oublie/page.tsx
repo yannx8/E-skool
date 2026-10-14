@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
 import { Field, Input } from "@/components/ui/form";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, useFormAction } from "@/components/ui/client";
 import { Alert } from "@/components/ui/misc";
 import { requestPasswordReset } from "../actions";
 
 export default function ForgotPasswordPage() {
-  const [state, action] = useActionState(requestPasswordReset, null);
+  const [state, onSubmit, pending] = useFormAction(requestPasswordReset);
   return (
     <>
       <h1 className="mb-1 text-xl font-semibold">Mot de passe oublié</h1>
@@ -16,12 +15,12 @@ export default function ForgotPasswordPage() {
       {state?.ok ? (
         <Alert tone="success">{state.message}</Alert>
       ) : (
-        <form action={action} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           <Field label="Email" htmlFor="email">
             <Input id="email" name="email" type="email" autoComplete="email" required autoFocus />
           </Field>
           {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
-          <SubmitButton className="w-full" pendingLabel="Envoi…">
+          <SubmitButton pending={pending} className="w-full" pendingLabel="Envoi…">
             Envoyer le lien
           </SubmitButton>
         </form>

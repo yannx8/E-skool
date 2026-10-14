@@ -1351,6 +1351,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"];
       };
       salary_for_month: { Args: { p_month: string; p_staff_id: string }; Returns: number };
+      save_fee_schedules: { Args: { p_lines: Json; p_school_year_id: string }; Returns: number };
       search_pupils: {
         Args: { p_limit?: number; p_query: string; p_school_year_id: string };
         Returns: {

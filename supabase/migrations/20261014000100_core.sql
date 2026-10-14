@@ -827,6 +827,53 @@ begin
 end;
 $$;
 
+-- Fee grid editor: saves every line of a year at once. Lines missing from
+-- p_lines are deleted (refused by trigger when payments exist). Atomic.
+-- p_lines = [{class_id, fee, term (null for one-off), amount, due_date}]
+create function public.save_fee_schedules(p_school_year_id uuid, p_lines jsonb)
+returns integer
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  l jsonb;
+  v_count integer := 0;
+begin
+  perform public.require_role(array['admin']::public.app_role[]);
+  if jsonb_typeof(p_lines) <> 'array' then
+    perform public.raise_app_error('Grille de frais invalide.');
+  end if;
+
+  delete from public.fee_schedules fs
+  where fs.school_year_id = p_school_year_id
+    and not exists (
+      select 1 from jsonb_array_elements(p_lines) x
+      where (x ->> 'class_id')::uuid = fs.class_id
+        and (x ->> 'fee')::public.fee_type = fs.fee
+        and nullif(x ->> 'term', '')::smallint is not distinct from fs.term
+    );
+
+  for l in select * from jsonb_array_elements(p_lines) loop
+    insert into public.fee_schedules (school_year_id, class_id, fee, term, amount, due_date)
+    values (
+      p_school_year_id,
+      (l ->> 'class_id')::uuid,
+      (l ->> 'fee')::public.fee_type,
+      nullif(l ->> 'term', '')::smallint,
+      (l ->> 'amount')::integer,
+      (l ->> 'due_date')::date
+    )
+    on conflict on constraint fee_schedules_unique do update
+      set amount = excluded.amount, due_date = excluded.due_date
+      where public.fee_schedules.amount is distinct from excluded.amount
+         or public.fee_schedules.due_date is distinct from excluded.due_date;
+    v_count := v_count + 1;
+  end loop;
+  return v_count;
+end;
+$$;
+
 -- -----------------------------------------------------------------------------
 -- RPC: pupils
 -- -----------------------------------------------------------------------------
@@ -1248,6 +1295,8 @@ grant execute on function
   public.void_payment(uuid, text),
   public.set_current_year(uuid),
   public.copy_fee_schedules(uuid, uuid),
+  public.save_fee_schedules(uuid, jsonb),
+  public.require_role(public.app_role[]),
   public.import_pupils(uuid, jsonb),
   public.create_pupil(uuid, uuid, text, text, text, text, text, text),
   public.promote_pupils(uuid, jsonb),

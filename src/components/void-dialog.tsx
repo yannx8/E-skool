@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogCancel } from "@/components/ui/dialog";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Textarea } from "@/components/ui/form";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, useFormAction } from "@/components/ui/client";
 import { Alert } from "@/components/ui/misc";
 import type { ActionResult } from "@/lib/errors";
 
@@ -31,7 +31,7 @@ export function VoidDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const [state, formAction] = useActionState(action, null);
+  const [state, onSubmit, pending] = useFormAction(action);
   const router = useRouter();
   const handled = useRef<ActionResult | null>(null);
 
@@ -58,7 +58,7 @@ export function VoidDialog({
         )
       }
     >
-      <form action={formAction} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         <input type="hidden" name={idName} value={id} />
         <Field label="Motif de l'annulation" htmlFor={`reason-${id}`} hint="Au moins 5 caractères, par exemple « erreur de saisie ».">
           <Textarea
@@ -74,7 +74,7 @@ export function VoidDialog({
         {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <AlertDialogCancel className={buttonClasses("secondary")}>Retour</AlertDialogCancel>
-          <SubmitButton variant="destructive" disabled={reason.trim().length < 5} pendingLabel="Annulation…">
+          <SubmitButton pending={pending} variant="destructive" disabled={reason.trim().length < 5} pendingLabel="Annulation…">
             Confirmer l&apos;annulation
           </SubmitButton>
         </div>

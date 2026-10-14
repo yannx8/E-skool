@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { Field, Input, Select, Textarea } from "@/components/ui/form";
-import { SubmitButton, useUnsavedChangesWarning } from "@/components/ui/client";
+import { SubmitButton, useFormAction, useUnsavedChangesWarning } from "@/components/ui/client";
 import { Alert } from "@/components/ui/misc";
 import { formatPhone } from "@/lib/phone";
 import type { ActionResult } from "@/lib/errors";
@@ -29,13 +29,20 @@ export function PupilForm({
   pupil?: Pupil;
   canPay?: boolean;
 }) {
-  const [state, formAction] = useActionState(action, null);
+  const [state, onSubmit, pending] = useFormAction(action);
   const [dirty, setDirty] = useState(false);
   useUnsavedChangesWarning(dirty);
   const err = state && !state.ok ? state.fieldErrors ?? {} : {};
 
   return (
-    <form action={formAction} onChange={() => setDirty(true)} onSubmit={() => setDirty(false)} className="space-y-4">
+    <form
+      onChange={() => setDirty(true)}
+      onSubmit={(e) => {
+        setDirty(false);
+        onSubmit(e);
+      }}
+      className="space-y-4"
+    >
       {pupil && <input type="hidden" name="id" value={pupil.id} />}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nom" htmlFor="last_name" error={err.last_name}>
@@ -96,9 +103,9 @@ export function PupilForm({
       </Field>
       {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
       <div className="flex flex-wrap gap-2">
-        <SubmitButton>{pupil ? "Enregistrer les modifications" : "Ajouter l'élève"}</SubmitButton>
+        <SubmitButton pending={pending}>{pupil ? "Enregistrer les modifications" : "Ajouter l'élève"}</SubmitButton>
         {!pupil && canPay && (
-          <SubmitButton variant="secondary" name="then" value="payer">
+          <SubmitButton pending={pending} variant="secondary" name="then" value="payer">
             Ajouter et encaisser
           </SubmitButton>
         )}

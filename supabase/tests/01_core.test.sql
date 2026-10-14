@@ -192,6 +192,31 @@ begin
   perform tests.assert_eq((select parent_phone from public.pupils where last_name = 'ETOA'), '237699112233', 'import normalizes phone and uppercases name');
 end $$;
 
+-- Fee grid save: upsert, delete unused lines, refuse deleting a paid line
+do $$
+declare n int;
+begin
+  n := public.save_fee_schedules('00000000-0000-0000-0000-0000000000a1', format('[
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "tuition", "term": 1, "amount": 50000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "tuition", "term": 2, "amount": 45000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "tuition", "term": 3, "amount": 40000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "registration", "term": null, "amount": 10000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c2", "fee": "exam", "term": null, "amount": 3000, "due_date": "%s"}
+  ]', public.app_today() - 10, public.app_today() + 90, public.app_today() + 180, public.app_today() - 30, public.app_today())::jsonb);
+  perform tests.assert_eq(n, 5, 'grid lines saved');
+  perform tests.assert_eq((select amount from public.fee_schedules where term = 2 and class_id = '00000000-0000-0000-0000-0000000000c1'), 45000, 'amount updated');
+  perform tests.assert_eq((select count(*) from public.fee_schedules where fee = 'exam')::int, 1, 'new line inserted');
+  -- Dropping the exam line (no payments) works; dropping term 1 (paid) is refused
+  perform public.save_fee_schedules('00000000-0000-0000-0000-0000000000a1', format('[
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "tuition", "term": 1, "amount": 50000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "tuition", "term": 2, "amount": 40000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "tuition", "term": 3, "amount": 40000, "due_date": "%s"},
+    {"class_id": "00000000-0000-0000-0000-0000000000c1", "fee": "registration", "term": null, "amount": 10000, "due_date": "%s"}
+  ]', public.app_today() - 10, public.app_today() + 90, public.app_today() + 180, public.app_today() - 30)::jsonb);
+  perform tests.assert_eq((select count(*) from public.fee_schedules where fee = 'exam')::int, 0, 'unused line removed');
+  perform tests.assert_fails($f$select public.save_fee_schedules('00000000-0000-0000-0000-0000000000a1', '[]')$f$, 'Des paiements existent');
+end $$;
+
 -- Create pupil + enrollment atomically; duplicate name in the same year refused
 do $$
 declare v_id uuid;

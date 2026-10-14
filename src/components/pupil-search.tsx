@@ -18,15 +18,21 @@ export function PupilSearch({ onSelect, autoFocus }: { onSelect: (hit: PupilHit)
   const listId = useId();
   const seq = useRef(0);
 
-  useEffect(() => {
-    const q = query.trim();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  function onQueryChange(value: string) {
+    setQuery(value);
+    clearTimeout(timer.current);
+    const q = value.trim();
+    const mySeq = ++seq.current;
     if (q.length < 2) {
       setHits([]);
+      setLoading(false);
       return;
     }
-    const mySeq = ++seq.current;
     setLoading(true);
-    const t = setTimeout(async () => {
+    timer.current = setTimeout(async () => {
       const res = await searchPupils(q);
       if (mySeq === seq.current) {
         setHits(res);
@@ -34,8 +40,7 @@ export function PupilSearch({ onSelect, autoFocus }: { onSelect: (hit: PupilHit)
         setLoading(false);
       }
     }, 200);
-    return () => clearTimeout(t);
-  }, [query]);
+  }
 
   const showList = query.trim().length >= 2;
 
@@ -54,7 +59,7 @@ export function PupilSearch({ onSelect, autoFocus }: { onSelect: (hit: PupilHit)
           autoComplete="off"
           placeholder="Nom, prénom, parent ou téléphone…"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
               e.preventDefault();

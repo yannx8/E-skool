@@ -20,6 +20,11 @@ import { voidPayment } from "@/app/(app)/paiements/actions";
 
 export const metadata: Metadata = { title: "Reçu" };
 
+/** The receipt offers "Annuler ce paiement" for 10 minutes after recording. */
+function withinUndoWindow(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() < 10 * 60 * 1000;
+}
+
 const PAGE_SIZE = {
   a5: "A5 portrait",
   a4: "A4 portrait",
@@ -78,8 +83,7 @@ export default async function ReceiptPage({ params, searchParams }: { params: Id
   const lineName = feeLineName(p.fee, p.term, settings.term_label);
   const format = (settings.receipt_format in PAGE_SIZE ? settings.receipt_format : "a5") as keyof typeof PAGE_SIZE;
   const thermal = format === "thermal";
-  const canUndo =
-    can(user.role, "voidPayment") && !p.voided && Date.now() - new Date(p.created_at).getTime() < 10 * 60 * 1000;
+  const canUndo = can(user.role, "voidPayment") && !p.voided && withinUndoWindow(p.created_at);
 
   const portalLink = publicEnv.siteUrl && p.pupils.portal_token ? `${publicEnv.siteUrl}/p/${p.pupils.portal_token}` : "";
   const shareText = [

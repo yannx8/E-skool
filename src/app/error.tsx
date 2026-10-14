@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Button, buttonClasses } from "@/components/ui/button";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -16,9 +17,9 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
       {error.digest && <p className="mt-2 text-sm text-slate-500">Code : {error.digest}</p>}
       <div className="mt-6 flex gap-3">
         <Button onClick={() => reset()}>Réessayer</Button>
-        <Button variant="secondary" onClick={() => (window.location.href = "/tableau-de-bord")}>
+        <Link href="/tableau-de-bord" className={buttonClasses("secondary")}>
           Accueil
-        </Button>
+        </Link>
       </div>
     </main>
   );

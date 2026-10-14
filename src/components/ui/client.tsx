@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -11,22 +20,44 @@ import { formatNumber, parseAmount } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import type { ActionResult } from "@/lib/errors";
 
-/** Submit button that shows a spinner while its form is pending. */
+/**
+ * Server action bound to a form through onSubmit instead of the form `action`
+ * prop. React 19 resets uncontrolled fields after every form action, even a
+ * failed one; submitting in a transition keeps what the user typed when the
+ * server answers with an error.
+ */
+export function useFormAction<S>(action: (prev: S | null, formData: FormData) => Promise<S>) {
+  const [state, dispatch, pending] = useActionState<S | null, FormData>(action, null);
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const formData = new FormData(e.currentTarget);
+    if (submitter?.name) formData.set(submitter.name, submitter.value);
+    startTransition(() => dispatch(formData));
+  };
+  return [state, onSubmit, pending] as const;
+}
+
+/** Submit button with a spinner. Pass `pending` from useFormAction. */
 export function SubmitButton({
   children,
+  pending: pendingProp,
   pendingLabel,
   variant,
   size,
   className,
+  disabled,
   ...props
 }: Omit<ComponentProps<"button">, "type"> & {
+  pending?: boolean;
   pendingLabel?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
 }) {
-  const { pending } = useFormStatus();
+  const status = useFormStatus();
+  const pending = pendingProp || status.pending;
   return (
-    <Button type="submit" variant={variant} size={size} className={className} disabled={pending || props.disabled} {...props}>
+    <Button type="submit" variant={variant} size={size} className={className} disabled={pending || disabled} {...props}>
       {pending && <Loader2 className="animate-spin" aria-hidden />}
       {pending ? (pendingLabel ?? "Enregistrement…") : children}
     </Button>

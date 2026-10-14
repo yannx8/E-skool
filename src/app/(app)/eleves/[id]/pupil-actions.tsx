@@ -1,19 +1,19 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Copy, Percent, UserMinus } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/form";
-import { SubmitButton, useCloseOnSuccess } from "@/components/ui/client";
+import { SubmitButton, useCloseOnSuccess, useFormAction } from "@/components/ui/client";
 import { Alert } from "@/components/ui/misc";
 import { FEE_TYPES } from "@/lib/labels";
 import { addDiscount, deactivatePupil } from "../actions";
 
 export function LeaveDialog({ pupilId, today }: { pupilId: string; today: string }) {
   const [open, setOpen] = useState(false);
-  const [state, action] = useActionState(deactivatePupil, null);
+  const [state, onSubmit, pending] = useFormAction(deactivatePupil);
   useCloseOnSuccess(state, () => setOpen(false));
   return (
     <Dialog
@@ -27,7 +27,7 @@ export function LeaveDialog({ pupilId, today }: { pupilId: string; today: string
         </Button>
       }
     >
-      <form action={action} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         <input type="hidden" name="id" value={pupilId} />
         <Field label="Raison du départ" htmlFor="left_reason">
           <Input id="left_reason" name="left_reason" required minLength={3} maxLength={300} placeholder="Déménagement, changement d'école…" />
@@ -36,7 +36,9 @@ export function LeaveDialog({ pupilId, today }: { pupilId: string; today: string
           <Input id="left_on" name="left_on" type="date" defaultValue={today} max={today} />
         </Field>
         {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
-        <SubmitButton variant="destructive">Confirmer le départ</SubmitButton>
+        <SubmitButton pending={pending} variant="destructive">
+          Confirmer le départ
+        </SubmitButton>
       </form>
     </Dialog>
   );
@@ -45,7 +47,7 @@ export function LeaveDialog({ pupilId, today }: { pupilId: string; today: string
 export function DiscountDialog({ pupilId, termLabel, termsCount }: { pupilId: string; termLabel: string; termsCount: number }) {
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<"percent" | "fixed">("percent");
-  const [state, action] = useActionState(addDiscount, null);
+  const [state, onSubmit, pending] = useFormAction(addDiscount);
   useCloseOnSuccess(state, () => setOpen(false));
   return (
     <Dialog
@@ -59,7 +61,7 @@ export function DiscountDialog({ pupilId, termLabel, termsCount }: { pupilId: st
         </Button>
       }
     >
-      <form action={action} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         <input type="hidden" name="pupil_id" value={pupilId} />
         <div className="grid grid-cols-2 gap-3">
           <Field label="Frais concernés" htmlFor="fee">
@@ -96,7 +98,7 @@ export function DiscountDialog({ pupilId, termLabel, termsCount }: { pupilId: st
           <Input id="reason" name="reason" required minLength={3} maxLength={200} placeholder="Réduction fratrie" />
         </Field>
         {state && !state.ok && <Alert tone="danger">{state.error}</Alert>}
-        <SubmitButton>Enregistrer la réduction</SubmitButton>
+        <SubmitButton pending={pending}>Enregistrer la réduction</SubmitButton>
       </form>
     </Dialog>
   );

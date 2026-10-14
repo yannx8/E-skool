@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import { PupilSearch } from "@/components/pupil-search";
 import { Field, Input, Textarea } from "@/components/ui/form";
-import { MoneyInput, SubmitButton, useUnsavedChangesWarning } from "@/components/ui/client";
+import { MoneyInput, SubmitButton, useFormAction, useUnsavedChangesWarning } from "@/components/ui/client";
 import { Alert } from "@/components/ui/misc";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,42 +16,48 @@ import { pupilBalance, recordPayment, type BalanceLine, type PupilHit, type Reco
 const METHODS = Object.entries(PAYMENT_METHODS) as [PaymentMethod, string][];
 const lineKey = (l: { fee: string; term: number | null }) => `${l.fee}|${l.term ?? ""}`;
 
-export function PaymentForm({
-  today,
-  termLabel,
-  initialPupil,
-  initialLines,
-}: {
-  today: string;
-  termLabel: string;
-  initialPupil: PupilHit | null;
-  initialLines: BalanceLine[];
-}) {
+/** First line still owed, with its balance as the suggested amount. */
+function defaultSelection(lines: BalanceLine[]) {
+  const first = lines.find((l) => l.remaining > 0) ?? lines[0];
+  return { lineValue: first ? lineKey(first) : "", amount: first && first.remaining > 0 ? first.remaining : null };
+}
+
+type Props = { today: string; termLabel: string; initialPupil: PupilHit | null; initialLines: BalanceLine[] };
+
+/** "Ne pas enregistrer" remounts the form so every field and warning starts fresh. */
+export function PaymentForm(props: Props) {
+  const [run, setRun] = useState(0);
+  return run === 0 ? (
+    <PaymentFormInner {...props} onReset={() => setRun(1)} />
+  ) : (
+    <PaymentFormInner key={run} {...props} initialPupil={null} initialLines={[]} onReset={() => setRun((r) => r + 1)} />
+  );
+}
+
+function PaymentFormInner({ today, termLabel, initialPupil, initialLines, onReset }: Props & { onReset: () => void }) {
   const [pupil, setPupil] = useState<PupilHit | null>(initialPupil);
   const [lines, setLines] = useState<BalanceLine[]>(initialLines);
-  const [lineValue, setLineValue] = useState<string>("");
-  const [amount, setAmount] = useState<number | null>(null);
+  const [lineValue, setLineValue] = useState<string>(() => defaultSelection(initialLines).lineValue);
+  const [amount, setAmount] = useState<number | null>(() => defaultSelection(initialLines).amount);
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [loadingLines, startLoading] = useTransition();
-  const [state, formAction] = useActionState<RecordPaymentState, FormData>(recordPayment, null);
-  const [submitted, setSubmitted] = useState(false);
+  const [state, onSubmit, pending] = useFormAction<RecordPaymentState>(recordPayment);
 
-  useUnsavedChangesWarning(!!pupil && !submitted);
-  useEffect(() => {
-    if (state && !state.ok) setSubmitted(false);
-  }, [state]);
+  // Leaving with a pupil selected and nothing saved asks for confirmation.
+  // A successful save navigates client-side to the receipt, which never triggers it.
+  useUnsavedChangesWarning(!!pupil && !pending);
 
-  // Preselect the first line still owed and prefill the amount with its balance.
-  useEffect(() => {
-    const first = lines.find((l) => l.remaining > 0) ?? lines[0];
-    setLineValue(first ? lineKey(first) : "");
-    setAmount(first && first.remaining > 0 ? first.remaining : null);
-  }, [lines]);
+  function applyLines(next: BalanceLine[]) {
+    const d = defaultSelection(next);
+    setLines(next);
+    setLineValue(d.lineValue);
+    setAmount(d.amount);
+  }
 
   function choosePupil(hit: PupilHit) {
     setPupil(hit);
-    setLines([]);
-    startLoading(async () => setLines(await pupilBalance(hit.pupil_id)));
+    applyLines([]);
+    startLoading(async () => applyLines(await pupilBalance(hit.pupil_id)));
   }
 
   const selected = lines.find((l) => lineKey(l) === lineValue);
@@ -67,7 +73,7 @@ export function PaymentForm({
   }
 
   return (
-    <form action={formAction} onSubmit={() => setSubmitted(true)} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-5">
       <input type="hidden" name="pupil_id" value={pupil.pupil_id} />
 
       <div className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -83,7 +89,7 @@ export function PaymentForm({
           size="sm"
           onClick={() => {
             setPupil(null);
-            setLines([]);
+            applyLines([]);
           }}
         >
           <X aria-hidden /> Changer
@@ -211,16 +217,16 @@ export function PaymentForm({
             ))}
           </ul>
           <div className="flex flex-wrap gap-2">
-            <SubmitButton name="force" value="1" variant="primary">
+            <SubmitButton pending={pending} name="force" value="1" variant="primary">
               Enregistrer quand même
             </SubmitButton>
-            <Button variant="secondary" onClick={() => (window.location.href = "/paiements/nouveau")}>
+            <Button variant="secondary" onClick={onReset}>
               Ne pas enregistrer
             </Button>
           </div>
         </div>
       ) : (
-        <SubmitButton size="lg" className="w-full sm:w-auto" disabled={!lineValue || !amount}>
+        <SubmitButton pending={pending} size="lg" className="w-full sm:w-auto" disabled={!lineValue || !amount}>
           Enregistrer le paiement
         </SubmitButton>
       )}

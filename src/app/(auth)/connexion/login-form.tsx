@@ -1,14 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
 import { Field, Input } from "@/components/ui/form";
-import { ActionFeedback, SubmitButton } from "@/components/ui/client";
+import { ActionFeedback, SubmitButton, useFormAction } from "@/components/ui/client";
 import { signIn } from "../actions";
 
 export function LoginForm({ next }: { next: string }) {
-  const [state, action] = useActionState(signIn, null);
+  const [state, onSubmit, pending] = useFormAction(signIn);
   return (
-    <form action={action} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <input type="hidden" name="next" value={next} />
       <Field label="Email" htmlFor="email">
         <Input id="email" name="email" type="email" autoComplete="email" required autoFocus />
@@ -17,7 +16,7 @@ export function LoginForm({ next }: { next: string }) {
         <Input id="password" name="password" type="password" autoComplete="current-password" required />
       </Field>
       <ActionFeedback state={state} />
-      <SubmitButton className="w-full" pendingLabel="Connexion…">
+      <SubmitButton pending={pending} className="w-full" pendingLabel="Connexion…">
         Se connecter
       </SubmitButton>
     </form>
