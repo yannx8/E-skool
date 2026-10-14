@@ -192,6 +192,18 @@ begin
   perform tests.assert_eq((select parent_phone from public.pupils where last_name = 'ETOA'), '237699112233', 'import normalizes phone and uppercases name');
 end $$;
 
+-- Create pupil + enrollment atomically; duplicate name in the same year refused
+do $$
+declare v_id uuid;
+begin
+  v_id := public.create_pupil('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c2',
+                              ' tchoua ', 'Jean', 'M. Tchoua', '237670000000', null, null);
+  perform tests.assert_eq((select last_name from public.pupils where id = v_id), 'TCHOUA', 'create_pupil uppercases');
+  perform tests.assert_eq((select count(*) from public.enrollments where pupil_id = v_id)::int, 1, 'create_pupil enrolls');
+  perform tests.assert_fails($f$select public.create_pupil('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c1', 'TCHOUA', 'jean')$f$, 'déjà inscrit');
+  perform tests.assert_fails($f$select public.create_pupil('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c1', 'X', 'Y', null, '12345')$f$, 'parent_phone_check');
+end $$;
+
 -- Year rollover (J3): copy fees, promote, switch current year
 do $$
 declare r jsonb; n int;

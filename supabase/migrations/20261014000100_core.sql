@@ -641,6 +641,7 @@ select
   p.parent_name,
   p.parent_phone,
   p.is_active,
+  p.portal_token,
   c.id as class_id,
   c.name as class_name,
   c.sort_order as class_sort_order,
@@ -910,6 +911,47 @@ begin
   end loop;
 
   return jsonb_build_object('inserted', v_inserted, 'rejected', v_rejected);
+end;
+$$;
+
+-- FR-P1: create a pupil and enroll them in one transaction. Runs with the
+-- caller's rights, so RLS decides who may do it (admin, secretary).
+create function public.create_pupil(
+  p_school_year_id uuid,
+  p_class_id uuid,
+  p_last_name text,
+  p_first_name text,
+  p_parent_name text default null,
+  p_parent_phone text default null,
+  p_parent_phone_alt text default null,
+  p_notes text default null
+)
+returns uuid
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_id uuid;
+begin
+  if exists (
+    select 1
+    from public.pupils p
+    join public.enrollments e on e.pupil_id = p.id and e.school_year_id = p_school_year_id
+    where public.normalize_text(p.last_name) = public.normalize_text(p_last_name)
+      and public.normalize_text(p.first_name) = public.normalize_text(p_first_name)
+  ) then
+    perform public.raise_app_error('Un élève avec ce nom et ce prénom est déjà inscrit cette année.');
+  end if;
+
+  insert into public.pupils (last_name, first_name, parent_name, parent_phone, parent_phone_alt, notes)
+  values (upper(trim(p_last_name)), trim(coalesce(p_first_name, '')), nullif(trim(p_parent_name), ''),
+          p_parent_phone, p_parent_phone_alt, nullif(trim(p_notes), ''))
+  returning id into v_id;
+
+  insert into public.enrollments (pupil_id, school_year_id, class_id)
+  values (v_id, p_school_year_id, p_class_id);
+  return v_id;
 end;
 $$;
 
@@ -1198,6 +1240,7 @@ grant insert (pupil_id, school_year_id, term, channel, amount_due) on public.rem
 
 grant execute on function
   public.app_today(),
+  public.raise_app_error(text),
   public.normalize_text(text),
   public.normalize_cm_phone(text),
   public.auth_role(),
@@ -1206,6 +1249,7 @@ grant execute on function
   public.set_current_year(uuid),
   public.copy_fee_schedules(uuid, uuid),
   public.import_pupils(uuid, jsonb),
+  public.create_pupil(uuid, uuid, text, text, text, text, text, text),
   public.promote_pupils(uuid, jsonb),
   public.search_pupils(text, uuid, integer),
   public.regenerate_portal_token(uuid),
