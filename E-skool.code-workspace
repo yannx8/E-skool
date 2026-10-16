@@ -1,0 +1,45 @@
+{
+  "folders": [{ "name": "E-skool", "path": "." }],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "files.exclude": {
+      "**/.next": true,
+      "**/node_modules": true,
+      "**/tsconfig.tsbuildinfo": true
+    },
+    "search.exclude": {
+      "**/.next": true,
+      "**/node_modules": true,
+      "**/package-lock.json": true,
+      "src/lib/database.types.ts": true
+    },
+    "eslint.useFlatConfig": true,
+    "css.lint.unknownAtRules": "ignore",
+    "tailwindCSS.experimental.classRegex": [["cn\\(([^)]*)\\)", "\"([^\"]*)\""]],
+    "[sql]": { "editor.defaultFormatter": null },
+    "[markdown]": { "files.trimTrailingWhitespace": false }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "supabase.vscode-supabase-extension",
+      "yoavbls.pretty-ts-errors"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      { "label": "Dev server", "type": "npm", "script": "dev", "isBackground": true, "problemMatcher": [] },
+      { "label": "Check (lint + types + tests)", "type": "npm", "script": "check", "problemMatcher": [] },
+      { "label": "Setup (migrations + admin)", "type": "npm", "script": "setup", "problemMatcher": [] },
+      { "label": "Build", "type": "npm", "script": "build", "problemMatcher": [] }
+    ]
+  }
+}
