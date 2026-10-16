@@ -13,6 +13,7 @@
 // 5. Prints the variables to paste into Vercel.
 
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { createClient } from "@supabase/supabase-js";
 
 const env = process.env;
@@ -42,13 +43,16 @@ const ref = new URL(url).hostname.split(".")[0];
 // 1. Migrations
 console.log("Applying database migrations…");
 try {
-  execFileSync("npx", ["supabase", "db", "push", "--db-url", dbUrl, "--include-all", "--yes"], {
+  // Run the CLI through Node itself: spawning "npx" without a shell fails on Windows.
+  const cli = createRequire(import.meta.url).resolve("supabase/dist/supabase.js");
+  execFileSync(process.execPath, [cli, "db", "push", "--db-url", dbUrl, "--include-all", "--yes"], {
     stdio: "inherit",
   });
   ok("Database schema is up to date");
-} catch {
+} catch (e) {
+  if (e && e.code === "ENOENT") die(`Cannot launch the Supabase CLI (${e.message}). Run npm install first.`);
   die(
-    "Migrations failed. Check SUPABASE_DB_URL (use the Session pooler string, password percent-encoded).",
+    "Migrations failed. Read the error printed above. If it mentions the connection, check SUPABASE_DB_URL (Session pooler string, password percent-encoded).",
   );
 }
 
