@@ -38,4 +38,4 @@ npm run test:db      # SQL tests against a throwaway local Postgres (PGHOST/PGPO
 npm run db:types     # regenerate src/lib/database.types.ts (TYPES_DB_URL)
 ```
 
-Project context for future work (decisions, rules, open assumptions): `CLAUDE.md` and `docs/context/`.
+Project context for future work (decisions, rules, open assumptions): `CLAUDE.md`.
