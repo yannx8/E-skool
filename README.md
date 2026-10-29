@@ -1,41 +1,40 @@
 # E-skool
 
-School management for a primary school in Douala: pupils, fees, payments and receipts, unpaid list with WhatsApp reminders, staff and payroll, expenses, cash book and daily cash closing, owner reports, enrollment pipeline and a read-only parent page. French UI, FCFA, mobile first.
+ERP for private primary schools in Douala. This repository is the platform baseline: a Next.js app that reads the database and shows its Postgres version.
 
-Stack: Next.js 16 (App Router, server actions) on Vercel, Supabase (Postgres, Auth, Storage). No other backend.
+## Run locally
 
-## Going live (your part: accounts and environment variables)
+Requirements: Node 24+, Docker.
 
-Plan about 45 minutes. Everything else is automated by `npm run setup`.
-
-1. **Supabase project.** Create a new project at supabase.com, region **eu-west-3 (Paris)** (closest to Douala). Do not reuse the existing `school-fees` project: it holds a different schema from an earlier prototype.
-2. **Fill `.env.local`.** `cp .env.example .env.local`, then fill the REQUIRED and SETUP blocks. Where to find each value:
-   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`: Supabase > Project Settings > API Keys.
-   - `SUPABASE_DB_URL`: Supabase > Connect > "Session pooler" URI (replace `[YOUR-PASSWORD]`, percent-encode special characters).
-   - `SUPABASE_ACCESS_TOKEN` (recommended): supabase.com/dashboard/account/tokens. Lets setup disable public sign-up and configure emails for you.
-   - `CRON_SECRET`: run `openssl rand -hex 32`.
-   - `NEXT_PUBLIC_SITE_URL`: the Vercel address from step 4 (you can fill it after the first deploy and re-run setup).
-   - Email (recommended): create a Resend account, verify a domain, put the API key in `RESEND_API_KEY` and a sender like `Ecole <ecole@votredomaine.cm>` in `EMAIL_FROM`.
-3. **Run setup** (Node 22.9+): `npm install && npm run setup`. It applies the database migrations, disables public sign-up, sets the password-reset URL, routes auth emails through Resend, creates the admin account and prints the list of variables for Vercel. Safe to run again.
-4. **Deploy on Vercel.** Import the GitHub repo, paste the variables printed by setup (Production), deploy. Crons (weekly backup, daily reminders) are declared in `vercel.json`. The function region is Paris (`cdg1`).
-5. **Optional: automatic migrations.** Add `SUPABASE_DB_URL` as a GitHub Actions secret; every push to `main` then applies new migrations after tests pass.
-
-Then sign in with `ADMIN_EMAIL`. The dashboard shows a 3-step checklist: classes, fees, pupils (Excel import supported).
-
-### If you skip `SUPABASE_ACCESS_TOKEN`
-Do by hand in Supabase > Authentication: turn off "Allow new users to sign up"; set Site URL to your Vercel address and add `https://<your-domain>/**` to Redirect URLs; for password-reset emails to reach non-members, configure custom SMTP (Resend: host `smtp.resend.com`, port 465, user `resend`, password = API key).
-
-### Modules
-HR, Finance and Enrollment are **off by default**, following the plan's gates (V1.0 first, used for 2 weeks). Turn them on in Configuration > Modules. Automatic WhatsApp reminders need a Meta WhatsApp Business account and an approved template (see `.env.example`); manual "Relancer" buttons work without it.
-
-## Development
-
-```bash
-npm install
-npm run dev          # needs NEXT_PUBLIC_SUPABASE_* in .env.local
-npm run check        # lint + typecheck + unit tests
-npm run test:db      # SQL tests against a throwaway local Postgres (PGHOST/PGPORT/PGUSER)
-npm run db:types     # regenerate src/lib/database.types.ts (TYPES_DB_URL)
+```sh
+npm ci
+docker compose up -d        # Postgres 17 on localhost:5433 (5432 is often taken by a native Postgres)
+cat > .env <<'EOF'
+DATABASE_URL=postgresql://eskool:eskool@localhost:5433/eskool
+DIRECT_URL=postgresql://eskool:eskool@localhost:5433/eskool
+EOF
+npm run dev
 ```
 
-Project context for future work (decisions, rules, open assumptions): `CLAUDE.md`.
+## Environment
+
+Two variables, read once in `src/config.ts` and validated at startup:
+
+- `DATABASE_URL`: runtime connection string (`postgresql://...`). Local: `postgresql://eskool:eskool@localhost:5433/eskool`. Neon: the pooled host.
+- `DIRECT_URL`: direct (non-pooled) connection string, for migrations. Optional until migrations exist. Local: same as `DATABASE_URL`. Neon: the direct host without `-pooler`.
+
+If `DATABASE_URL` is missing or invalid the app refuses to start and names the variable.
+
+## Verify
+
+```sh
+npm run check      # lint, typecheck, unit tests (no database needed)
+npm run test:db    # database tests against the running container
+npm run build      # production build
+```
+
+CI (`.github/workflows/ci.yml`) runs the `app` job (lint, typecheck, test, build) and the `db` job (Postgres 17 service, `test:db`).
+
+## Deploy
+
+Vercel project imports this repository. Region is set in `vercel.json` (`fra1`). Production runs from `main`, previews from other branches. Set `DATABASE_URL` (and `DIRECT_URL`) in Vercel environment variables. Pushing to GitHub and creating the Vercel project are manual steps.

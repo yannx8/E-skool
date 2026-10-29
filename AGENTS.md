@@ -13,33 +13,23 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## E-skool
 
-Finance and accountability app for private primary schools in Douala: pupil fees, moratoires, payroll, expenses, cash book. Next.js 16 (App Router, server actions) on Vercel, Supabase (Postgres, Auth, Storage), no other backend. Product direction and requirements: `_bmad-output/brainstorm-eskool-next-and-adoption/brainstorm-eskool-next-and-adoption.md` and `_bmad-output/prd-eskool/prd-eskool.md`.
+ERP for private primary schools in Douala (ticket 1: platform baseline). Next.js 16.4.3 (App Router) on Vercel region `fra1`, managed Postgres 17 in the EU (Neon Frankfurt), Prisma 7.10.1 with `@prisma/adapter-pg`. Architecture spine: `_bmad-output/initiative-eskool-erp/architecture-eskool-erp/architecture-eskool-erp.md`. Old finance prototype: branch `archive/finance-prototype`.
 
 ## Policy
 
-- Never apply migrations to the existing `school-fees` Supabase project (different prototype schema with data).
-- Money writes only through SECURITY DEFINER functions with role checks; payments are immutable except void; no deletes on money or person tables.
-- Every new table: enable RLS, add explicit grants (Supabase grants ALL to anon by default), add an audit trigger if it holds money or person data, add it to `src/lib/backup.ts`.
-- Parents only receive WhatsApp reminders; add no parent-facing features (the token parent page is being removed).
-
-## Where things are
-
-- Migrations: `supabase/migrations/`; SQL tests: `supabase/tests/*.test.sql`.
+- Database access only from `src/modules/core/data/`; environment read only in `src/config.ts` (zod-validated).
+- Modules expose only their `index.ts`; no domain tables until the owning entry lands (AD-1, AD-2).
+- Money is integer FCFA and append-only (AD-4); every tenant table gets RLS when it is added (AD-2).
 
 ## Running and verifying
 
-- `npm run check` is lint + typecheck + unit tests. CI also runs `npm run build` and `npm run test:db`, which `check` skips.
-- `npm run test:db` needs local Postgres 15+ with a superuser (PG* vars) and drops and recreates `TEST_DB` (default `eskool_test`); never point it at production.
-- Node >=22.9.
-- A push to `main` runs `supabase db push` on production when `SUPABASE_DB_URL` is set; finalize migrations before merging.
-- Nothing has run end to end against a live Supabase; treat auth and PostgREST paths as unverified until the first real login.
+- `docker compose up -d` starts Postgres 17 on `localhost:5433`. Set `DATABASE_URL` and `DIRECT_URL` (see README).
+- `npm run check` = lint + typecheck + unit tests. `npm run test:db` needs the container running. CI also runs `npm run build`.
+- Node >=24.
 
-## Conventions that differ from defaults
+## Conventions
 
-- Integer FCFA only. Douala time via `public.app_today()` (SQL) / `todayISO()` (`src/lib/format.ts`), never the server clock.
-- Supabase returns max 1000 rows per request: use `fetchAll` (`src/lib/fetch-all.ts`) for exports and totals.
-- Forms submit through `useFormAction` (onSubmit + transition), because React 19 resets form fields after every form action.
-- Next.js Cache Components are off; the app is fully dynamic and authenticated.
-- Bilingual UI, 16 px text, 44 px touch targets, phone first.
+- Pinned versions from the spine Stack; do not upgrade Prisma to 8 RC.
+- Business dates via `todayDouala()` only (AD-7), once `core/domain/clock.ts` exists.
 
 <!-- /bmad:context -->

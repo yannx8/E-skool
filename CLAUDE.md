@@ -2,21 +2,16 @@
 
 @AGENTS.md
 
-## Objective and success metric
-Primary School management app  in Douala. 
+## Objective
+ERP for private primary schools in Douala. Ticket 1 (platform baseline): clean tree, pinned stack, local Postgres 17, CI, one page reading the database.
 
-## Current state (2026-10-14)
-- Built: V1.0 (fees), V1.1 (HR/payroll), V1.2 (finance, owner role, reports), V2 (enrollment pipeline, parent portal (being removed), auto reminders, secretary role, discounts).
-- Verified: SQL tests (4 suites, money rules + RLS + grants), 52 unit tests, lint, typecheck, production build.
-- NOT verified: no end-to-end run against a live Supabase (PostgREST/GoTrue unavailable in the build sandbox). First real login is the first E2E test.
+## Current state (2026-10-29)
+- Built: scaffold, `src/config.ts` (zod env), `core.databaseStatus()`, home page, unit test (config), DB test (`tests/db`), CI, `vercel.json` (fra1), security headers and `poweredByHeader: false` in `next.config.ts`, `/health` route (`src/app/health/route.ts`), startup config check (`src/instrumentation.ts`).
+- Verified locally: `npm run check`, `npm run build`. `npm run test:db` targets the Docker container on host port 5433 (a native Windows Postgres holds 5432); last run failed because Docker Desktop was not running.
+- NOT verified: CI run, Vercel deploy, production URL.
 
 ## Decisions
-- 2026-10-14 Pupils split into `pupils` (identity) + `enrollments` (pupil x year x class), unlike the plan's single table: promotions keep history.
-- 2026-10-14 Overpayment carry (BR5) computed in the `balance_lines` view, forward only (Lindley recursion), not a separate credit table.
-- 2026-10-14 Cash closing keeps an opening balance (previous counted - removed), and locks every entry dated on or before the last closing.
-- 2026-10-14 "Tranche" + 3 terms by default, both configurable (settings.term_label, terms_count) because A1 is unvalidated.
-- 2026-10-14 HR/Finance/Enrollment modules off by default (plan gates; adoption risk #2).
-- 2026-10-14 Not built: `parents`/`parent_pupils` tables (siblings share a phone instead), statutory payroll contributions, SMS.
-
-## Open assumptions to validate with the admin
-A1 fees per term fixed per class · A2 sibling discounts (supported) · A3 one-off fees · A4 phone + laptop · A5 owner wants read-only visibility · receipt paper format (A5 / A4 / 80 mm all supported) · what happens when a pupil leaves mid-year (debt stays visible) · WhatsApp reminder volume (auto reminders only if > 30/week).
+- 2026-10-29 Old prototype removed from `main` of this branch; kept on `archive/finance-prototype`.
+- 2026-10-29 `prisma.config.ts` reads no environment variables; the datasource URL arrives with the first migration.
+- 2026-10-29 Database is Neon Frankfurt with 30-day point-in-time restore; Vercel region `fra1`.
+- 2026-10-29 Deploy by pushing `erp/platform-baseline` to GitHub and importing into Vercel; each push needs the owner's approval.

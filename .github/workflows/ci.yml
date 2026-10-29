@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
-  pull_request:
 
 jobs:
   app:
@@ -12,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run lint
@@ -20,43 +18,31 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci
+          NEXT_TELEMETRY_DISABLED: 1
 
-  database:
+  db:
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_PASSWORD: postgres
-        ports: ["5432:5432"]
+          POSTGRES_USER: eskool
+          POSTGRES_PASSWORD: eskool
+          POSTGRES_DB: eskool
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "pg_isready -U eskool -d eskool"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
     env:
-      PGHOST: localhost
-      PGUSER: postgres
-      PGPASSWORD: postgres
+      DATABASE_URL: postgresql://eskool:eskool@localhost:5432/eskool
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client postgresql-contrib >/dev/null
-      - run: bash scripts/test-db.sh
-
-  # Applies new migrations to production on every push to main, when the
-  # SUPABASE_DB_URL repository secret is set. Without it, this job is skipped.
-  migrate:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [app, database]
-    runs-on: ubuntu-latest
-    env:
-      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-    steps:
-      - uses: actions/checkout@v4
-        if: env.SUPABASE_DB_URL != ''
       - uses: actions/setup-node@v4
-        if: env.SUPABASE_DB_URL != ''
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
-      - if: env.SUPABASE_DB_URL != ''
-        run: npm ci && npx supabase db push --db-url "$SUPABASE_DB_URL" --include-all --yes
+      - run: npm ci
+      - run: npm run test:db
