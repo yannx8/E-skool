@@ -1,46 +1,31 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { MessageCircle } from "lucide-react";
-import { buttonClasses, type ButtonSize } from "@/components/ui/button";
-import { logReminder } from "@/app/(app)/eleves/actions";
+import { toast } from "sonner";
+import { logReminder } from "@/app/(app)/families/actions";
+import { whatsappLink } from "@/lib/format";
+import { buttonClass } from "./ui";
 
-/**
- * Opens WhatsApp with the reminder prefilled (FR-B4) and logs the click
- * (FR-B5). Delivery is not tracked: the log means "WhatsApp was opened".
- */
-export function ReminderButton({
-  href,
-  pupilId,
-  term,
-  amountDue,
-  size = "sm",
-  label = "Relancer",
-}: {
-  href: string;
-  pupilId: string;
-  term: number | null;
-  amountDue: number;
-  size?: ButtonSize;
-  label?: string;
-}) {
-  const [done, setDone] = useState(false);
-  const [, startTransition] = useTransition();
+/** Opens WhatsApp with the message ready, and records that the family was reminded. */
+export function ReminderButton({ familyId, phone, text, amountDue, compact }: { familyId: number; phone: string | null; text: string; amountDue: number; compact?: boolean }) {
+  const [pending, start] = useTransition();
+  if (!phone) return <span className="text-[13px] text-late">No phone number</span>;
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
+      type="button"
+      disabled={pending}
+      className={buttonClass("secondary", compact ? "min-h-11 px-3 text-[14px]" : undefined)}
       onClick={() => {
-        setDone(true);
-        startTransition(async () => {
-          await logReminder({ pupilId, term, amountDue });
+        window.open(whatsappLink(phone, text), "_blank", "noopener");
+        start(async () => {
+          await logReminder(familyId, "WHATSAPP", amountDue);
+          toast.success("Reminder logged.");
         });
       }}
-      className={buttonClasses("whatsapp", size)}
     >
-      <MessageCircle aria-hidden />
-      {done ? "Relancé" : label}
-    </a>
+      <MessageCircle className="size-4 text-paid" strokeWidth={2.2} />
+      {compact ? "WhatsApp" : "Remind on WhatsApp"}
+    </button>
   );
 }

@@ -1,88 +1,53 @@
 import "server-only";
-import { cache } from "react";
+import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { can, type Permission } from "@/lib/permissions";
-import type { AppRole } from "@/lib/labels";
-import type { Database } from "@/lib/database.types";
+import { cache } from "react";
+import type { Role } from "@/generated/prisma/client";
+import { db } from "./db";
 
-export type AppUser = {
-  id: string;
-  email: string;
-  fullName: string;
-  role: AppRole | null;
-};
+export { hashPassword, verifyPassword } from "./password";
 
-export type Settings = Database["public"]["Tables"]["settings"]["Row"];
-export type SchoolYear = Database["public"]["Tables"]["school_years"]["Row"];
+const COOKIE = "eskool_session";
+const DAYS = 14;
 
-export const YEAR_COOKIE = "eskool_year";
+const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
-/** The signed-in user and their role, read once per request. */
-export const getAppUser = cache(async (): Promise<AppUser | null> => {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  if (!claims?.sub) return null;
-  const { data: row } = await supabase
-    .from("user_roles")
-    .select("role, full_name, is_active")
-    .eq("user_id", claims.sub)
-    .maybeSingle();
-  return {
-    id: claims.sub,
-    email: typeof claims.email === "string" ? claims.email : "",
-    fullName: row?.full_name ?? "",
-    role: row?.is_active ? row.role : null,
-  };
-});
-
-/** Redirects to the login page, or to the "no access" page when the user has no role. */
-export async function requireUser(): Promise<AppUser & { role: AppRole }> {
-  const user = await getAppUser();
-  if (!user) redirect("/connexion");
-  if (!user.role) redirect("/acces-refuse");
-  return user as AppUser & { role: AppRole };
+export async function startSession(userId: number) {
+  const token = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + DAYS * 86_400_000);
+  await db.session.create({ data: { id: sha(token), userId, expiresAt } });
+  await db.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
+  // Not "secure": the app is served over plain http on the school network.
+  (await cookies()).set(COOKIE, token, { httpOnly: true, sameSite: "lax", path: "/", expires: expiresAt });
 }
 
-/** For pages: redirects to the dashboard when the role lacks the permission. */
-export async function requirePermission(permission: Permission) {
-  const user = await requireUser();
-  if (!can(user.role, permission)) redirect("/tableau-de-bord?refus=1");
+export async function endSession() {
+  const jar = await cookies();
+  const token = jar.get(COOKIE)?.value;
+  if (token) await db.session.deleteMany({ where: { id: sha(token) } });
+  jar.delete(COOKIE);
+}
+
+export const currentUser = cache(async () => {
+  const token = (await cookies()).get(COOKIE)?.value;
+  if (!token) return null;
+  const s = await db.session.findUnique({ where: { id: sha(token) }, include: { user: true } });
+  if (!s || s.expiresAt < new Date() || !s.user.active) return null;
+  return s.user;
+});
+
+export type User = NonNullable<Awaited<ReturnType<typeof currentUser>>>;
+
+/** Pages and actions call this first. Roles listed are the ones allowed. */
+export async function requireUser(...roles: Role[]): Promise<User> {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  if (roles.length && !roles.includes(user.role)) throw new Error("You do not have permission to do this.");
   return user;
 }
 
-/** For server actions: returns the user, or null when not allowed. */
-export async function userWithPermission(permission: Permission) {
-  const user = await getAppUser();
-  if (!user?.role || !can(user.role, permission)) return null;
-  return user as AppUser & { role: AppRole };
-}
-
-export const getSettings = cache(async (): Promise<Settings> => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("settings").select("*").single();
-  if (error || !data) throw new Error(`Settings unavailable: ${error?.message ?? "no row"}`);
-  return data;
-});
-
-export const getSchoolYears = cache(async (): Promise<SchoolYear[]> => {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("school_years")
-    .select("*")
-    .order("label", { ascending: false });
-  return data ?? [];
-});
-
-/**
- * The school year being viewed: the one picked in the header (cookie), else
- * the current year, else the most recent one. Null before any year exists.
- */
-export const getActiveYear = cache(async (): Promise<SchoolYear | null> => {
-  const years = await getSchoolYears();
-  if (years.length === 0) return null;
-  const picked = (await cookies()).get(YEAR_COOKIE)?.value;
-  return years.find((y) => y.id === picked) ?? years.find((y) => y.is_current) ?? years[0];
-});
+export const can = {
+  collect: (u: User) => u.role !== "OWNER",
+  manage: (u: User) => u.role === "ADMIN",
+};

@@ -1,132 +1,66 @@
-// Formatting helpers. Money is always an integer number of FCFA.
+// Display helpers shared by server and client code.
 
-export const APP_TIMEZONE = "Africa/Douala";
+const num = new Intl.NumberFormat("en-US");
 
-const numberFormat = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+/** 85000 -> "85,000" */
+export const fmt = (n: number) => num.format(n);
 
-/** 15000 -> "15 000" (narrow no-break spaces, French style). */
-export function formatNumber(n: number | null | undefined): string {
-  return numberFormat.format(Math.round(n ?? 0));
+/** 85000 -> "85,000 F" */
+export const money = (n: number) => `${num.format(n)} F`;
+
+/** Today in Douala (UTC+1, no DST), never the server clock's zone. */
+export function today(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Douala" }).format(new Date());
 }
 
-/** 15000 -> "15 000 FCFA". */
-export function formatFCFA(n: number | null | undefined): string {
-  return `${formatNumber(n)} FCFA`;
+/** The Douala date n days before today, as "YYYY-MM-DD". */
+export function daysAgo(n: number): string {
+  const d = day(today());
+  d.setUTCDate(d.getUTCDate() - n);
+  return iso(d);
 }
 
-/** Signed amount for adjustments and differences: "+2 000 FCFA", "-500 FCFA". */
-export function formatSignedFCFA(n: number): string {
-  if (n > 0) return `+${formatFCFA(n)}`;
-  if (n < 0) return `-${formatFCFA(-n)}`;
-  return formatFCFA(0);
+/** Date column -> "2026-10-27" */
+export const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+/** "2026-10-27" -> Date at UTC midnight, the form @db.Date expects */
+export const day = (s: string) => new Date(`${s}T00:00:00.000Z`);
+
+const longDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+
+/** "2026-10-27" or Date -> "27 Oct 2026" */
+export const dateLabel = (d: string | Date) => longDate.format(typeof d === "string" ? day(d) : d);
+export const dayMonth = (d: string | Date) => shortDate.format(typeof d === "string" ? day(d) : d);
+
+export const timeLabel = (d: Date) =>
+  new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Douala" }).format(d);
+
+/** Keep the 9 national digits of a Cameroon number: "+237 6 77-12-34-56" -> "677123456" */
+export function normalizePhone(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  let d = raw.replace(/\D/g, "");
+  if (d.startsWith("00237")) d = d.slice(5);
+  else if (d.startsWith("237") && d.length === 12) d = d.slice(3);
+  return d.length === 9 ? d : null;
 }
 
-/**
- * Parses what a person typed in an amount field ("15 000", "15.000", "15000 F")
- * into an integer, or null when it holds no digits.
- */
-export function parseAmount(input: string | null | undefined): number | null {
-  const digits = String(input ?? "").replace(/\D/g, "");
-  if (!digits) return null;
-  const n = Number.parseInt(digits, 10);
-  return Number.isSafeInteger(n) ? n : null;
-}
+/** "677123456" -> "677 12 34 56" */
+export const phoneLabel = (p: string) => `${p.slice(0, 3)} ${p.slice(3, 5)} ${p.slice(5, 7)} ${p.slice(7)}`;
 
-/** Today's date in Douala as YYYY-MM-DD. */
-export function todayISO(now: Date = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: APP_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-}
+export const whatsappLink = (phone: string, text: string) =>
+  `https://wa.me/237${phone}?text=${encodeURIComponent(text)}`;
 
-/** First day of the current month in Douala, YYYY-MM-01. */
-export function currentMonthISO(now: Date = new Date()): string {
-  return `${todayISO(now).slice(0, 7)}-01`;
-}
+export const METHOD_LABEL = {
+  CASH: "Cash",
+  MTN_MOMO: "MTN MoMo",
+  ORANGE_MONEY: "Orange Money",
+  BANK: "Bank",
+  OPENING: "Paid before E-skool",
+} as const;
 
-/** "2026-10-14" -> "14/10/2026". Date-only strings are never shifted by timezones. */
-export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-  if (!m) return iso;
-  return `${m[3]}/${m[2]}/${m[1]}`;
-}
+export const receiptNo = (n: number) => String(n).padStart(6, "0");
 
-/** Timestamp -> "14/10/2026 à 08:10" in Douala time. */
-export function formatDateTime(ts: string | null | undefined): string {
-  if (!ts) return "";
-  const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return ts;
-  const parts = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: APP_TIMEZONE,
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).formatToParts(d);
-  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
-  return `${get("day")}/${get("month")}/${get("year")} à ${get("hour")}:${get("minute")}`;
-}
-
-/** Relative day label for "Relancé le ..." badges. */
-export function formatRelativeDay(ts: string | null | undefined, now: Date = new Date()): string {
-  if (!ts) return "";
-  const day = todayISO(new Date(ts));
-  const today = todayISO(now);
-  if (day === today) return "aujourd'hui";
-  const yesterday = todayISO(new Date(now.getTime() - 86_400_000));
-  if (day === yesterday) return "hier";
-  return `le ${formatDate(day)}`;
-}
-
-const MONTHS = [
-  "janvier",
-  "février",
-  "mars",
-  "avril",
-  "mai",
-  "juin",
-  "juillet",
-  "août",
-  "septembre",
-  "octobre",
-  "novembre",
-  "décembre",
-];
-
-/** "2026-10-01" -> "octobre 2026". */
-export function formatMonth(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const m = /^(\d{4})-(\d{2})/.exec(iso);
-  if (!m) return iso;
-  return `${MONTHS[Number(m[2]) - 1]} ${m[1]}`;
-}
-
-/** Adds n months to a YYYY-MM-01 string. */
-export function addMonths(monthIso: string, n: number): string {
-  const [y, m] = monthIso.slice(0, 7).split("-").map(Number);
-  const total = y * 12 + (m - 1) + n;
-  const year = Math.floor(total / 12);
-  const month = (total % 12) + 1;
-  return `${year}-${String(month).padStart(2, "0")}-01`;
-}
-
-/** Validates a YYYY-MM or YYYY-MM-DD query value and returns YYYY-MM-01. */
-export function parseMonthParam(value: string | undefined | null, fallback: string): string {
-  if (value && /^\d{4}-\d{2}(-\d{2})?$/.test(value)) return `${value.slice(0, 7)}-01`;
-  return fallback;
-}
-
-/** Validates a YYYY-MM-DD query value. */
-export function parseDateParam(value: string | undefined | null, fallback: string): string {
-  if (value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))) return value;
-  return fallback;
-}
-
-export function fullName(p: { last_name?: string | null; first_name?: string | null }): string {
-  return [p.last_name, p.first_name].filter(Boolean).join(" ").trim();
-}
+/** Fill {placeholders} in a message template. */
+export const fillTemplate = (t: string, vars: Record<string, string>) =>
+  t.replace(/\{(\w+)\}/g, (m, k: string) => vars[k] ?? m);

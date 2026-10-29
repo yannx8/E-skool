@@ -1,16 +1,12 @@
 import type { NextConfig } from "next";
 
-// Security headers for every response. No third-party scripts are loaded, so
-// the CSP can stay strict; Supabase is the only external origin.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseHost = supabaseUrl ? new URL(supabaseUrl).host : "";
-
+// Everything is served by this one local server: no third-party origin at all.
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${supabaseHost ? `https://${supabaseHost}` : ""}`,
-  `connect-src 'self' ${supabaseHost ? `https://${supabaseHost} wss://${supabaseHost}` : ""}`,
+  "img-src 'self' data: blob:",
+  "connect-src 'self'",
   "font-src 'self' data:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -20,6 +16,8 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Phones on the school Wi-Fi open the dev server by its LAN address.
+  allowedDevOrigins: ["127.0.0.1", "localhost", "192.168.*.*", "10.*.*.*", "172.16.*.*"],
   turbopack: {
     rules: {
       "*.css": {
@@ -29,10 +27,7 @@ const nextConfig: NextConfig = {
     },
   },
   experimental: {
-    serverActions: {
-      // Pupil import sends up to 2000 rows as JSON.
-      bodySizeLimit: "2mb",
-    },
+    serverActions: { bodySizeLimit: "4mb" }, // Excel import
   },
   async headers() {
     return [
@@ -42,15 +37,7 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
-        ],
-      },
-      {
-        source: "/p/:path*",
-        headers: [
-          { key: "X-Robots-Tag", value: "noindex, nofollow" },
-          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "Referrer-Policy", value: "same-origin" },
         ],
       },
     ];

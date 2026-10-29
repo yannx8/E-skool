@@ -1,27 +1,15 @@
-import { AppShell } from "@/components/app-shell";
-import { getActiveYear, getSchoolYears, getSettings, requireUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { can, requireUser } from "@/lib/auth";
+import { getSchool } from "@/lib/queries";
+import { Shell } from "@/components/shell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const school = await getSchool();
+  if (!school) redirect("/setup");
   const user = await requireUser();
-  const [settings, years, activeYear] = await Promise.all([
-    getSettings(),
-    getSchoolYears(),
-    getActiveYear(),
-  ]);
   return (
-    <AppShell
-      role={user.role}
-      userName={user.fullName || user.email}
-      schoolName={settings.school_name}
-      modules={{
-        hr: settings.module_hr,
-        finance: settings.module_finance,
-        enrollment: settings.module_enrollment,
-      }}
-      years={years.map((y) => ({ id: y.id, label: y.label, is_current: y.is_current }))}
-      activeYearId={activeYear?.id ?? null}
-    >
+    <Shell school={school.name} user={{ name: user.name, role: user.role }} canCollect={can.collect(user)}>
       {children}
-    </AppShell>
+    </Shell>
   );
 }

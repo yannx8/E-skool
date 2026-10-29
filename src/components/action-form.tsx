@@ -1,78 +1,58 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
-import { ActionFeedback, SubmitButton, useFormAction } from "@/components/ui/client";
-import type { ButtonSize, ButtonVariant } from "@/components/ui/button";
-import type { ActionResult } from "@/lib/errors";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { toast } from "sonner";
 
-const PendingContext = createContext(false);
+export type ActionResult = { error?: string; ok?: string; go?: string } | void;
 
 /**
- * Small form wired to a server action: inline error that persists, success
- * toast. Use <ActionSubmit> inside for a button that knows the pending state.
+ * Submits a server action without React's automatic form reset, so a failed
+ * submit keeps what the cashier typed. Errors and successes show as toasts.
  */
 export function ActionForm({
   action,
   children,
   className,
-  resetOnSuccess,
+  onDone,
+  confirm,
 }: {
-  action: (prev: ActionResult | null, formData: FormData) => Promise<ActionResult>;
-  children: ReactNode;
+  action: (fd: FormData) => Promise<ActionResult>;
+  children: React.ReactNode;
   className?: string;
-  /** Clear the fields after a successful submit (creation forms). */
-  resetOnSuccess?: boolean;
+  onDone?: () => void;
+  confirm?: string;
 }) {
-  const [state, onSubmit, pending] = useFormAction(action);
-  const formRef = useRef<HTMLFormElement>(null);
-  const handled = useRef<ActionResult | null>(null);
-  useEffect(() => {
-    if (resetOnSuccess && state?.ok && handled.current !== state) {
-      handled.current = state;
-      formRef.current?.reset();
-    }
-  }, [state, resetOnSuccess]);
+  const [pending, start] = useTransition();
+  const router = useRouter();
   return (
-    <form ref={formRef} onSubmit={onSubmit} className={className}>
-      <PendingContext value={pending}>{children}</PendingContext>
-      {state && (
-        <div className="mt-3">
-          <ActionFeedback state={state} />
-        </div>
-      )}
-    </form>
-  );
-}
-
-export function ActionSubmit({
-  children,
-  variant,
-  size,
-  className,
-  disabled,
-  name,
-  value,
-}: {
-  children: ReactNode;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  className?: string;
-  disabled?: boolean;
-  name?: string;
-  value?: string;
-}) {
-  const pending = useContext(PendingContext);
-  return (
-    <SubmitButton
-      pending={pending}
-      variant={variant}
-      size={size}
+    <form
+      // Never let a submit before hydration put field values (passwords) in the URL.
+      method="post"
       className={className}
-      disabled={disabled}
-      name={name}
-      value={value}
+      aria-busy={pending}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (confirm && !window.confirm(confirm)) return;
+        const fd = new FormData(e.currentTarget);
+        const form = e.currentTarget;
+        start(async () => {
+          const r = await action(fd);
+          if (r?.error) return void toast.error(r.error);
+          if (r?.ok) toast.success(r.ok);
+          onDone?.();
+          form.dispatchEvent(new Event("action-done", { bubbles: true }));
+          if (r?.go) router.push(r.go);
+          else {
+            form.reset();
+            router.refresh();
+          }
+        });
+      }}
     >
-      {children}
-    </SubmitButton>
+      <fieldset disabled={pending} className="contents">
+        {children}
+      </fieldset>
+    </form>
   );
 }
