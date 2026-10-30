@@ -7,4 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
-// No domain models yet. Tables arrive with the modules that own them (entries 2 to 7).
+// Global table (no school_id, no RLS): the first School. Tenant tables arrive with their modules.
+model School {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("schools")
+}

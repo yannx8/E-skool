@@ -37,7 +37,8 @@ jobs:
           --health-timeout 3s
           --health-retries 20
     env:
-      DATABASE_URL: postgresql://eskool:eskool@localhost:5432/eskool
+      DIRECT_URL: postgresql://eskool:eskool@localhost:5432/eskool
+      DATABASE_URL: postgresql://eskool_app:eskool_app@localhost:5432/eskool
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

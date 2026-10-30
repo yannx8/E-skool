@@ -19,3 +19,6 @@
 - source_plan: same change proposal
   summary: Competency-grid report cards (A / ECA / NA) for francophone primary; Secretary role; nursery levels.
   evidence: standard mark-based template chosen for the MVP; revisit when a school asks.
+- source_plan: `_bmad-output/initiative-eskool-erp/epic-platform-baseline/spike-prove-rls-with-set-config-under-prisma-7-plan.md`
+  summary: Restrict the global `schools` table at the database level (separate platform role or policy) so the app role cannot list or update every School.
+  evidence: migration grants select/insert/update on schools to eskool_app with no RLS; AD-2 relies on code (platform module only). Decide with entry 1.7 (Platform admin creates Schools).
