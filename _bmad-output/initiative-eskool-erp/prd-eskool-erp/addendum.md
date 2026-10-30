@@ -1,40 +1,37 @@
 # Addendum: E-skool PRD
 
-Detail that belongs to architecture and UX, kept out of the PRD body.
+Detail that belongs to architecture and UX, kept out of the PRD body. Updated 2026-10-30 for the narrowed MVP (`../change-narrow-mvp-cash-control/change-narrow-mvp-cash-control.md`).
 
 ## A. Role permissions (FR-15)
 
-| Capability | Promoter | Director | Bursar | Secretary | Teacher | School admin | Parent |
-|---|---|---|---|---|---|---|---|
-| Read dashboard, Term report | ✓ | ✓ | — | — | — | ✓ | — |
-| School structure, Fee plans, Modules, rules | — | — | — | — | — | ✓ | — |
-| Pupils, Guardians, Families, import | read | ✓ | read | ✓ | own Classes, read | ✓ | own Family |
-| Record Payment, Cash session | — | ✓ | ✓ | — | — | — | — |
-| Void Payment | option | ✓ | — | — | — | — | — |
-| Discounts | read | ✓ | — | propose | — | — | — |
-| Moratoire request | — | ✓ | ✓ | — | — | — | ✓ |
-| Moratoire decision | option | ✓ | within rules, option | — | — | — | accept counter-proposal |
-| Reminders, Notices | — | ✓ | ✓ | — | — | — | — |
-| Enter Evaluations | — | ✓ | — | — | own Classes | — | — |
-| Sign off, reopen, hold Report cards | — | ✓ | — | — | — | — | — |
-| Audit log | ✓ | ✓ | — | — | — | ✓ | — |
-| Users and Roles | — | — | — | — | — | ✓ | — |
+| Capability | Promoter | Director | Cashier | Teacher |
+|---|---|---|---|---|
+| Dashboard, Term report, Audit log | ✓ | ✓ | — | — |
+| School year, key dates, structure, Fee plans, Modules, rules, Users | — | ✓ | — | — |
+| Pupils, Guardians, import, promotion | read | ✓ | read (no phone edits) | own Classes, names only |
+| Record cash Payment, print and reprint Receipt, own Cash session | — | ✓ | ✓ | — |
+| Void Payment | — | ✓ | — | — |
+| Discounts | read | ✓ | — | — |
+| Payment delays | read | ✓ | read | — |
+| Send-home list: confirm, exclude | read | ✓ | — | — |
+| Send-home list: view confirmed | ✓ | ✓ | ✓ | own Classes, no amounts |
+| Approve Cash closing above Gap threshold | — | ✓ | — | — |
+| Enter Marks and comments | — | ✓ | — | own Classes and Subjects |
+| Sign off, reopen, hold, print Report cards | — | ✓ | — | — |
+| WhatsApp messages: view, send `wa.me` fallback, edit wording | read | ✓ | read | — |
 
-"Option" = a School setting, off by default.
+Patterns: cancel as a separate privilege (Fedena "Revert Transaction", MyClassBoard), restricted discounts (Loyverse), closing approval above a maximum difference (Odoo POS), defaulter list flagged to the principal (Schoolites, Entab, EdPrime).
 
-## B. Technical direction (to confirm in bmad-architecture)
+## B. Technical direction
 
-- Default stack: Next.js (App Router, server actions) + PostgreSQL + Prisma, deployed as one multi-tenant app. Every tenant-owned table carries `school_id`; isolation enforced in one data-access layer and backed by Postgres row-level security `[to decide]`.
-- i18n: message catalogs FR/EN, build fails on a missing key (FR-53).
-- PDFs (Receipts, Report cards, Notices, Term report) rendered server-side; QR Verification codes point to a public `/v/<code>` route.
-- WhatsApp: `wa.me/<number>?text=` links, no API (FR-32).
-- Mobile Money: manual reference entry; aggregator integration later (no aggregator chosen).
-- Hosting: managed Postgres with daily backups and per-School restore (FR-58); data location to settle with the data-protection advice.
-- Nothing from the previous code base is reused; the old Prisma schema and routes are reference only.
+- Stack and invariants: `../architecture-eskool-erp/architecture-eskool-erp.md`.
+- PDFs (Receipts, Report cards, Term report) rendered server-side; QR Verification codes point to a public `/v/<code>` route.
+- WhatsApp: WhatsApp Business Platform Cloud API with approved utility templates, sent from an outbox (AD-18); `wa.me` text fallback.
+- No Mobile Money or bank integration in the MVP.
+- All screens are designed in Claude Design.
 
 ## C. Source pointers
 
 - Ministry rules and confidence levels: `_bmad-output/research/erp-cameroon-analysis.md` §2.
 - Competitor set and pricing: same file §1.
-- Screen references (Mercury, Square, Asana, Kitchen, Lemon Squeezy, Klarna, Copilot): `_bmad-output/research/erp-education-ux/rapport-erp-education-ux.md` §3 and `captures/`.
-- Moratoire flow and statuses: same report §4.2.
+- Proven-software evidence for the 2026-10-30 changes (send-home list, separation of duties, WhatsApp records, parked ideas): the change proposal §1 and its sources.

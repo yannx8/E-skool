@@ -12,7 +12,7 @@ risk: high
 
 ## Description
 
-The new code base replaces the old one: scaffold, CI, preview and production on Vercel EU with managed Postgres, tenant isolation in the database, identity and Memberships with staff and parent sign-in, the `defineCommand` write path with audit, Roles and permissions, Module and Subscription guards, French and English, private files, and the Platform admin area to create Schools.
+The new code base replaces the old one: scaffold, CI, preview and production on Vercel EU with managed Postgres, tenant isolation in the database, identity and Memberships with staff sign-in, the `defineCommand` write path with audit, Roles and permissions, Module and Subscription guards, French and English, private files, and the Platform admin area to create Schools.
 
 ## Outcome
 
@@ -41,6 +41,8 @@ Platform and core plumbing only; no school-domain screens beyond School creation
 
 ## Notes
 
-- Unknown: parent-code sign-in through better-auth, and RLS `set_config` under Prisma 7 interactive transactions; spike entries settle them first.
+- Unknown: RLS `set_config` under Prisma 7 interactive transactions; entry 2 settles it first.
 
 - Decision: breakdown of 10 entries approved by the user (2026-10-29); builds use ECC skills and agents where useful.
+- Dropped: entry 3 (parent-code sign-in spike), 2026-10-30 — parents no longer sign in (change-narrow-mvp-cash-control); entries 6 and 10 no longer wait on it.
+- Decision: 2026-10-30 — Modules are Fees, Report cards and WhatsApp messages; all UI is designed in Claude Design.

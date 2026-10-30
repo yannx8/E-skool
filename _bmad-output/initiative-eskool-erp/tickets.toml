@@ -1,4 +1,4 @@
-# E-skool MVP epics, in build order (PRD §6.2 releases R1–R4).
+# E-skool MVP epics, in build order (PRD §6.2 releases R1–R4). Re-sliced 2026-10-30 (change-narrow-mvp-cash-control).
 
 [[epic]]
 id = 1
@@ -10,22 +10,22 @@ covers = ["FR-1", "FR-2", "FR-3", "FR-4", "FR-15", "FR-16", "FR-53", "FR-54", "F
 id = 2
 slug = "epic-school-setup"
 title = "A school is set up from its Excel sheets"
-covers = ["FR-5", "FR-6", "FR-7", "FR-8", "FR-9", "FR-10", "FR-11", "FR-12", "FR-13", "FR-14", "FR-17"]
+covers = ["FR-5", "FR-6", "FR-7", "FR-8", "FR-9", "FR-11", "FR-12", "FR-13", "FR-14"]
 after = [{ epic = 1, needs = "defineCommand, withSchool, Memberships, i18n and audit" }]
 
 [[epic]]
 id = 3
 slug = "epic-fees-and-payments"
-title = "The bursar takes payments and the promoter sees them"
-covers = ["FR-18", "FR-19", "FR-20", "FR-21", "FR-22", "FR-23", "FR-24", "FR-25", "FR-26", "FR-38"]
-after = [{ epic = 2, needs = "Families, Enrolments and the enrolPupil workflow" }]
+title = "The cashier takes cash and hands a stamped receipt"
+covers = ["FR-18", "FR-19", "FR-20", "FR-21", "FR-22", "FR-23", "FR-24", "FR-25", "FR-26", "FR-34", "FR-38"]
+after = [{ epic = 2, needs = "Pupils, Guardians, Enrolments and the enrolPupil workflow" }]
 
 [[epic]]
 id = 4
 slug = "epic-collection-control"
-title = "Moratoires, reminders and cash closing raise the collection rate"
-covers = ["FR-27", "FR-28", "FR-29", "FR-30", "FR-31", "FR-32", "FR-33", "FR-34", "FR-35", "FR-36", "FR-37", "FR-39"]
-after = [{ epic = 3, needs = "Charges, Payments, ledger_lines and the dashboard" }]
+title = "Send-home list, payment delays and cash closing"
+covers = ["FR-27", "FR-28", "FR-30", "FR-35", "FR-36", "FR-37", "FR-39", "FR-40", "FR-59", "FR-60"]
+after = [{ epic = 3, needs = "Charges, Payments, Cash sessions, ledger_lines and the dashboard" }]
 
 [[epic]]
 id = 5
@@ -38,5 +38,13 @@ after = [{ epic = 2, needs = "Classes, Subjects and Enrolments" }]
 id = 6
 slug = "epic-parent-portal"
 title = "Parents follow their balance and report cards"
-covers = ["FR-40", "FR-49", "FR-50", "FR-51", "FR-52", "FR-56", "FR-57"]
-after = [{ epic = 4, needs = "Moratoire requests and decisions" }, { epic = 5, needs = "issued Report cards" }]
+covers = []
+after = []
+# Dropped 2026-10-30: parent portal removed from the MVP (see epic Notes). Table kept so id 6 is never reused.
+
+[[epic]]
+id = 7
+slug = "epic-whatsapp-records"
+title = "Parents get WhatsApp payment records and reminders"
+covers = ["FR-56", "FR-57", "FR-61", "FR-62", "FR-63", "FR-64"]
+after = [{ epic = 3, needs = "the recordPayment workflow and Receipts" }, { epic = 4, needs = "Payment delays and the Send-home confirmation" }]

@@ -2,9 +2,10 @@
 type: epic
 title: "Parents follow their balance and report cards"
 parent: initiative-eskool-erp
-covers: [FR-40, FR-49, FR-50, FR-51, FR-52, FR-56, FR-57]
+covers: []  # FR-40 moved to epic 4, FR-56 and FR-57 to epic 7, FR-49 to FR-52 removed
 after: []
 assignee: ""
+status: dropped
 risk: medium
 ---
 
@@ -38,3 +39,4 @@ At least 40% of the pilot school's Families sign in to the portal in term 3 (SM-
 ## Notes
 
 - Open question: a light no-sign-in page from a Reminder link (PRD Q9).
+- Dropped: 2026-10-30 — parent portal and parent sign-in removed from the MVP by the approved change proposal (change-narrow-mvp-cash-control); parents get printed receipts and WhatsApp messages (epic-whatsapp-records). Listed in deferred-work.md.
