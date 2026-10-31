@@ -25,3 +25,9 @@
 - source_plan: `_bmad-output/initiative-eskool-erp/epic-platform-baseline/story-clock-language-and-formatting-foundations-plan.md`
   summary: Verify `npm run build` and the language switch (EN/FR, reload keeps it) in a running app.
   evidence: this Windows host's SWC native cache rejects every folder (BUILTIN\Users full control), so build and dev cannot start locally; CI build on first push, or a host permission fix, settles it.
+- source_plan: `_bmad-output/initiative-eskool-erp/epic-platform-baseline/story-definecommand-audit-permissions-and-module-guards-plan.md`
+  summary: Build the AD-1 check that a module's data/ only touches Prisma models it owns (prisma/ownership.ts).
+  evidence: 1.4 only checks that every model has an owner; build it when the first non-core module adds a table (epic 2 or 3).
+- source_plan: same plan
+  summary: Purge old command_requests rows (retention, e.g. 30 days).
+  evidence: idempotency rows grow without bound; add when the first cron lands (epic 7).

@@ -4,7 +4,7 @@
 
 export type TenantManifest = { tenant: readonly string[]; global: readonly string[] };
 
-export const tenantTables: readonly string[] = [];
+export const tenantTables: readonly string[] = ["school_settings", "audit_log", "command_requests"];
 
 export const globalTables: readonly string[] = ["schools"];
 

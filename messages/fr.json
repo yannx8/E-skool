@@ -13,5 +13,11 @@
     "label": "Langue",
     "fr": "Français",
     "en": "English"
+  },
+  "errors": {
+    "forbidden": "Vous n'êtes pas autorisé à faire ceci.",
+    "invalid_input": "Certaines informations manquent ou sont invalides.",
+    "module_off": "Ce module est désactivé pour votre école.",
+    "suspended": "L'abonnement de votre école est suspendu. Vous pouvez encore consulter et exporter."
   }
 }

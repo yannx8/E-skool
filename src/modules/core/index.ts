@@ -14,3 +14,9 @@ export {
   parseLanguage,
 } from "./domain/language";
 export type { DocumentRequest, Language } from "./domain/language";
+export { MODULES, PERMISSIONS, ROLES, can, isModuleOn, scopeFor } from "./domain/permissions";
+export type { Actor, Module, Permission, Resource, Role, Scope } from "./domain/permissions";
+export { ERROR_CODES, defineCommand } from "./application/define-command";
+export type { CommandContext, CommandDefinition, CommandError, CommandResult, ErrorCode } from "./application/define-command";
+export type { AuditEntry } from "./data/audit";
+export { setModuleEnabled } from "./application/set-module-enabled";

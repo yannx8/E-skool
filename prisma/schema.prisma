@@ -7,11 +7,63 @@ datasource db {
   provider = "postgresql"
 }
 
-// Global table (no school_id, no RLS): the first School. Tenant tables arrive with their modules.
+// Global table (no school_id, no RLS). Every model is owned by one module (prisma/ownership.ts).
 model School {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  settings        SchoolSettings?
+  auditLog        AuditLog[]
+  commandRequests CommandRequest[]
+
   @@map("schools")
+}
+
+// Tenant (AD-12): Modules and Subscription state read by defineCommand's guards.
+model SchoolSettings {
+  schoolId          String   @id @map("school_id") @db.Uuid
+  modules           String[] @default(["fees", "report_cards"])
+  subscriptionState String   @default("trial") @map("subscription_state")
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@map("school_settings")
+}
+
+// Tenant, insert-only (AD-3, FR-55): ids and changed field names, never personal data.
+model AuditLog {
+  schoolId  String   @map("school_id") @db.Uuid
+  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  at        DateTime @default(now()) @db.Timestamptz(6)
+  actorKind String   @map("actor_kind")
+  actorId   String?  @map("actor_id") @db.Uuid
+  command   String
+  entity    String
+  entityId  String   @map("entity_id") @db.Uuid
+  fields    String[]
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@id([schoolId, id])
+  @@index([schoolId, at(sort: Desc)], map: "audit_log_school_at_idx")
+  @@map("audit_log")
+}
+
+// Tenant (AD-15): one row per (School, command, requestId); a repeat by the same actor
+// with the same input returns `result`.
+model CommandRequest {
+  schoolId  String   @map("school_id") @db.Uuid
+  command   String
+  requestId String   @map("request_id") @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  inputHash String   @map("input_hash")
+  result    Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@id([schoolId, command, requestId])
+  @@map("command_requests")
 }
