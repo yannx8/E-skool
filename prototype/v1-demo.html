@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-skool — démo V1</title>
+<!-- Throwaway demo prototype (2026-10-31): fake data in localStorage, no server. Not the product code. -->
+<style>
+:root{--paper:#F7F7FB;--surface:#FFF;--ink:#16181B;--ink2:#5C5F66;--ink3:#8A8D93;--line:#E6E6EF;--accent:#4F46E5;--accent2:#4338CA;--tint:#EEF0FF;
+--paid:#1F7A4D;--paidt:#E5F3EB;--due:#5C5F66;--duet:#EEEDE9;--late:#B4400B;--latet:#FBEADF;--mora:#5B44A8;--morat:#ECE8F7;--danger:#B42318;--focus:#1D4ED8;
+--font:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);font:400 16px/1.5 var(--font);color:var(--ink)}
+.num{font-variant-numeric:tabular-nums;font-weight:600}
+.app{display:flex;min-height:100vh}
+nav{width:240px;background:var(--surface);border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+nav .brand{font:600 20px var(--font);padding:4px 12px 2px}nav .school{font-size:14px;color:var(--ink2);padding:0 12px 16px}
+nav button{all:unset;cursor:pointer;padding:10px 12px;border-radius:6px;min-height:24px;color:var(--ink2);font-weight:500}
+nav button:hover{background:var(--paper)}nav button.on{background:var(--tint);color:var(--accent2)}
+nav .spacer{flex:1}nav label{font-size:14px;color:var(--ink2);padding:0 12px}
+nav select{margin:4px 12px;height:44px;border:1px solid var(--line);border-radius:6px;font:inherit;padding:0 8px;background:var(--surface)}
+main{flex:1;padding:24px 32px;max-width:1100px}
+h1{font:600 24px/1.2 var(--font);margin:0 0 4px}.sub{color:var(--ink2);margin:0 0 20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.grid{display:grid;gap:16px}.k4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .l{font-size:14px;color:var(--ink2);font-weight:500}.kpi .v{font:600 28px/1.2 var(--font);font-variant-numeric:tabular-nums;margin:4px 0}.kpi .c{font-size:14px;color:var(--ink2)}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}th{font-size:14px;color:var(--ink2);font-weight:500;background:#FBFBFD}
+td.r,th.r{text-align:right}tr:last-child td{border-bottom:0}
+.badge{display:inline-block;padding:2px 10px;border-radius:9999px;font:500 14px/1.6 var(--font);white-space:nowrap}
+.b-paid{background:var(--paidt);color:var(--paid)}.b-due{background:var(--duet);color:var(--due)}.b-late{background:var(--latet);color:var(--late)}.b-mora{background:var(--morat);color:var(--mora)}.b-void{background:#FDECEA;color:var(--danger)}
+.btn{height:44px;padding:0 16px;border-radius:6px;font:600 16px var(--font);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,nav button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff}.btn-p:hover{background:var(--accent2)}.btn-d{color:var(--danger);border-color:#F3C9C4}
+.btn:disabled{opacity:.45;cursor:not-allowed}.btn-s{height:36px;padding:0 12px;font-size:14px}
+input,select.f{height:44px;border:1px solid var(--line);border-radius:6px;font:inherit;padding:0 12px;background:var(--surface);width:100%}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.mt{margin-top:16px}.mt2{margin-top:24px}
+.muted{color:var(--ink2);font-size:14px}.danger{color:var(--danger)}.ok{color:var(--paid)}
+.hint{background:var(--tint);color:var(--accent2);border-radius:10px;padding:10px 14px;font-size:14px}
+.warn{background:var(--latet);color:var(--late);border-radius:10px;padding:10px 14px;font-size:14px}
+.lock{background:#FDECEA;color:var(--danger);border-radius:10px;padding:10px 14px;font-size:14px}
+.list button.pick{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:12px;width:100%;padding:12px 14px;border-bottom:1px solid var(--line);box-sizing:border-box}
+.list button.pick:hover{background:var(--paper)}
+.toast{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:30}
+.toast div{background:#0F5132;color:#fff;padding:12px 16px;border-radius:10px;max-width:380px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.15)}
+.toast div.wa::before{content:"WhatsApp · ";font-weight:600}
+.modal{position:fixed;inset:0;background:rgba(22,24,27,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:20;overflow:auto}
+.sheet{background:var(--surface);border-radius:10px;padding:20px;width:100%;max-width:520px}
+.receipt{width:302px;margin:0 auto;font:400 13px/1.45 'Courier New',monospace;color:#000;border:1px dashed #BBB;padding:14px}
+.receipt h3{text-align:center;margin:0;font:700 15px 'Courier New',monospace}.receipt .c{text-align:center}.receipt hr{border:0;border-top:1px dashed #999;margin:8px 0}
+.receipt .ln{display:flex;justify-content:space-between;gap:8px}.receipt .stamp{border:1px dashed #999;height:64px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#888}
+.marks input{width:72px;height:36px;text-align:right}
+.card-bulletin{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--line);padding:24px;border-radius:10px}
+.card-bulletin table{border-radius:0}.card-bulletin h2{text-align:center;margin:0;font-size:18px}
+@media print{nav,.noprint,.toast,main>*:not(.printable){display:none!important}.modal{position:static;background:none;padding:0}.sheet{max-width:none;padding:0}main{padding:0}.receipt{border:0}body{background:#fff}}
+@media (max-width:760px){.app{flex-direction:column}nav{width:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line)}nav .spacer{display:none}main{padding:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="noprint" aria-label="Modules">
+    <div class="brand">E-skool</div>
+    <div class="school">GS Les Lauréats · Douala</div>
+    <div id="navItems"></div>
+    <div class="spacer"></div>
+    <label for="role">Je suis connecté comme</label>
+    <select id="role">
+      <option value="promoteur">Promoteur (M. Tchoumi)</option>
+      <option value="directeur" selected>Directeur (M. Essomba)</option>
+      <option value="caissier">Caissier (Brice)</option>
+      <option value="enseignant">Enseignante CM1 A (Mme Fon)</option>
+    </select>
+    <button id="reset" style="margin:4px 12px;font-size:14px">Réinitialiser la démo</button>
+  </nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<script>
+"use strict";
+// ---------- Demo data ----------
+const TODAY = "2026-10-31"; // Douala business date for the demo
+const SCHOOL = { name: "Groupe Scolaire Les Lauréats", city: "Douala — Bonamoussadi", tel: "+237 6 99 00 00 00" };
+const TRANCHES = [
+  { id: "INS", label: "Inscription", due: "2026-09-07", amount: 25000 },
+  { id: "T1", label: "Tranche 1", due: "2026-10-15", amount: 45000 },
+  { id: "T2", label: "Tranche 2", due: "2027-01-15", amount: 40000 },
+  { id: "T3", label: "Tranche 3", due: "2027-04-15", amount: 35000 },
+];
+const SEND_HOME_DAYS = 7; // send-home rule: due date + 7 days
+const BASELINE_T1 = 0.48;  // last year's T1 rate at its checkpoint
+const SUBJECTS = [
+  { id: "fr", name: "Français", coef: 3 }, { id: "ma", name: "Mathématiques", coef: 3 },
+  { id: "an", name: "Anglais", coef: 2 }, { id: "sc", name: "Sciences", coef: 2 },
+  { id: "hg", name: "Histoire-Géographie", coef: 1 }, { id: "ec", name: "Éducation civique", coef: 1 },
+];
+const PERIODS = ["Éval. 1", "Éval. 2", "Éval. 3"];
+
+function seed() {
+  const P = (id, first, last, cls, guardian, phone) => ({ id, first, last, cls, guardian, phone });
+  const pupils = [
+    P("p1","Junior","Mbappe","CM1 A","Mme Mbappe Clarisse","+237 677 12 34 56"),
+    P("p2","Grâce","Mbappe","CE2 B","Mme Mbappe Clarisse","+237 677 12 34 56"),
+    P("p3","Yannick","Ngo Biyong","CM1 A","M. Ngo Biyong Paul","+237 699 45 11 02"),
+    P("p4","Aïcha","Bello","CM1 A","Mme Bello Hadiza","+237 655 20 87 33"),
+    P("p5","Ethan","Fotso","CM1 A","M. Fotso Arnaud","+237 670 98 76 54"),
+    P("p6","Marie-Claire","Essomba","CE2 B","Mme Essomba Rose","+237 691 33 22 11"),
+    P("p7","Kevin","Tchinda","CE2 B","M. Tchinda Serge","+237 652 44 10 90"),
+    P("p8","Sandrine","Atangana","CM1 A","Mme Atangana Lydie","+237 678 01 02 03"),
+    P("p9","Brayan","Kamga","CE2 B","M. Kamga Joseph","+237 696 55 66 77"),
+    P("p10","Océane","Ndjock","CM1 A","Mme Ndjock Viviane","+237 650 12 99 88"),
+    P("p11","Samuel","Eto'o Mvondo","CE2 B","M. Mvondo Jean","+237 675 70 70 70"),
+    P("p12","Laure","Douala Manga","CM1 A","Mme Manga Félicité","+237 699 88 77 66"),
+  ];
+  // Payments already received this year (INS for all; T1 for some, partial for others)
+  const pay = (pupil, tranche, amount, date, cashier) => ({ pupil, tranche, amount, date, cashier });
+  const lines = [];
+  pupils.forEach(p => lines.push(pay(p.id, "INS", 25000, "2026-09-07", "Brice")));
+  [["p3",45000],["p5",45000],["p6",45000],["p8",20000],["p9",45000],["p11",30000],["p12",45000]]
+    .forEach(([id, a]) => lines.push(pay(id, "T1", a, "2026-10-12", "Brice")));
+  let n = 0;
+  const receipts = lines.map(l => ({ no: ++n, date: l.date, time: "08:3" + (n % 10), cashier: l.cashier, items: [{ pupil: l.pupil, tranche: l.tranche, amount: l.amount }], void: null }));
+  const marks = {};
+  const base = { p1:12, p3:15, p4:9, p5:13, p8:16, p10:11, p12:14 };
+  pupils.filter(p => p.cls === "CM1 A").forEach(p => {
+    marks[p.id] = {};
+    SUBJECTS.forEach((s, i) => { marks[p.id][s.id] = PERIODS.map((_, k) => Math.max(4, Math.min(19, base[p.id] + ((i * 3 + k * 2 + p.id.length) % 7) - 3))); });
+  });
+  return {
+    pupils, receipts, nextReceipt: n + 1,
+    delays: { p4: { granted: "2026-10-20", by: "M. Essomba", instalments: [{ due: "2026-11-05", amount: 15000 }, { due: "2026-11-20", amount: 15000 }, { due: "2026-12-05", amount: 15000 }], reason: "Père en déplacement, salaire fin novembre" } },
+    session: { open: true, opened: "07:30", openingCash: 10000, paidOut: [] },
+    closings: [{ date: "2026-10-30", cashier: "Brice", expected: 155000, counted: 140000, gap: -15000, status: "approved", approver: "M. Essomba", comment: "Erreur de monnaie signalée" }],
+    sendHome: { confirmed: false, exclusions: {} },
+    marks, signedOff: false,
+  };
+}
+const KEY = "eskool-demo-v1";
+let S = JSON.parse(localStorage.getItem(KEY) || "null") || seed();
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+let role = "directeur", route = "dashboard", ctx = {};
+
+// ---------- Helpers ----------
+const fcfa = n => String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ").replace(/^/, n < 0 ? "-" : "") + " FCFA";
+const d = iso => iso.split("-").reverse().join("/");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pupil = id => S.pupils.find(p => p.id === id);
+const fullName = p => `${p.first} ${p.last}`;
+const addDays = (iso, k) => { const t = new Date(iso + "T12:00:00Z"); t.setUTCDate(t.getUTCDate() + k); return t.toISOString().slice(0, 10); };
+const liveItems = () => S.receipts.filter(r => !r.void).flatMap(r => r.items.map(i => ({ ...i, date: r.date, cashier: r.cashier })));
+function paidOn(pid, tid) { return liveItems().filter(i => i.pupil === pid && i.tranche === tid).reduce((a, i) => a + i.amount, 0); }
+function owed(pid, tid) { const t = TRANCHES.find(x => x.id === tid); return Math.max(0, t.amount - paidOn(pid, tid)); }
+function balanceDue(pid, asOf = TODAY) { return TRANCHES.filter(t => t.due <= asOf).reduce((a, t) => a + owed(pid, t.id), 0); }
+function balanceYear(pid) { return TRANCHES.reduce((a, t) => a + owed(pid, t.id), 0); }
+function underDelay(pid) { const dl = S.delays[pid]; return dl && !dl.broken; }
+function status(pid) {
+  if (balanceDue(pid) === 0) return balanceYear(pid) === 0 ? ["Soldé", "b-paid"] : ["À jour", "b-paid"];
+  if (underDelay(pid)) return ["Délai accordé", "b-mora"];
+  return ["En retard", "b-late"];
+}
+const badge = ([t, c]) => `<span class="badge ${c}">${t}</span>`;
+function toast(msg, wa) { const el = document.createElement("div"); if (wa) el.className = "wa"; el.textContent = msg; document.getElementById("toasts").appendChild(el); setTimeout(() => el.remove(), 5200); }
+function modal(html) { document.getElementById("modalRoot").innerHTML = `<div class="modal" role="dialog" aria-modal="true"><div class="sheet printable">${html}</div></div>`; }
+const closeModal = () => (document.getElementById("modalRoot").innerHTML = "");
+const can = {
+  pay: () => ["directeur", "caissier"].includes(role),
+  void: () => role === "directeur",
+  delay: () => role === "directeur",
+  confirmSendHome: () => role === "directeur",
+  approveGap: () => role === "directeur",
+  marks: () => ["directeur", "enseignant"].includes(role),
+  signOff: () => role === "directeur",
+  money: () => role !== "enseignant",
+};
+
+// ---------- Derived: send-home list ----------
+function sendHomeCandidates() {
+  return S.pupils.map(p => {
+    const late = TRANCHES.filter(t => addDays(t.due, SEND_HOME_DAYS) <= TODAY && owed(p.id, t.id) > 0);
+    return { p, late, amount: late.reduce((a, t) => a + owed(p.id, t.id), 0) };
+  }).filter(x => x.amount > 0 && !underDelay(x.p.id));
+}
+
+// ---------- Views ----------
+const NAV = [
+  ["dashboard", "Tableau de bord", () => ["promoteur", "directeur"].includes(role)],
+  ["counter", "Caisse", () => can.pay()],
+  ["pupils", "Élèves", () => can.money()],
+  ["sendhome", "Renvois du jour", () => true],
+  ["closing", "Clôture de caisse", () => ["promoteur", "directeur", "caissier"].includes(role)],
+  ["marks", "Notes", () => can.marks()],
+  ["reportcards", "Bulletins", () => ["promoteur", "directeur"].includes(role)],
+];
+function renderNav() {
+  document.getElementById("navItems").innerHTML = NAV.filter(n => n[2]()).map(n => `<button class="${route === n[0] ? "on" : ""}" data-go="${n[0]}">${n[1]}</button>`).join("");
+}
+function go(r, c = {}) { route = r; ctx = c; render(); }
+
+function vDashboard() {
+  const expT1 = S.pupils.length * 45000, gotT1 = S.pupils.reduce((a, p) => a + paidOn(p.id, "T1"), 0), rate = gotT1 / expT1;
+  const today = liveItems().filter(i => i.date === TODAY).reduce((a, i) => a + i.amount, 0);
+  const late = S.pupils.filter(p => !underDelay(p.id)).reduce((a, p) => a + balanceDue(p.id), 0);
+  const delay = S.pupils.filter(p => underDelay(p.id)).reduce((a, p) => a + balanceDue(p.id), 0);
+  const sh = sendHomeCandidates().filter(x => !S.sendHome.exclusions[x.p.id]);
+  const lastClose = S.closings[S.closings.length - 1];
+  return `<h1>Tableau de bord</h1><p class="sub">Année 2026-2027 · aujourd'hui ${d(TODAY)}</p>
+  <div class="grid k4">
+    <div class="card kpi"><div class="l">Taux de recouvrement · Tranche 1</div><div class="v">${Math.round(rate * 100)} %</div><div class="c">${rate >= BASELINE_T1 ? '<span class="ok">▲</span>' : '<span class="danger">▼</span>'} vs ${Math.round(BASELINE_T1 * 100)} % l'an dernier au même point</div></div>
+    <div class="card kpi"><div class="l">Encaissé aujourd'hui</div><div class="v">${fcfa(today)}</div><div class="c">Session de Brice ${S.session.open ? "ouverte" : "clôturée"}</div></div>
+    <div class="card kpi"><div class="l">En retard</div><div class="v" style="color:var(--late)">${fcfa(late)}</div><div class="c">${S.pupils.filter(p => status(p.id)[0] === "En retard").length} élèves</div></div>
+    <div class="card kpi"><div class="l">Sous délai accordé</div><div class="v" style="color:var(--mora)">${fcfa(delay)}</div><div class="c">${Object.keys(S.delays).length} élève(s)</div></div>
+  </div>
+  <div class="grid k4 mt">
+    <div class="card"><div class="row between"><b>Dernière clôture</b>${lastClose.gap === 0 ? badge(["Sans écart", "b-paid"]) : badge(["Écart " + fcfa(lastClose.gap), "b-void"])}</div>
+      <p class="muted">${d(lastClose.date)} · ${lastClose.cashier} · attendu ${fcfa(lastClose.expected)} · compté ${fcfa(lastClose.counted)}<br>${lastClose.status === "approved" ? "Approuvée par " + esc(lastClose.approver) + " : « " + esc(lastClose.comment) + " »" : '<span class="danger">En attente d\'approbation du directeur</span>'}</p>
+      <button class="btn btn-s" data-go="closing">Voir les clôtures</button></div>
+    <div class="card"><div class="row between"><b>Renvois du jour</b>${badge([sh.length + " élèves", "b-late"])}</div>
+      <p class="muted">${S.sendHome.confirmed ? "Liste confirmée par le directeur. Parents prévenus sur WhatsApp." : "Liste à confirmer par le directeur."}</p>
+      <button class="btn btn-s" data-go="sendhome">Ouvrir la liste</button></div>
+  </div>
+  <h2 class="mt2" style="font-size:18px">Par classe · Tranche 1</h2>
+  <table><tr><th>Classe</th><th class="r">Attendu</th><th class="r">Encaissé</th><th class="r">Taux</th></tr>
+  ${["CM1 A", "CE2 B"].map(c => { const ps = S.pupils.filter(p => p.cls === c), e = ps.length * 45000, g = ps.reduce((a, p) => a + paidOn(p.id, "T1"), 0); return `<tr><td>${c}</td><td class="r num">${fcfa(e)}</td><td class="r num">${fcfa(g)}</td><td class="r num">${Math.round(g / e * 100)} %</td></tr>`; }).join("")}
+  </table>`;
+}
+
+function vCounter() {
+  if (!S.session.open) return `<h1>Caisse</h1><div class="lock">Session clôturée pour aujourd'hui. Aucun paiement ne peut être enregistré dans une session fermée.</div><h2 class="mt2" style="font-size:18px">Reçus du jour</h2>${receiptsTable(S.receipts.filter(r => r.date === TODAY))}`;
+  const cart = ctx.cart || [];
+  const q = (ctx.q || "").toLowerCase();
+  const hits = q.length >= 2 ? S.pupils.filter(p => (fullName(p) + " " + p.guardian).toLowerCase().includes(q) && !cart.find(c => c.id === p.id)) : [];
+  const siblings = cart.length ? S.pupils.filter(p => p.phone === pupil(cart[0].id).phone && !cart.find(c => c.id === p.id)) : [];
+  const total = cart.reduce((a, c) => a + (Number(c.amount) || 0), 0);
+  return `<h1>Caisse</h1><p class="sub">Session ouverte à ${S.session.opened} · ${role === "caissier" ? "Brice" : "M. Essomba"} · paiement en espèces</p>
+  <div class="grid" style="grid-template-columns:minmax(280px,1fr) minmax(320px,1.2fr);align-items:start">
+    <div class="card"><label for="q"><b>1. Trouver l'élève</b></label>
+      <input id="q" placeholder="Nom de l'élève ou du parent (ex. mbap)" value="${esc(ctx.q || "")}" autocomplete="off" class="mt">
+      <div class="list mt">${hits.map(p => `<button class="pick" data-add="${p.id}"><span><b>${esc(fullName(p))}</b><br><span class="muted">${p.cls} · ${esc(p.guardian)}</span></span><span>${badge(status(p.id))}<br><span class="muted num">${fcfa(balanceDue(p.id))}</span></span></button>`).join("") || (q.length >= 2 ? '<p class="muted">Aucun élève trouvé.</p>' : '<p class="muted">Tapez au moins 2 lettres.</p>')}</div>
+      ${siblings.length ? `<div class="hint mt">Frère/sœur du même parent : ${siblings.map(s => `<button class="btn btn-s" data-add="${s.id}">+ ${esc(fullName(s))} (${s.cls})</button>`).join(" ")}</div>` : ""}
+    </div>
+    <div class="card"><b>2. Montants</b>
+      ${cart.length ? cart.map((c, i) => { const p = pupil(c.id), next = TRANCHES.find(t => owed(p.id, t.id) > 0); return `<div class="mt" style="border-bottom:1px solid var(--line);padding-bottom:12px"><div class="row between"><span><b>${esc(fullName(p))}</b> · ${p.cls}</span><button class="btn btn-s" data-rm="${i}">Retirer</button></div>
+        <div class="muted">${TRANCHES.map(t => `${t.label} : ${owed(p.id, t.id) ? '<span style="color:var(--late)">reste ' + fcfa(owed(p.id, t.id)) + "</span>" : '<span class="ok">payée</span>'}`).join(" · ")}</div>
+        <div class="row mt"><input type="number" min="1" step="1" data-amt="${i}" value="${c.amount}" style="max-width:200px" aria-label="Montant pour ${esc(fullName(p))}"><span class="muted">${next ? "Proposé : reste de la " + next.label.toLowerCase() : "Élève soldé"}</span></div></div>`; }).join("") : '<p class="muted">Ajoutez un élève à gauche.</p>'}
+      <div class="row between mt"><span>Total encaissé</span><span class="num" style="font-size:22px">${fcfa(total)}</span></div>
+      <button class="btn btn-p mt" id="confirmPay" ${cart.length && total > 0 ? "" : "disabled"} style="width:100%">3. Encaisser et imprimer le reçu</button>
+      <p class="muted">Le reçu est numéroté par le système. Un message WhatsApp de confirmation part au parent.</p>
+    </div>
+  </div>
+  <h2 class="mt2" style="font-size:18px">Reçus du jour</h2>${receiptsTable(S.receipts.filter(r => r.date === TODAY))}`;
+}
+
+function receiptsTable(rs) {
+  if (!rs.length) return '<p class="muted">Aucun reçu aujourd\'hui.</p>';
+  return `<table><tr><th>N°</th><th>Heure</th><th>Élève(s)</th><th>Caissier</th><th class="r">Montant</th><th></th></tr>${rs.slice().reverse().map(r => `<tr><td class="num">${String(r.no).padStart(5, "0")}</td><td>${r.time}</td><td>${r.items.map(i => esc(fullName(pupil(i.pupil)))).join(", ")}</td><td>${r.cashier}</td>
+  <td class="r num">${r.void ? '<s>' + fcfa(r.items.reduce((a, i) => a + i.amount, 0)) + "</s>" : fcfa(r.items.reduce((a, i) => a + i.amount, 0))}</td>
+  <td class="r">${r.void ? badge(["Annulé", "b-void"]) : `<button class="btn btn-s" data-receipt="${r.no}">Réimprimer</button> ${can.void() ? `<button class="btn btn-s btn-d" data-void="${r.no}">Annuler</button>` : ""}`}</td></tr>`).join("")}</table>`;
+}
+
+function allocate(pid, amount) {
+  const items = []; let left = amount;
+  for (const t of TRANCHES) { const o = owed(pid, t.id); if (o > 0 && left > 0) { const a = Math.min(o, left); items.push({ pupil: pid, tranche: t.id, amount: a }); left -= a; } }
+  if (left > 0) items.push({ pupil: pid, tranche: "T3", amount: left }); // overpayment: credit kept on the last tranche in the demo
+  return items;
+}
+
+function receiptHtml(r, dup) {
+  const groups = {}; r.items.forEach(i => (groups[i.pupil] = groups[i.pupil] || []).push(i));
+  return `<div class="receipt"><h3>${SCHOOL.name.toUpperCase()}</h3><div class="c">${SCHOOL.city}<br>${SCHOOL.tel}</div><hr>
+  <div class="ln"><span>REÇU N°</span><b>${String(r.no).padStart(5, "0")}</b></div><div class="ln"><span>Date</span><span>${d(r.date)} ${r.time}</span></div><div class="ln"><span>Caissier</span><span>${r.cashier}</span></div>${dup ? '<div class="c"><b>** DUPLICATA **</b></div>' : ""}${r.void ? '<div class="c"><b>** ANNULÉ **</b></div>' : ""}<hr>
+  ${Object.entries(groups).map(([pid, its]) => { const p = pupil(pid); return `<div><b>${esc(fullName(p))}</b> · ${p.cls}</div>${its.map(i => `<div class="ln"><span>${TRANCHES.find(t => t.id === i.tranche).label}</span><span>${fcfa(i.amount)}</span></div>`).join("")}<div class="ln"><span>Reste à payer (année)</span><span>${fcfa(balanceYear(pid))}</span></div><hr>`; }).join("")}
+  <div class="ln"><b>TOTAL ESPÈCES</b><b>${fcfa(r.items.reduce((a, i) => a + i.amount, 0))}</b></div>
+  <div class="stamp">Cachet de l'école</div><div class="c" style="margin-top:8px">Vérifier : eskool.cm/v/${(r.no * 7919).toString(36).toUpperCase()}</div></div>`;
+}
+
+function vPupils() {
+  if (ctx.id) return vPupil(pupil(ctx.id));
+  return `<h1>Élèves</h1><p class="sub">${S.pupils.length} élèves · le compte est par élève, le parent est un contact</p>
+  <table><tr><th>Élève</th><th>Classe</th><th>Parent</th><th class="r">Échu non payé</th><th>Statut</th></tr>
+  ${S.pupils.map(p => `<tr style="cursor:pointer" data-pupil="${p.id}"><td><b>${esc(fullName(p))}</b></td><td>${p.cls}</td><td>${esc(p.guardian)}<br><span class="muted">${p.phone}</span></td><td class="r num">${fcfa(balanceDue(p.id))}</td><td>${badge(status(p.id))}</td></tr>`).join("")}</table>`;
+}
+
+function vPupil(p) {
+  const dl = S.delays[p.id];
+  const events = [
+    ...S.receipts.filter(r => r.items.some(i => i.pupil === p.id)).map(r => ({ date: r.date, t: `${r.void ? "Paiement annulé" : "Paiement"} · reçu ${String(r.no).padStart(5, "0")} · ${fcfa(r.items.filter(i => i.pupil === p.id).reduce((a, i) => a + i.amount, 0))}${r.void ? " · motif : " + esc(r.void.reason) : ""}` })),
+    ...(dl ? [{ date: dl.granted, t: `Délai accordé par ${esc(dl.by)} · ${dl.instalments.length} versements · « ${esc(dl.reason)} »` }] : []),
+    ...(ctx.wa || []).filter(w => w.pupil === p.id),
+  ].sort((a, b) => b.date.localeCompare(a.date));
+  return `<button class="btn btn-s noprint" data-go="pupils">← Élèves</button>
+  <h1 class="mt">${esc(fullName(p))}</h1><p class="sub">${p.cls} · parent : ${esc(p.guardian)} · ${p.phone} · WhatsApp ✓</p>
+  <div class="grid k4"><div class="card kpi"><div class="l">Échu non payé</div><div class="v">${fcfa(balanceDue(p.id))}</div><div class="c">${badge(status(p.id))}</div></div>
+  <div class="card kpi"><div class="l">Reste sur l'année</div><div class="v">${fcfa(balanceYear(p.id))}</div></div></div>
+  <table class="mt"><tr><th>Tranche</th><th>Échéance</th><th class="r">Montant</th><th class="r">Payé</th><th class="r">Reste</th></tr>
+  ${TRANCHES.map(t => `<tr><td>${t.label}</td><td>${d(t.due)}</td><td class="r num">${fcfa(t.amount)}</td><td class="r num">${fcfa(paidOn(p.id, t.id))}</td><td class="r num">${fcfa(owed(p.id, t.id))}</td></tr>`).join("")}</table>
+  ${dl ? `<div class="card mt"><b>Délai de paiement</b> ${badge(["Actif", "b-mora"])}<p class="muted">${fcfa(dl.instalments.reduce((a, i) => a + i.amount, 0))} en ${dl.instalments.length} versements : ${dl.instalments.map(i => fcfa(i.amount) + " le " + d(i.due)).join(", ")}. Accordé par ${esc(dl.by)}.</p></div>`
+    : balanceDue(p.id) > 0 ? `<div class="card mt"><b>Accorder un délai de paiement</b>${can.delay() ? `<p class="muted">Même montant, nouvelles dates. Limite : 3 versements, avant le 18/12/2026.</p><div class="row"><select class="f" id="nInst" style="max-width:220px"><option value="2">2 versements</option><option value="3" selected>3 versements</option></select><input id="dReason" placeholder="Motif (obligatoire)" style="max-width:320px"><button class="btn btn-p" data-delay="${p.id}">Accorder</button></div>` : '<p class="muted">Réservé au directeur.</p>'}</div>` : ""}
+  <h2 class="mt2" style="font-size:18px">Historique</h2><div class="card">${events.map(e => `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><span class="muted">${d(e.date)}</span> · ${e.t}</div>`).join("")}</div>`;
+}
+
+function vSendHome() {
+  const list = sendHomeCandidates();
+  const kept = list.filter(x => !S.sendHome.exclusions[x.p.id]);
+  const teacher = role === "enseignant";
+  const rows = (teacher ? kept.filter(x => x.p.cls === "CM1 A") : list);
+  const visible = S.sendHome.confirmed || can.confirmSendHome();
+  return `<h1>Renvois du jour</h1><p class="sub">${d(TODAY)} · règle : tranche échue depuis ${SEND_HOME_DAYS} jours et non soldée · les élèves sous délai accordé ne sont pas renvoyés</p>
+  ${!visible ? '<div class="warn">La liste du jour n\'est pas encore confirmée par le directeur.</div>' : `
+  ${S.sendHome.confirmed ? '<div class="hint">Liste confirmée par M. Essomba à 07:30. Les parents ont reçu le montant à payer pour le retour en classe.</div>' : can.confirmSendHome() ? '<div class="warn">Vérifiez la liste, excluez si besoin avec un motif, puis confirmez.</div>' : ""}
+  <table class="mt"><tr><th>Élève</th><th>Classe</th>${teacher ? "" : '<th>Tranches</th><th class="r">À payer</th>'}<th></th></tr>
+  ${rows.map(x => { const ex = S.sendHome.exclusions[x.p.id]; return `<tr${ex ? ' style="opacity:.55"' : ""}><td><b>${esc(fullName(x.p))}</b>${ex ? `<br><span class="muted">Exclu : ${esc(ex)}</span>` : ""}</td><td>${x.p.cls}</td>${teacher ? "" : `<td>${x.late.map(t => t.label).join(", ")}</td><td class="r num">${fcfa(x.amount)}</td>`}
+  <td class="r">${can.confirmSendHome() && !S.sendHome.confirmed ? (ex ? `<button class="btn btn-s" data-unex="${x.p.id}">Réintégrer</button>` : `<button class="btn btn-s" data-ex="${x.p.id}">Exclure</button>`) : ""}</td></tr>`; }).join("") || `<tr><td colspan="5" class="muted">Aucun élève à renvoyer.</td></tr>`}</table>
+  ${can.confirmSendHome() && !S.sendHome.confirmed ? `<button class="btn btn-p mt" id="confirmSH">Confirmer la liste (${kept.length} élèves)</button>` : ""}`}
+  <p class="muted mt">La liste vient des paiements enregistrés. Un élève dont le parent a payé hier n'y figure plus ; si un parent présente un reçu introuvable dans le système, le directeur le voit tout de suite.</p>`;
+}
+
+function vClosing() {
+  const todays = S.receipts.filter(r => r.date === TODAY && !r.void).reduce((a, r) => a + r.items.reduce((b, i) => b + i.amount, 0), 0);
+  const voids = S.receipts.filter(r => r.date === TODAY && r.void).length;
+  const expected = S.session.openingCash + todays;
+  const history = `<h2 class="mt2" style="font-size:18px">Clôtures</h2><table><tr><th>Date</th><th>Caissier</th><th class="r">Attendu</th><th class="r">Compté</th><th class="r">Écart</th><th>Statut</th></tr>
+  ${S.closings.slice().reverse().map((c, i) => `<tr><td>${d(c.date)}</td><td>${c.cashier}</td><td class="r num">${fcfa(c.expected)}</td><td class="r num">${fcfa(c.counted)}</td><td class="r num ${c.gap ? "danger" : "ok"}">${fcfa(c.gap)}</td>
+  <td>${c.status === "approved" ? badge([c.gap ? "Approuvée" : "Sans écart", "b-paid"]) + (c.comment ? `<br><span class="muted">${esc(c.approver)} : ${esc(c.comment)}</span>` : "") : (can.approveGap() ? `<div class="row"><input id="apc${S.closings.length - 1 - i}" placeholder="Commentaire" style="max-width:200px"><button class="btn btn-s btn-p" data-approve="${S.closings.length - 1 - i}">Approuver l'écart</button></div>` : badge(["En attente du directeur", "b-late"]))}</td></tr>`).join("")}</table>`;
+  if (!S.session.open) return `<h1>Clôture de caisse</h1><div class="hint">Session du ${d(TODAY)} clôturée.</div>${history}`;
+  if (role !== "caissier") return `<h1>Clôture de caisse</h1><p class="sub">La session de Brice est ouverte. Il compte la caisse en fin de journée sans voir le montant attendu.</p>${history}`;
+  return `<h1>Clôture de caisse</h1><p class="sub">Session ouverte à ${S.session.opened} · fond de caisse ${fcfa(S.session.openingCash)}</p>
+  <div class="card" style="max-width:520px"><label for="counted"><b>Comptez les espèces dans la caisse et saisissez le total</b></label>
+  <p class="muted">Le montant attendu s'affiche seulement après la saisie (comptage à l'aveugle). Le montant saisi ne peut plus être modifié.</p>
+  <input id="counted" type="number" min="0" step="1" placeholder="ex. 70000"><button class="btn btn-p mt" id="doClose" style="width:100%">Valider le comptage et clôturer</button>
+  <p class="muted">${voids} reçu(s) annulé(s) aujourd'hui · attendu calculé par le système</p></div>${history}`;
+}
+
+function vMarks() {
+  if (role === "enseignant" || role === "directeur") {
+    const cls = "CM1 A", subj = ctx.subj || "ma", per = ctx.per ?? 2;
+    const ps = S.pupils.filter(p => p.cls === cls);
+    return `<h1>Saisie des notes</h1><p class="sub">${cls} · trimestre 1 · notes sur 20 · enregistrées à chaque saisie</p>
+    ${S.signedOff ? '<div class="lock">Trimestre signé par le directeur : les notes sont verrouillées.</div>' : ""}
+    <div class="row"><select class="f" id="subj" style="max-width:260px">${SUBJECTS.map(s => `<option value="${s.id}" ${s.id === subj ? "selected" : ""}>${s.name} (coef. ${s.coef})</option>`).join("")}</select>
+    <select class="f" id="per" style="max-width:180px">${PERIODS.map((p, i) => `<option value="${i}" ${i == per ? "selected" : ""}>${p}</option>`).join("")}</select></div>
+    <table class="mt marks"><tr><th>Élève</th><th class="r">Note /20</th><th></th></tr>
+    ${ps.map(p => `<tr><td>${esc(fullName(p))}</td><td class="r"><input type="number" min="0" max="20" step="0.25" data-mark="${p.id}" value="${S.marks[p.id][subj][per] ?? ""}" ${S.signedOff ? "disabled" : ""} aria-label="Note de ${esc(fullName(p))}"></td><td class="muted" id="sv-${p.id}"></td></tr>`).join("")}</table>
+    ${role === "directeur" ? `<button class="btn btn-p mt" data-go="reportcards">Voir les bulletins</button>` : ""}`;
+  }
+  return "";
+}
+
+function results() {
+  const ps = S.pupils.filter(p => p.cls === "CM1 A");
+  const coefs = SUBJECTS.reduce((a, s) => a + s.coef, 0);
+  const rows = ps.map(p => {
+    const subj = SUBJECTS.map(s => { const ms = S.marks[p.id][s.id].filter(m => m !== null && m !== ""); const avg = ms.reduce((a, m) => a + Number(m), 0) / ms.length; return { s, ms: S.marks[p.id][s.id], avg }; });
+    return { p, subj, avg: subj.reduce((a, x) => a + x.avg * x.s.coef, 0) / coefs };
+  });
+  rows.forEach(r => { r.rank = 1 + rows.filter(o => o.avg > r.avg + 1e-9).length; });
+  const classAvg = rows.reduce((a, r) => a + r.avg, 0) / rows.length;
+  return { rows: rows.sort((a, b) => a.rank - b.rank), classAvg };
+}
+const f2 = n => n.toFixed(2).replace(".", ",");
+const mention = a => a >= 16 ? "Très bien" : a >= 14 ? "Bien" : a >= 12 ? "Assez bien" : a >= 10 ? "Passable" : "Insuffisant";
+
+function vReportCards() {
+  const { rows, classAvg } = results();
+  if (ctx.id) {
+    const r = rows.find(x => x.p.id === ctx.id), p = r.p;
+    return `<div class="noprint row"><button class="btn btn-s" data-go="reportcards">← Bulletins</button><button class="btn btn-s" onclick="print()">Imprimer</button></div>
+    <div class="card-bulletin printable mt"><div class="row between"><div><b>${SCHOOL.name}</b><br><span class="muted">${SCHOOL.city}</span></div><div class="muted" style="text-align:right">République du Cameroun<br>Paix – Travail – Patrie</div></div>
+    <h2 class="mt">BULLETIN DE NOTES · 1er TRIMESTRE 2026-2027</h2>
+    <p><b>${esc(fullName(p))}</b> · Classe : ${p.cls} · Effectif : ${rows.length}</p>
+    <table><tr><th>Matière</th>${PERIODS.map(x => `<th class="r">${x}</th>`).join("")}<th class="r">Moy. /20</th><th class="r">Coef.</th><th class="r">Points</th></tr>
+    ${r.subj.map(x => `<tr><td>${x.s.name}</td>${x.ms.map(m => `<td class="r num">${m}</td>`).join("")}<td class="r num">${f2(x.avg)}</td><td class="r">${x.s.coef}</td><td class="r num">${f2(x.avg * x.s.coef)}</td></tr>`).join("")}</table>
+    <div class="grid k4 mt"><div><span class="muted">Moyenne trimestrielle</span><div class="num" style="font-size:22px">${f2(r.avg)} / 20</div></div><div><span class="muted">Rang</span><div class="num" style="font-size:22px">${r.rank}${r.rank === 1 ? "er" : "e"} / ${rows.length}</div></div><div><span class="muted">Moyenne de la classe</span><div class="num" style="font-size:22px">${f2(classAvg)}</div></div><div><span class="muted">Appréciation</span><div style="font-size:18px;font-weight:600">${mention(r.avg)}</div></div></div>
+    <div class="row between mt2"><div style="width:45%"><span class="muted">L'enseignante</span><div style="height:56px;border-bottom:1px solid #999"></div></div><div style="width:45%"><span class="muted">Le directeur · cachet</span><div style="height:56px;border-bottom:1px solid #999"></div></div></div>
+    <p class="muted mt">Code de vérification : eskool.cm/v/${(p.id.length * 104729 + r.rank).toString(36).toUpperCase()}</p></div>`;
+  }
+  return `<h1>Bulletins</h1><p class="sub">CM1 A · 1er trimestre · moyennes et rangs calculés par le système (jamais saisis)</p>
+  <div class="row">${S.signedOff ? badge(["Trimestre signé", "b-paid"]) : can.signOff() ? '<button class="btn btn-p" id="signOff">Signer le trimestre et verrouiller les notes</button>' : ""}<span class="muted">Moyenne de la classe : <b class="num">${f2(classAvg)}</b></span></div>
+  <table class="mt"><tr><th>Rang</th><th>Élève</th><th class="r">Moyenne /20</th><th>Appréciation</th><th></th></tr>
+  ${rows.map(r => `<tr><td class="num">${r.rank}</td><td>${esc(fullName(r.p))}</td><td class="r num">${f2(r.avg)}</td><td>${mention(r.avg)}</td><td class="r"><button class="btn btn-s" data-card="${r.p.id}">Ouvrir le bulletin</button></td></tr>`).join("")}</table>`;
+}
+
+const VIEWS = { dashboard: vDashboard, counter: vCounter, pupils: vPupils, sendhome: vSendHome, closing: vClosing, marks: vMarks, reportcards: vReportCards };
+function render() {
+  const allowed = NAV.filter(n => n[2]()).map(n => n[0]);
+  if (!allowed.includes(route)) route = allowed[0];
+  renderNav();
+  document.getElementById("view").innerHTML = VIEWS[route]();
+  if (route === "counter") { const q = document.getElementById("q"); if (q && ctx.focusQ) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
+}
+
+// ---------- Actions ----------
+document.addEventListener("click", e => {
+  const t = e.target.closest("button,[data-pupil]"); if (!t) return;
+  const ds = t.dataset;
+  if (ds.go) return go(ds.go);
+  if (ds.pupil) return go("pupils", { id: ds.pupil });
+  if (ds.add) { const cart = (ctx.cart || []).concat([{ id: ds.add, amount: owed(ds.add, (TRANCHES.find(x => owed(ds.add, x.id) > 0) || TRANCHES[3]).id) || 0 }]); return go("counter", { cart, q: "" }); }
+  if (ds.rm) { const cart = ctx.cart.slice(); cart.splice(+ds.rm, 1); return go("counter", { ...ctx, cart }); }
+  if (t.id === "confirmPay") {
+    const cart = ctx.cart.filter(c => Number(c.amount) > 0);
+    if (cart.some(c => !Number.isInteger(Number(c.amount)))) return toast("Montant en FCFA entiers uniquement.");
+    const now = new Date(), time = now.toTimeString().slice(0, 5);
+    const r = { no: S.nextReceipt++, date: TODAY, time, cashier: role === "caissier" ? "Brice" : "M. Essomba", items: cart.flatMap(c => allocate(c.id, Number(c.amount))), void: null };
+    S.receipts.push(r); if (S.sendHome.confirmed === false) {} save();
+    const g = pupil(cart[0].id);
+    modal(`<div class="noprint row between"><b class="ok">Paiement enregistré</b><button class="btn btn-s" id="closeM">Paiement suivant</button></div><div class="mt">${receiptHtml(r)}</div><div class="noprint row mt"><button class="btn btn-p" onclick="print()">Imprimer le reçu (80 mm)</button></div>`);
+    setTimeout(() => toast(`${g.guardian} : « ${SCHOOL.name} a reçu ${fcfa(r.items.reduce((a, i) => a + i.amount, 0))} pour ${cart.map(c => pupil(c.id).first).join(" et ")}. Reçu n°${String(r.no).padStart(5, "0")}. Reste à payer : ${fcfa(cart.reduce((a, c) => a + balanceYear(c.id), 0))}. »`, true), 900);
+    ctx = {}; return render();
+  }
+  if (t.id === "closeM") return closeModal();
+  if (ds.receipt) { const r = S.receipts.find(x => x.no == ds.receipt); return modal(`<div class="noprint row between"><b>Réimpression</b><button class="btn btn-s" id="closeM">Fermer</button></div><div class="mt">${receiptHtml(r, true)}</div><div class="noprint row mt"><button class="btn btn-p" onclick="print()">Imprimer</button></div>`); }
+  if (ds.void) { return modal(`<b>Annuler le reçu n°${String(ds.void).padStart(5, "0")}</b><p class="muted">Le paiement reste visible, marqué « Annulé ». Réservé au directeur.</p><input id="vReason" placeholder="Motif (obligatoire)"><div class="row mt"><button class="btn btn-d" data-dovoid="${ds.void}">Confirmer l'annulation</button><button class="btn" id="closeM">Retour</button></div>`); }
+  if (ds.dovoid) { const reason = document.getElementById("vReason").value.trim(); if (!reason) return toast("Le motif est obligatoire."); const r = S.receipts.find(x => x.no == ds.dovoid); r.void = { by: "M. Essomba", reason }; save(); closeModal(); toast("Reçu annulé. Le parent reçoit un message de correction."); return render(); }
+  if (ds.delay) {
+    const reason = document.getElementById("dReason").value.trim(); if (!reason) return toast("Le motif est obligatoire.");
+    const n = +document.getElementById("nInst").value, due = balanceDue(ds.delay), part = Math.floor(due / n / 500) * 500;
+    const inst = Array.from({ length: n }, (_, i) => ({ due: addDays(TODAY, 15 * (i + 1)), amount: i === n - 1 ? due - part * (n - 1) : part }));
+    S.delays[ds.delay] = { granted: TODAY, by: "M. Essomba", instalments: inst, reason }; save();
+    toast(`Délai accordé : ${fcfa(due)} en ${n} versements. L'élève sort de la liste des renvois.`); return render();
+  }
+  if (ds.ex) { const why = prompt("Motif de l'exclusion (obligatoire) :"); if (!why) return; S.sendHome.exclusions[ds.ex] = why; save(); return render(); }
+  if (ds.unex) { delete S.sendHome.exclusions[ds.unex]; save(); return render(); }
+  if (t.id === "confirmSH") {
+    const kept = sendHomeCandidates().filter(x => !S.sendHome.exclusions[x.p.id]);
+    S.sendHome.confirmed = true; save(); render();
+    kept.slice(0, 3).forEach((x, i) => setTimeout(() => toast(`${x.p.guardian} : « ${x.p.first} ne peut pas rester en classe aujourd'hui. Montant à régler pour son retour : ${fcfa(x.amount)}. »`, true), 600 * (i + 1)));
+    if (kept.length > 3) setTimeout(() => toast(`… et ${kept.length - 3} autres parents prévenus.`, true), 2400);
+    return;
+  }
+  if (t.id === "doClose") {
+    const v = document.getElementById("counted").value; if (v === "" || !Number.isInteger(+v)) return toast("Saisissez le total compté en FCFA entiers.");
+    const todays = S.receipts.filter(r => r.date === TODAY && !r.void).reduce((a, r) => a + r.items.reduce((b, i) => b + i.amount, 0), 0);
+    const expected = S.session.openingCash + todays, counted = +v, gap = counted - expected;
+    S.closings.push({ date: TODAY, cashier: "Brice", expected, counted, gap, status: gap === 0 ? "approved" : "pending", approver: "", comment: "" });
+    S.session.open = false; save();
+    modal(`<b>Session clôturée</b><table class="mt"><tr><td>Fond de caisse</td><td class="r num">${fcfa(S.session.openingCash)}</td></tr><tr><td>Encaissements espèces</td><td class="r num">${fcfa(todays)}</td></tr><tr><td><b>Attendu</b></td><td class="r num">${fcfa(expected)}</td></tr><tr><td><b>Compté</b></td><td class="r num">${fcfa(counted)}</td></tr><tr><td><b>Écart</b></td><td class="r num ${gap ? "danger" : "ok"}">${fcfa(gap)}</td></tr></table>
+    ${gap ? '<div class="lock mt">Écart détecté : la clôture attend l\'approbation du directeur. Le promoteur le voit sur son tableau de bord.</div>' : '<div class="hint mt">Aucun écart.</div>'}<button class="btn mt" id="closeM">Fermer</button>`);
+    return render();
+  }
+  if (ds.approve) { const c = S.closings[+ds.approve], cm = document.getElementById("apc" + ds.approve).value.trim(); if (!cm) return toast("Un commentaire est obligatoire."); c.status = "approved"; c.approver = "M. Essomba"; c.comment = cm; save(); return render(); }
+  if (t.id === "signOff") { S.signedOff = true; save(); toast("Trimestre signé : notes verrouillées, bulletins prêts à imprimer."); return render(); }
+  if (ds.card) return go("reportcards", { id: ds.card });
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "q") { ctx = { ...ctx, q: e.target.value, focusQ: true }; render(); }
+  if (e.target.dataset.amt !== undefined) { ctx.cart[+e.target.dataset.amt].amount = e.target.value; const total = ctx.cart.reduce((a, c) => a + (Number(c.amount) || 0), 0); const b = document.getElementById("confirmPay"); b.disabled = !(total > 0); b.previousElementSibling.lastElementChild.textContent = fcfa(total); }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "role") { role = e.target.value; ctx = {}; closeModal(); render(); }
+  if (e.target.id === "subj" || e.target.id === "per") go("marks", { subj: document.getElementById("subj").value, per: +document.getElementById("per").value });
+  if (e.target.dataset.mark) {
+    const v = e.target.value, n = Number(v), subj = document.getElementById("subj").value, per = +document.getElementById("per").value;
+    const sv = document.getElementById("sv-" + e.target.dataset.mark);
+    if (v === "" || n < 0 || n > 20) { sv.innerHTML = '<span class="danger">Note entre 0 et 20</span>'; return; }
+    S.marks[e.target.dataset.mark][subj][per] = n; save(); sv.innerHTML = '<span class="ok">Enregistré</span>';
+  }
+});
+document.getElementById("reset").onclick = () => { if (confirm("Remettre les données de démonstration à zéro ?")) { localStorage.removeItem(KEY); S = seed(); ctx = {}; render(); } };
+render();
+</script>
+</body>
+</html>
