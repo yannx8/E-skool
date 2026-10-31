@@ -95,7 +95,7 @@ graph TD
 
 - **Binds:** FR-53, FR-54
 - **Prevents:** hard-coded text in one Language, documents in the wrong Language.
-- **Rule:** UI text lives only in `messages/fr.json` and `messages/en.json` (next-intl), with identical key sets; a test fails on a missing key. The interface Language comes from the User's preference (cookie, no locale in the URL). Document Language is chosen by one function `core.documentLanguage(kind, guardian | class)` implementing FR-54 and passed explicitly to every renderer. Amounts are formatted only by `formatFcfa()`, dates only by `formatDate()` (DD/MM/YYYY).
+- **Rule:** UI text lives only in `messages/fr.json` and `messages/en.json` (next-intl), with identical key sets; a test fails on a missing key. The interface Language comes from the User's preference (cookie, no locale in the URL). Document Language is chosen by one function `core.documentLanguage({ kind, guardianLanguage } | { kind: "report_card", classSubsystem })` implementing FR-54 and passed explicitly to every renderer. Amounts are formatted only by `formatFcfa()`, dates only by `formatDate()` (DD/MM/YYYY).
 
 ### AD-9 — Report card rules are versioned code, presentation is data
 

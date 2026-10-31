@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "title": "E-skool",
+    "description": "School management ERP"
+  },
+  "home": {
+    "database": "Database",
+    "serverTime": "Server time",
+    "databaseUnreachable": "Database unreachable",
+    "today": "Today in Douala"
+  },
+  "language": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  }
+}

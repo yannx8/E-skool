@@ -22,3 +22,6 @@
 - source_plan: `_bmad-output/initiative-eskool-erp/epic-platform-baseline/spike-prove-rls-with-set-config-under-prisma-7-plan.md`
   summary: Restrict the global `schools` table at the database level (separate platform role or policy) so the app role cannot list or update every School.
   evidence: migration grants select/insert/update on schools to eskool_app with no RLS; AD-2 relies on code (platform module only). Decide with entry 1.7 (Platform admin creates Schools).
+- source_plan: `_bmad-output/initiative-eskool-erp/epic-platform-baseline/story-clock-language-and-formatting-foundations-plan.md`
+  summary: Verify `npm run build` and the language switch (EN/FR, reload keeps it) in a running app.
+  evidence: this Windows host's SWC native cache rejects every folder (BUILTIN\Users full control), so build and dev cannot start locally; CI build on first push, or a host permission fix, settles it.
