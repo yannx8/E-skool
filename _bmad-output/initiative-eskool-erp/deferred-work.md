@@ -31,3 +31,21 @@
 - source_plan: same plan
   summary: Purge old command_requests rows (retention, e.g. 30 days).
   evidence: idempotency rows grow without bound; add when the first cron lands (epic 7).
+- source_plan: `_bmad-output/initiative-eskool-erp/epic-platform-baseline/story-staff-sign-in-memberships-and-school-picker-plan.md`
+  summary: Settle the core/platform import direction: platform/data imports `getDb` and types from `core`, against the spine (core -> platform) and AGENTS.md (DB only from core/data).
+  evidence: `src/modules/platform/data/*.ts`, `application/sign-in.ts` import from `../../core`; fix is either an AGENTS.md policy edit or moving db.ts and shared types into platform.
+- source_plan: same plan
+  summary: HMAC the auth_events identifier hash with a server secret.
+  evidence: plain sha256 of a +237 phone is brute-forceable; intent pins sha256, so it needs the owner.
+- source_plan: same plan
+  summary: Grant UPDATE on memberships to eskool_app.
+  evidence: migration grants select/insert only; 1.7 edits Roles and scope.
+- source_plan: same plan
+  summary: Retention purge for auth_events vs its insert-only trigger.
+  evidence: rows grow without bound; purge needs an owner-role job or a trigger exception. Decide with the first cron (epic 7).
+- source_plan: same plan
+  summary: Add BETTER_AUTH_SECRET and BETTER_AUTH_URL to `.env.example`.
+  evidence: file blocked by a deny rule for the agent; README and ci.yml already list them.
+- source_plan: same plan
+  summary: Make the tenancy check compare `manifest.global` against AD-2's fixed list of global tables.
+  evidence: `src/modules/core/data/tenancy-check.ts` exempts any table marked global.

@@ -7,4 +7,10 @@ export const ownership: Readonly<Record<string, OwningModule>> = {
   SchoolSettings: "core",
   AuditLog: "core",
   CommandRequest: "core",
+  User: "platform",
+  Session: "platform",
+  Account: "platform",
+  Verification: "platform",
+  Membership: "platform",
+  AuthEvent: "platform",
 };

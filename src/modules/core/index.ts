@@ -1,4 +1,5 @@
 export { readDatabaseStatus as databaseStatus } from "./data/db";
+export { getDb } from "./data/db";
 export type { DatabaseStatus } from "./data/db";
 export { withSchool } from "./data/with-school";
 export type { SchoolTx } from "./data/with-school";

@@ -33,6 +33,11 @@ describe("tenancyProblems", () => {
     expect(problems).toEqual(["rls_planted: has school_id but is not in the tenant manifest"]);
   });
 
+  it("accepts a global table that references school_id when it is listed as global", () => {
+    const memberships = { ...globalTable, name: "memberships", has_school_id: true };
+    expect(tenancyProblems([protectedTable("pupils"), memberships], { ...manifest, global: ["memberships"] })).toEqual([]);
+  });
+
   it("reports a manifest table that does not exist", () => {
     expect(tenancyProblems([globalTable], manifest)).toEqual(["pupils: tenant table is missing from the database"]);
   });

@@ -12,6 +12,8 @@ docker compose up -d        # Postgres 17 on localhost:5433 (5432 is often taken
 cat > .env <<'EOF'
 DATABASE_URL=postgresql://eskool_app:eskool_app@localhost:5433/eskool
 DIRECT_URL=postgresql://eskool:eskool@localhost:5433/eskool
+BETTER_AUTH_SECRET=<openssl rand -base64 32>
+BETTER_AUTH_URL=http://localhost:3000
 EOF
 DIRECT_URL=postgresql://eskool:eskool@localhost:5433/eskool npx prisma migrate deploy  # owner; creates eskool_app NOLOGIN
 docker compose exec db psql -U eskool -d eskool -c "alter role eskool_app with login password 'eskool_app'"  # local dev login only
@@ -25,7 +27,12 @@ Two connection strings, read once in `src/config.ts` and validated at startup:
 - `DATABASE_URL`: runtime, connects as the app role `eskool_app` (LOGIN, NOSUPERUSER, NOBYPASSRLS). Row level security applies to it. Local: `postgresql://eskool_app:eskool_app@localhost:5433/eskool`. Neon: the pooled host, role `eskool_app`.
 - `DIRECT_URL`: the owner, non-pooled connection. Migrations and `prisma` CLI commands use it (`prisma.config.ts`). Local: `postgresql://eskool:eskool@localhost:5433/eskool`. Neon: the direct host without `-pooler`, owner role.
 
-If `DATABASE_URL` is missing or invalid the app refuses to start and names the variable.
+Staff sign-in (better-auth) needs two more:
+
+- `BETTER_AUTH_SECRET`: at least 32 characters, signs session cookies. One per environment, never in git (`openssl rand -base64 32`).
+- `BETTER_AUTH_URL`: the app's own origin, e.g. `http://localhost:3000` or the production URL.
+
+If a variable is missing or invalid the app refuses to start and names it.
 
 Neon, once, before the app takes traffic: run the first `prisma migrate deploy` as the owner (`DIRECT_URL`). It creates `eskool_app` as NOLOGIN, with no password in git. Then, as the owner, run `ALTER ROLE eskool_app WITH LOGIN PASSWORD '<generated secret>';`, and set `DATABASE_URL` in Vercel to that role's connection string. Never reuse the owner password for `DATABASE_URL`.
 
@@ -41,4 +48,4 @@ CI (`.github/workflows/ci.yml`) runs the `app` job (lint, typecheck, test, build
 
 ## Deploy
 
-Vercel project imports this repository. Region is set in `vercel.json` (`fra1`). Production runs from `main`, previews from other branches. Set `DATABASE_URL` (and `DIRECT_URL`) in Vercel environment variables. Pushing to GitHub and creating the Vercel project are manual steps.
+Vercel project imports this repository. Region is set in `vercel.json` (`fra1`). Production runs from `main`, previews from other branches. Set `DATABASE_URL`, `DIRECT_URL`, `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` in Vercel environment variables. Pushing to GitHub and creating the Vercel project are manual steps.

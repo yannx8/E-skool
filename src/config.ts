@@ -3,6 +3,9 @@ import { z } from "zod";
 const envSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
   DIRECT_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
+  // better-auth signs session cookies with the secret; the URL is the app's own origin.
+  BETTER_AUTH_SECRET: z.string().min(32),
+  BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
 });
 
 export type Config = z.infer<typeof envSchema>;

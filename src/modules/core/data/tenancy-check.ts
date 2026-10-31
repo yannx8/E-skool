@@ -20,7 +20,8 @@ export function tenancyProblems(tables: TableFacts[], manifest: TenantManifest):
   const byName = new Map(tables.map((table) => [table.name, table]));
 
   for (const table of tables) {
-    if (table.has_school_id && !manifest.tenant.includes(table.name)) {
+    // A global table may carry school_id as a plain reference (memberships); it is listed on purpose.
+    if (table.has_school_id && !manifest.tenant.includes(table.name) && !manifest.global.includes(table.name)) {
       problems.push(`${table.name}: has school_id but is not in the tenant manifest`);
     }
   }

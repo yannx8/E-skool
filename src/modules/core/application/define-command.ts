@@ -26,7 +26,7 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 export type CommandError = { code: ErrorCode; messageKey: `errors.${ErrorCode}`; field?: string };
 export type CommandResult<T> = { ok: true; data: T } | { ok: false; error: CommandError };
 
-// Built by the caller until sign-in exists (entry 1.6 fills it from the session and Membership).
+// Built by platform.getCommandContext() from the session and its Membership (tests may build it directly).
 export type CommandContext = { schoolId: string; actor: Actor };
 
 type Handler<S extends z.ZodType, R> = (tx: SchoolTx, input: z.output<S>, ctx: CommandContext) => Promise<R>;

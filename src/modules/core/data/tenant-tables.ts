@@ -6,6 +6,15 @@ export type TenantManifest = { tenant: readonly string[]; global: readonly strin
 
 export const tenantTables: readonly string[] = ["school_settings", "audit_log", "command_requests"];
 
-export const globalTables: readonly string[] = ["schools"];
+// Global tables are reached only by the platform module (AD-2).
+export const globalTables: readonly string[] = [
+  "schools",
+  "users",
+  "sessions",
+  "accounts",
+  "auth_verifications",
+  "memberships",
+  "auth_events",
+];
 
 export const tenantManifest: TenantManifest = { tenant: tenantTables, global: globalTables };
