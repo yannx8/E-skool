@@ -1,0 +1,119 @@
+# Epic 1 — A tenant-safe, bilingual platform is live. Table order is the build order.
+
+[[entry]]
+id = 1
+type = "story"
+title = "Archive the old code and deploy a new scaffold end to end"
+description = "Moves the old tree to an archive branch, scaffolds the new app at the pinned versions with config.ts, Prisma on local Postgres 17 and CI, and deploys one page that reads the database to a Vercel EU production URL."
+verify = "CI runs lint, typecheck, unit tests and build green, and the production URL shows a row read from the managed EU database."
+covers = ["FR-58"]
+after = []
+hitl = true
+risk = "medium"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#stack", "architecture-eskool-erp/architecture-eskool-erp.md#operations"]
+notes = []
+
+[[entry]]
+id = 2
+type = "spike"
+title = "Prove RLS with set_config under Prisma 7"
+description = "Builds withSchool, the tenant-table manifest, the RLS migration helper and a non-BYPASSRLS app role, and proves set_config inside Prisma 7.10.1 interactive transactions isolates two Schools."
+verify = "A Vitest suite against Postgres shows School B rows invisible in a School A transaction and visible in their own, and fails when a planted table lacks a policy."
+covers = ["FR-2"]
+after = [1]
+hitl = false
+risk = "high"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#ad-2"]
+
+[[entry]]
+id = 3
+type = "spike"
+title = "Prove parent-code sign-in with better-auth"
+description = "Shows better-auth 1.7 on Prisma 7 with global identity tables can sign in a Guardian by normalised phone plus an argon2-hashed code, with rate limiting and lockout, alongside staff password sign-in."
+verify = "A test signs in a Guardian with phone and code, rejects a wrong code, locks after 5 failures for 15 minutes, and records each attempt in auth_events."
+covers = ["FR-16"]
+after = [1]
+hitl = false
+risk = "high"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#ad-13"]
+
+[[entry]]
+id = 4
+type = "story"
+title = "defineCommand, audit, permissions and module guards"
+description = "Delivers the defineCommand factory with zod validation, requestId idempotency, withSchool, the Audit log writer, the scoped permission matrix, Module and Subscription guards on school_settings, and the CI checks for module boundaries, model ownership and Prisma writes outside data layers."
+verify = "Unit and db tests show a command refused without permission, on a switched-off Module, on a suspended School and on a repeated requestId, each success writing one Audit row; CI fails on a planted cross-module import."
+covers = ["FR-3", "FR-4", "FR-15", "FR-55"]
+after = [2]
+hitl = false
+risk = "high"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#ad-1", "architecture-eskool-erp/architecture-eskool-erp.md#ad-3", "architecture-eskool-erp/architecture-eskool-erp.md#ad-5", "architecture-eskool-erp/architecture-eskool-erp.md#ad-12", "architecture-eskool-erp/architecture-eskool-erp.md#ad-15"]
+
+[[entry]]
+id = 5
+type = "story"
+title = "Clock, Language and formatting foundations"
+description = "Adds todayDouala, the next-intl setup with French and English catalogs and a Language preference without URL prefix, formatFcfa, formatDate, documentLanguage, the missing-key test and the lint rule against new Date in business code."
+verify = "Switching Language on the scaffold page changes every string, the missing-key test fails on a planted key, and formatFcfa(45000) gives \"45 000 FCFA\" in both Languages."
+covers = ["FR-53", "FR-54"]
+after = [1]
+hitl = false
+risk = "low"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#ad-7", "architecture-eskool-erp/architecture-eskool-erp.md#ad-8"]
+
+[[entry]]
+id = 6
+type = "story"
+title = "Staff sign-in, Memberships and school picker"
+description = "Sets up better-auth 1.7 on Prisma 7 with global identity tables and delivers staff sign-in by phone or email and password, Memberships per School, an active-School picker when a User has several, sign-out of all devices, and session expiry after 30 days."
+verify = "A User with Memberships in two Schools signs in, picks one, sees only its data, is locked for 15 minutes after 5 bad passwords, and every attempt is in auth_events."
+covers = ["FR-16"]
+after = [4, 5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Platform admin creates and manages Schools"
+description = "Adds the admin area where a Platform admin creates a School with its first School administrator, sets Subscription state and Modules (mirrored to school_settings), and grants or ends support access recorded in the Audit log."
+verify = "In production a Platform admin creates a School, its administrator signs in from the emailed or texted link, and suspending the School blocks a write command while reads still work."
+covers = ["FR-1", "FR-3", "FR-4"]
+after = [6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Private files for logos and stamps"
+description = "Adds the private EU bucket with school-prefixed keys and the permission-checked route returning short-lived signed URLs, used for the School logo and stamp at creation."
+verify = "A logo uploaded for School A displays for its Users, and the same key requested by a User of School B is refused."
+covers = ["FR-1"]
+after = [7]
+hitl = true
+risk = "low"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#ad-16"]
+
+[[entry]]
+id = 9
+type = "story"
+title = "Monitoring and single-School restore rehearsal"
+description = "Wires the error tracker and an uptime check on sign-in during school hours, and writes and rehearses the script that restores one School's rows from point-in-time backup by the manifest."
+verify = "A planted error reaches the builder's phone, and the rehearsal restores one School in a scratch database with row counts equal to the source."
+covers = ["FR-58"]
+after = [7]
+hitl = true
+risk = "medium"
+references = ["architecture-eskool-erp/architecture-eskool-erp.md#operations"]
+
+[[entry]]
+id = 10
+type = "story"
+title = "Refactor sweep"
+description = "Cleans up what the epic's plans and reviews deferred; scope is set when it starts."
+verify = "npm run check and the db tests pass with no deferred cleanup left in the epic's plans."
+covers = []
+after = [2, 4, 5, 6, 7, 8, 9]
+hitl = false
+risk = "low"

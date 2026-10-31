@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-skool - Variations de thème (light)</title>
+<style>
+/*
+  Shared structure. Each theme sets the semantic tokens on its own .t* class.
+  Text is 16px minimum, targets 44px minimum. Light mode only.
+  Hex values are documented per theme below so any theme can be lifted as-is.
+*/
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px; line-height: 1.4;
+  background: #e5e7eb; /* page chrome, #111827 on #e5e7eb = 14.3:1 */
+  color: #111827;
+}
+h1 { font-size: 24px; margin: 0 0 6px; }
+.intro { margin: 0 0 20px; color: #374151; } /* #374151 on #e5e7eb = 8.3:1 */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); gap: 20px; align-items: start; }
+
+.theme {
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.theme h2 { margin: 0; font-size: 20px; color: var(--text); }
+.reg { margin: 0; color: var(--text-muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 4px 8px;
+}
+.sw { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); flex: none; }
+.chip code { font-family: Consolas, "Courier New", monospace; color: var(--text-muted); }
+
+/* Snippet: realistic desktop app, Impayés page */
+.app {
+  display: grid; grid-template-columns: 150px 1fr;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden;
+}
+.side { background: var(--primary-soft); padding-bottom: 8px; }
+.side .brand { font-weight: 700; color: var(--primary); padding: 12px; }
+.side ul { list-style: none; margin: 0; padding: 0; }
+.side li { min-height: 44px; padding: 8px 12px; display: flex; align-items: center; color: var(--text); }
+.side li.on { background: var(--primary); color: #ffffff; font-weight: 600; }
+.main { padding: 14px; min-width: 0; }
+.top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.top h3 { margin: 0; font-size: 20px; color: var(--text); }
+.sub { margin: 0; color: var(--text-muted); }
+.btn {
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px;
+  background: var(--primary); color: #ffffff; font: 600 16px system-ui, sans-serif; cursor: pointer;
+}
+.btn:hover { background: var(--primary-hover); }
+.tbl { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; color: var(--text-muted); font-weight: 600; border-bottom: 2px solid var(--border); padding: 8px 6px; white-space: nowrap; }
+td { padding: 10px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+.st {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  border: 1px solid currentColor; border-radius: 999px; padding: 2px 8px;
+  background: var(--surface); font-weight: 600;
+}
+.ok { color: var(--success); }
+.ko { color: var(--danger); }
+.no { color: var(--warning); }
+.note { margin: 10px 0 0; color: var(--info); font-weight: 600; }
+.totals { display: flex; gap: 8px; margin-top: 12px; border-top: 2px solid var(--text); padding-top: 10px; }
+.totals div { flex: 1; min-width: 0; }
+.totals span { display: block; color: var(--text-muted); }
+.totals b { color: var(--text); white-space: nowrap; }
+
+/* ============================================================
+   T1  Institutionnel (bleu affiné, base de l'app actuelle)
+   Register: confiance sobre et familière. Lowest risk.
+   primary #1e40af  primary-hover #1e3a8a  primary-soft #dbeafe
+   background #f1f5f9  surface #ffffff  text #0f172a  text-muted #475569
+   border #64748b  success #15803d  warning #92400e  danger #b91c1c  info #0369a1
+   WCAG AA: text/bg 16.3, text/surface 17.9, muted/surface 7.6, #fff/primary 8.7,
+     #fff/hover 10.4, success 5.0, warning 7.1, danger 6.5, info 5.9, primary/soft 7.2.
+   FIXED: border was #94a3b8 = 2.56:1 on surface (fails 3:1 non-text, 1.4.11). Now #64748b = 4.76:1.
+   ============================================================ */
+.t1 {
+  --primary: #1e40af; --primary-hover: #1e3a8a; --primary-soft: #dbeafe;
+  --bg: #f1f5f9; --surface: #ffffff; --text: #0f172a; --text-muted: #475569;
+  --border: #64748b; --success: #15803d; --warning: #92400e; --danger: #b91c1c; --info: #0369a1;
+}
+
+/* ============================================================
+   T2  Registre (papier officiel, encre verte, sceau)
+   Register: solennel et archivé, le registre de caisse qu'on signe.
+   primary #1f5130  primary-hover #163d24  primary-soft #e2ede4
+   background #f6f3ea  surface #fffdf8  text #1c1917  text-muted #57534e
+   border #8a8273  success #166534  warning #854d0e  danger #b42318  info #1e4e79
+   WCAG AA: text/bg 15.8, text/surface 17.2, muted/surface 7.5, #fff/primary 9.2,
+     #fff/hover 12.2, success 7.0, warning 6.7, danger 6.5, info 8.5, primary/soft 7.7.
+   Non-text: border/surface 3.7:1 (passes 3:1). No failures.
+   ============================================================ */
+.t2 {
+  --primary: #1f5130; --primary-hover: #163d24; --primary-soft: #e2ede4;
+  --bg: #f6f3ea; --surface: #fffdf8; --text: #1c1917; --text-muted: #57534e;
+  --border: #8a8273; --success: #166534; --warning: #854d0e; --danger: #b42318; --info: #1e4e79;
+}
+
+/* ============================================================
+   T3  Calme bancaire (teal froid, gris doux)
+   Register: sérénité de guichet, neutre et apaisant.
+   primary #0f5e5b  primary-hover #0b4846  primary-soft #d7ebe9
+   background #eef3f3  surface #ffffff  text #0c1f1e  text-muted #3d5a58
+   border #6f8c8a  success #256b3a  warning #8a4b08  danger #b42318  info #155e75
+   WCAG AA: text/bg 15.2, text/surface 17.1, muted/surface 7.5, #fff/primary 7.6,
+     #fff/hover 10.4, success 6.5, warning 6.8, danger 6.6, info 7.3, primary/soft 6.1.
+   Non-text: border/surface 3.6:1 (passes 3:1). No failures.
+   ============================================================ */
+.t3 {
+  --primary: #0f5e5b; --primary-hover: #0b4846; --primary-soft: #d7ebe9;
+  --bg: #eef3f3; --surface: #ffffff; --text: #0c1f1e; --text-muted: #3d5a58;
+  --border: #6f8c8a; --success: #256b3a; --warning: #8a4b08; --danger: #b42318; --info: #155e75;
+}
+
+/* ============================================================
+   T4  Chaleur sereine (aubergine, crème)
+   Register: une école qui rassure, humaine sans être enfantine.
+   primary #5b2a86  primary-hover #4a1f70  primary-soft #ede4f7
+   background #faf7f4  surface #ffffff  text #231a2b  text-muted #5e5566
+   border #7d7385  success #166534  warning #92400e  danger #b42318  info #0e6e8c
+   WCAG AA: text/bg 15.7, text/surface 16.7, muted/surface 7.1, #fff/primary 9.9,
+     #fff/hover 12.2, success 7.1, warning 7.1, danger 6.6, info 5.8, primary/soft 8.0.
+   Non-text: border/surface 4.5:1. No failures.
+   ============================================================ */
+.t4 {
+  --primary: #5b2a86; --primary-hover: #4a1f70; --primary-soft: #ede4f7;
+  --bg: #faf7f4; --surface: #ffffff; --text: #231a2b; --text-muted: #5e5566;
+  --border: #7d7385; --success: #166534; --warning: #92400e; --danger: #b42318; --info: #0e6e8c;
+}
+
+/* ============================================================
+   T5  Austère (graphite, blanc, zéro décoratif)
+   Register: rigueur d'audit, lisibilité maximale, couleur réservée aux statuts.
+   primary #1c1917  primary-hover #3f3a35  primary-soft #ebe7e0
+   background #fafaf9  surface #ffffff  text #0a0a0a  text-muted #44403c
+   border #78716c  success #15803d  warning #854d0e  danger #b91c1c  info #0c4a6e
+   WCAG AA: text/bg 19.0, text/surface 19.8, muted/surface 10.3, #fff/primary 17.5,
+     #fff/hover 11.2, success 5.0, warning 6.9, danger 6.5, info 9.5, primary/soft 14.2.
+   Non-text: border/surface 4.8:1. No failures.
+   ============================================================ */
+.t5 {
+  --primary: #1c1917; --primary-hover: #3f3a35; --primary-soft: #ebe7e0;
+  --bg: #fafaf9; --surface: #ffffff; --text: #0a0a0a; --text-muted: #44403c;
+  --border: #78716c; --success: #15803d; --warning: #854d0e; --danger: #b91c1c; --info: #0c4a6e;
+}
+</style>
+</head>
+<body>
+<h1>E-skool : 5 variations de thème</h1>
+<p class="intro">Light uniquement. Chaque carte montre les rôles sémantiques et un extrait réel : page Impayés.</p>
+
+<div class="grid">
+
+<!-- T1 -->
+<section class="theme t1" aria-label="Institutionnel">
+  <div>
+    <h2>1. Institutionnel</h2>
+    <p class="reg">Confiance sobre et familière : le bleu actuel, affiné. Risque le plus faible.</p>
+  </div>
+  <div class="chips">
+    <span class="chip"><span class="sw" style="background:#1e40af"></span>primary <code>#1e40af</code></span>
+    <span class="chip"><span class="sw" style="background:#1e3a8a"></span>primary-hover <code>#1e3a8a</code></span>
+    <span class="chip"><span class="sw" style="background:#dbeafe"></span>primary-soft <code>#dbeafe</code></span>
+    <span class="chip"><span class="sw" style="background:#f1f5f9"></span>background <code>#f1f5f9</code></span>
+    <span class="chip"><span class="sw" style="background:#ffffff"></span>surface <code>#ffffff</code></span>
+    <span class="chip"><span class="sw" style="background:#0f172a"></span>text <code>#0f172a</code></span>
+    <span class="chip"><span class="sw" style="background:#475569"></span>text-muted <code>#475569</code></span>
+    <span class="chip"><span class="sw" style="background:#64748b"></span>border <code>#64748b</code></span>
+    <span class="chip"><span class="sw" style="background:#15803d"></span>success <code>#15803d</code></span>
+    <span class="chip"><span class="sw" style="background:#92400e"></span>warning <code>#92400e</code></span>
+    <span class="chip"><span class="sw" style="background:#b91c1c"></span>danger <code>#b91c1c</code></span>
+    <span class="chip"><span class="sw" style="background:#0369a1"></span>info <code>#0369a1</code></span>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">E-skool</div>
+      <ul>
+        <li>Tableau de bord</li><li>Élèves</li><li>Paiements</li><li class="on">Impayés</li>
+        <li>Moratoires</li><li>Fournitures</li><li>Personnel</li><li>Finances</li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div><h3>Impayés</h3><p class="sub">Trimestre 1 · 2026-2027</p></div>
+        <button class="btn" type="button">Enregistrer un paiement</button>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Élève</th><th>Classe</th><th>Solde</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Awa Mbarga</td><td>CE1</td><td>45 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+          <tr><td>Jean-Paul Essomba</td><td>CM2</td><td>90 000 FCFA</td><td><span class="st ko">✕ Promesse rompue</span></td></tr>
+          <tr><td>Marie Ngo Bi</td><td>CP2</td><td>27 500 FCFA</td><td><span class="st no">– Aucune promesse</span></td></tr>
+          <tr><td>Ibrahim Yaya</td><td>CM1</td><td>62 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="totals">
+        <div><span>Encaissé</span><b>1 240 000 FCFA</b></div>
+        <div><span>Attendu</span><b>1 980 000 FCFA</b></div>
+        <div><span>Reste dû</span><b>740 000 FCFA</b></div>
+      </div>
+      <p class="note">ℹ 3 relances envoyées cette semaine</p>
+    </div>
+  </div>
+</section>
+
+<!-- T2 -->
+<section class="theme t2" aria-label="Registre">
+  <div>
+    <h2>2. Registre</h2>
+    <p class="reg">Papier officiel et encre verte : registre de caisse, sceau. Solennel, archivé.</p>
+  </div>
+  <div class="chips">
+    <span class="chip"><span class="sw" style="background:#1f5130"></span>primary <code>#1f5130</code></span>
+    <span class="chip"><span class="sw" style="background:#163d24"></span>primary-hover <code>#163d24</code></span>
+    <span class="chip"><span class="sw" style="background:#e2ede4"></span>primary-soft <code>#e2ede4</code></span>
+    <span class="chip"><span class="sw" style="background:#f6f3ea"></span>background <code>#f6f3ea</code></span>
+    <span class="chip"><span class="sw" style="background:#fffdf8"></span>surface <code>#fffdf8</code></span>
+    <span class="chip"><span class="sw" style="background:#1c1917"></span>text <code>#1c1917</code></span>
+    <span class="chip"><span class="sw" style="background:#57534e"></span>text-muted <code>#57534e</code></span>
+    <span class="chip"><span class="sw" style="background:#8a8273"></span>border <code>#8a8273</code></span>
+    <span class="chip"><span class="sw" style="background:#166534"></span>success <code>#166534</code></span>
+    <span class="chip"><span class="sw" style="background:#854d0e"></span>warning <code>#854d0e</code></span>
+    <span class="chip"><span class="sw" style="background:#b42318"></span>danger <code>#b42318</code></span>
+    <span class="chip"><span class="sw" style="background:#1e4e79"></span>info <code>#1e4e79</code></span>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">E-skool</div>
+      <ul>
+        <li>Tableau de bord</li><li>Élèves</li><li>Paiements</li><li class="on">Impayés</li>
+        <li>Moratoires</li><li>Fournitures</li><li>Personnel</li><li>Finances</li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div><h3>Impayés</h3><p class="sub">Trimestre 1 · 2026-2027</p></div>
+        <button class="btn" type="button">Enregistrer un paiement</button>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Élève</th><th>Classe</th><th>Solde</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Awa Mbarga</td><td>CE1</td><td>45 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+          <tr><td>Jean-Paul Essomba</td><td>CM2</td><td>90 000 FCFA</td><td><span class="st ko">✕ Promesse rompue</span></td></tr>
+          <tr><td>Marie Ngo Bi</td><td>CP2</td><td>27 500 FCFA</td><td><span class="st no">– Aucune promesse</span></td></tr>
+          <tr><td>Ibrahim Yaya</td><td>CM1</td><td>62 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="totals">
+        <div><span>Encaissé</span><b>1 240 000 FCFA</b></div>
+        <div><span>Attendu</span><b>1 980 000 FCFA</b></div>
+        <div><span>Reste dû</span><b>740 000 FCFA</b></div>
+      </div>
+      <p class="note">ℹ 3 relances envoyées cette semaine</p>
+    </div>
+  </div>
+</section>
+
+<!-- T3 -->
+<section class="theme t3" aria-label="Calme bancaire">
+  <div>
+    <h2>3. Calme bancaire</h2>
+    <p class="reg">Teal froid et gris doux : la sérénité d'un guichet. Apaisant, neutre.</p>
+  </div>
+  <div class="chips">
+    <span class="chip"><span class="sw" style="background:#0f5e5b"></span>primary <code>#0f5e5b</code></span>
+    <span class="chip"><span class="sw" style="background:#0b4846"></span>primary-hover <code>#0b4846</code></span>
+    <span class="chip"><span class="sw" style="background:#d7ebe9"></span>primary-soft <code>#d7ebe9</code></span>
+    <span class="chip"><span class="sw" style="background:#eef3f3"></span>background <code>#eef3f3</code></span>
+    <span class="chip"><span class="sw" style="background:#ffffff"></span>surface <code>#ffffff</code></span>
+    <span class="chip"><span class="sw" style="background:#0c1f1e"></span>text <code>#0c1f1e</code></span>
+    <span class="chip"><span class="sw" style="background:#3d5a58"></span>text-muted <code>#3d5a58</code></span>
+    <span class="chip"><span class="sw" style="background:#6f8c8a"></span>border <code>#6f8c8a</code></span>
+    <span class="chip"><span class="sw" style="background:#256b3a"></span>success <code>#256b3a</code></span>
+    <span class="chip"><span class="sw" style="background:#8a4b08"></span>warning <code>#8a4b08</code></span>
+    <span class="chip"><span class="sw" style="background:#b42318"></span>danger <code>#b42318</code></span>
+    <span class="chip"><span class="sw" style="background:#155e75"></span>info <code>#155e75</code></span>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">E-skool</div>
+      <ul>
+        <li>Tableau de bord</li><li>Élèves</li><li>Paiements</li><li class="on">Impayés</li>
+        <li>Moratoires</li><li>Fournitures</li><li>Personnel</li><li>Finances</li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div><h3>Impayés</h3><p class="sub">Trimestre 1 · 2026-2027</p></div>
+        <button class="btn" type="button">Enregistrer un paiement</button>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Élève</th><th>Classe</th><th>Solde</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Awa Mbarga</td><td>CE1</td><td>45 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+          <tr><td>Jean-Paul Essomba</td><td>CM2</td><td>90 000 FCFA</td><td><span class="st ko">✕ Promesse rompue</span></td></tr>
+          <tr><td>Marie Ngo Bi</td><td>CP2</td><td>27 500 FCFA</td><td><span class="st no">– Aucune promesse</span></td></tr>
+          <tr><td>Ibrahim Yaya</td><td>CM1</td><td>62 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="totals">
+        <div><span>Encaissé</span><b>1 240 000 FCFA</b></div>
+        <div><span>Attendu</span><b>1 980 000 FCFA</b></div>
+        <div><span>Reste dû</span><b>740 000 FCFA</b></div>
+      </div>
+      <p class="note">ℹ 3 relances envoyées cette semaine</p>
+    </div>
+  </div>
+</section>
+
+<!-- T4 -->
+<section class="theme t4" aria-label="Chaleur sereine">
+  <div>
+    <h2>4. Chaleur sereine</h2>
+    <p class="reg">Aubergine et crème : une école qui rassure, humaine sans être enfantine.</p>
+  </div>
+  <div class="chips">
+    <span class="chip"><span class="sw" style="background:#5b2a86"></span>primary <code>#5b2a86</code></span>
+    <span class="chip"><span class="sw" style="background:#4a1f70"></span>primary-hover <code>#4a1f70</code></span>
+    <span class="chip"><span class="sw" style="background:#ede4f7"></span>primary-soft <code>#ede4f7</code></span>
+    <span class="chip"><span class="sw" style="background:#faf7f4"></span>background <code>#faf7f4</code></span>
+    <span class="chip"><span class="sw" style="background:#ffffff"></span>surface <code>#ffffff</code></span>
+    <span class="chip"><span class="sw" style="background:#231a2b"></span>text <code>#231a2b</code></span>
+    <span class="chip"><span class="sw" style="background:#5e5566"></span>text-muted <code>#5e5566</code></span>
+    <span class="chip"><span class="sw" style="background:#7d7385"></span>border <code>#7d7385</code></span>
+    <span class="chip"><span class="sw" style="background:#166534"></span>success <code>#166534</code></span>
+    <span class="chip"><span class="sw" style="background:#92400e"></span>warning <code>#92400e</code></span>
+    <span class="chip"><span class="sw" style="background:#b42318"></span>danger <code>#b42318</code></span>
+    <span class="chip"><span class="sw" style="background:#0e6e8c"></span>info <code>#0e6e8c</code></span>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">E-skool</div>
+      <ul>
+        <li>Tableau de bord</li><li>Élèves</li><li>Paiements</li><li class="on">Impayés</li>
+        <li>Moratoires</li><li>Fournitures</li><li>Personnel</li><li>Finances</li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div><h3>Impayés</h3><p class="sub">Trimestre 1 · 2026-2027</p></div>
+        <button class="btn" type="button">Enregistrer un paiement</button>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Élève</th><th>Classe</th><th>Solde</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Awa Mbarga</td><td>CE1</td><td>45 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+          <tr><td>Jean-Paul Essomba</td><td>CM2</td><td>90 000 FCFA</td><td><span class="st ko">✕ Promesse rompue</span></td></tr>
+          <tr><td>Marie Ngo Bi</td><td>CP2</td><td>27 500 FCFA</td><td><span class="st no">– Aucune promesse</span></td></tr>
+          <tr><td>Ibrahim Yaya</td><td>CM1</td><td>62 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="totals">
+        <div><span>Encaissé</span><b>1 240 000 FCFA</b></div>
+        <div><span>Attendu</span><b>1 980 000 FCFA</b></div>
+        <div><span>Reste dû</span><b>740 000 FCFA</b></div>
+      </div>
+      <p class="note">ℹ 3 relances envoyées cette semaine</p>
+    </div>
+  </div>
+</section>
+
+<!-- T5 -->
+<section class="theme t5" aria-label="Austère">
+  <div>
+    <h2>5. Austère</h2>
+    <p class="reg">Graphite et blanc : lisibilité maximale, couleur réservée aux statuts. Rigueur d'audit.</p>
+  </div>
+  <div class="chips">
+    <span class="chip"><span class="sw" style="background:#1c1917"></span>primary <code>#1c1917</code></span>
+    <span class="chip"><span class="sw" style="background:#3f3a35"></span>primary-hover <code>#3f3a35</code></span>
+    <span class="chip"><span class="sw" style="background:#ebe7e0"></span>primary-soft <code>#ebe7e0</code></span>
+    <span class="chip"><span class="sw" style="background:#fafaf9"></span>background <code>#fafaf9</code></span>
+    <span class="chip"><span class="sw" style="background:#ffffff"></span>surface <code>#ffffff</code></span>
+    <span class="chip"><span class="sw" style="background:#0a0a0a"></span>text <code>#0a0a0a</code></span>
+    <span class="chip"><span class="sw" style="background:#44403c"></span>text-muted <code>#44403c</code></span>
+    <span class="chip"><span class="sw" style="background:#78716c"></span>border <code>#78716c</code></span>
+    <span class="chip"><span class="sw" style="background:#15803d"></span>success <code>#15803d</code></span>
+    <span class="chip"><span class="sw" style="background:#854d0e"></span>warning <code>#854d0e</code></span>
+    <span class="chip"><span class="sw" style="background:#b91c1c"></span>danger <code>#b91c1c</code></span>
+    <span class="chip"><span class="sw" style="background:#0c4a6e"></span>info <code>#0c4a6e</code></span>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">E-skool</div>
+      <ul>
+        <li>Tableau de bord</li><li>Élèves</li><li>Paiements</li><li class="on">Impayés</li>
+        <li>Moratoires</li><li>Fournitures</li><li>Personnel</li><li>Finances</li>
+      </ul>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div><h3>Impayés</h3><p class="sub">Trimestre 1 · 2026-2027</p></div>
+        <button class="btn" type="button">Enregistrer un paiement</button>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Élève</th><th>Classe</th><th>Solde</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>Awa Mbarga</td><td>CE1</td><td>45 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+          <tr><td>Jean-Paul Essomba</td><td>CM2</td><td>90 000 FCFA</td><td><span class="st ko">✕ Promesse rompue</span></td></tr>
+          <tr><td>Marie Ngo Bi</td><td>CP2</td><td>27 500 FCFA</td><td><span class="st no">– Aucune promesse</span></td></tr>
+          <tr><td>Ibrahim Yaya</td><td>CM1</td><td>62 000 FCFA</td><td><span class="st ok">✓ Promesse tenue</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="totals">
+        <div><span>Encaissé</span><b>1 240 000 FCFA</b></div>
+        <div><span>Attendu</span><b>1 980 000 FCFA</b></div>
+        <div><span>Reste dû</span><b>740 000 FCFA</b></div>
+      </div>
+      <p class="note">ℹ 3 relances envoyées cette semaine</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

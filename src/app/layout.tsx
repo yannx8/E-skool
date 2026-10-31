@@ -1,31 +1,20 @@
-import type { Metadata, Viewport } from "next";
-import { Toaster } from "sonner";
+import type { ReactNode } from "react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: { default: "E-skool", template: "%s | E-skool" },
-  description: "Gestion de l'école : élèves, paiements, reçus, impayés, personnel et finances.",
-  applicationName: "E-skool",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  const t = await getTranslations("meta");
+  return { title: t("title"), description: t("description") };
+}
 
-export const viewport: Viewport = {
-  themeColor: "#1e40af",
-  width: "device-width",
-  initialScale: 1,
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
   return (
-    <html lang="fr" className="h-full antialiased">
-      <body className="min-h-full">
-        {children}
-        <Toaster
-          position="top-center"
-          richColors
-          closeButton
-          toastOptions={{ style: { fontSize: 16 } }}
-        />
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

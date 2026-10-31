@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "title": "E-skool",
+    "description": "School management ERP"
+  },
+  "home": {
+    "database": "Database",
+    "serverTime": "Server time",
+    "databaseUnreachable": "Database unreachable",
+    "today": "Today in Douala"
+  },
+  "language": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "errors": {
+    "forbidden": "You are not allowed to do this.",
+    "invalid_input": "Some information is missing or invalid.",
+    "module_off": "This module is switched off for your school.",
+    "suspended": "Your school's subscription is suspended. You can still view and export."
+  },
+  "auth": {
+    "title": "Sign in",
+    "identifier": "Phone number or email",
+    "password": "Password",
+    "submit": "Sign in",
+    "invalid": "Wrong phone number, email or password.",
+    "locked": "Too many failed attempts. Try again in 15 minutes.",
+    "chooseSchool": "Choose a school",
+    "choose": "Open",
+    "noSchool": "Your account has no access to any school yet. Ask your Director.",
+    "signedInAs": "Signed in as",
+    "activeSchool": "School",
+    "changeSchool": "Change school",
+    "signOut": "Sign out",
+    "signOutEverywhere": "Sign out on all devices"
+  }
+}

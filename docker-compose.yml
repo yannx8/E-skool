@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: eskool
+      POSTGRES_PASSWORD: eskool
+      POSTGRES_DB: eskool
+    volumes:
+      - eskool-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eskool -d eskool"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  eskool-pgdata:

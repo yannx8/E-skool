@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Global table (no school_id, no RLS). Every model is owned by one module (prisma/ownership.ts).
+model School {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  settings        SchoolSettings?
+  auditLog        AuditLog[]
+  commandRequests CommandRequest[]
+  memberships     Membership[]
+  activeSessions  Session[]
+
+  @@map("schools")
+}
+
+// Tenant (AD-12): Modules and Subscription state read by defineCommand's guards.
+model SchoolSettings {
+  schoolId          String   @id @map("school_id") @db.Uuid
+  modules           String[] @default(["fees", "report_cards"])
+  subscriptionState String   @default("trial") @map("subscription_state")
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@map("school_settings")
+}
+
+// Tenant, insert-only (AD-3, FR-55): ids and changed field names, never personal data.
+model AuditLog {
+  schoolId  String   @map("school_id") @db.Uuid
+  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  at        DateTime @default(now()) @db.Timestamptz(6)
+  actorKind String   @map("actor_kind")
+  actorId   String?  @map("actor_id") @db.Uuid
+  command   String
+  entity    String
+  entityId  String   @map("entity_id") @db.Uuid
+  fields    String[]
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@id([schoolId, id])
+  @@index([schoolId, at(sort: Desc)], map: "audit_log_school_at_idx")
+  @@map("audit_log")
+}
+
+// Tenant (AD-15): one row per (School, command, requestId); a repeat by the same actor
+// with the same input returns `result`.
+model CommandRequest {
+  schoolId  String   @map("school_id") @db.Uuid
+  command   String
+  requestId String   @map("request_id") @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  inputHash String   @map("input_hash")
+  result    Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@id([schoolId, command, requestId])
+  @@map("command_requests")
+}
+
+// Global identity tables (AD-2, AD-13), owned by platform. better-auth's core shapes
+// (model names user/session/account/verification), snake_case columns. Ids are uuids so
+// they fit audit_log.actor_id.
+model User {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  phoneNumber   String?  @unique @map("phone_number")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  sessions    Session[]
+  accounts    Account[]
+  memberships Membership[]
+
+  @@map("users")
+}
+
+model Session {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  token          String   @unique
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  activeSchoolId String?  @map("active_school_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeSchool School? @relation(fields: [activeSchoolId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([activeSchoolId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String    @map("user_id") @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([identifier])
+  @@map("auth_verifications")
+}
+
+// Global: a User's Roles and scope in one School (AD-5). The only source of scope ids.
+model Membership {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  schoolId   String   @map("school_id") @db.Uuid
+  roles      String[]
+  classIds   String[] @default([]) @map("class_ids") @db.Uuid
+  subjectIds String[] @default([]) @map("subject_ids") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, schoolId])
+  @@index([schoolId])
+  @@map("memberships")
+}
+
+// Global, insert-only: every sign-in attempt and sign-out. sha256 of the identifier,
+// never the raw phone, email or password.
+model AuthEvent {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  at             DateTime @default(now()) @db.Timestamptz(6)
+  kind           String
+  identifierHash String?  @map("identifier_hash")
+  userId         String?  @map("user_id") @db.Uuid
+  ip             String?
+
+  @@index([identifierHash, at(sort: Desc)], map: "auth_events_identifier_at_idx")
+  @@index([ip, at(sort: Desc)], map: "auth_events_ip_at_idx")
+  @@map("auth_events")
+}

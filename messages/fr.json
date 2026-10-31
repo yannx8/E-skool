@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "title": "E-skool",
+    "description": "ERP de gestion scolaire"
+  },
+  "home": {
+    "database": "Base de données",
+    "serverTime": "Heure du serveur",
+    "databaseUnreachable": "Base de données injoignable",
+    "today": "Date du jour à Douala"
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "errors": {
+    "forbidden": "Vous n'êtes pas autorisé à faire ceci.",
+    "invalid_input": "Certaines informations manquent ou sont invalides.",
+    "module_off": "Ce module est désactivé pour votre école.",
+    "suspended": "L'abonnement de votre école est suspendu. Vous pouvez encore consulter et exporter."
+  },
+  "auth": {
+    "title": "Connexion",
+    "identifier": "Numéro de téléphone ou e-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "invalid": "Numéro, e-mail ou mot de passe incorrect.",
+    "locked": "Trop de tentatives échouées. Réessayez dans 15 minutes.",
+    "chooseSchool": "Choisir une école",
+    "choose": "Ouvrir",
+    "noSchool": "Votre compte n'a encore accès à aucune école. Demandez à votre directeur.",
+    "signedInAs": "Connecté en tant que",
+    "activeSchool": "École",
+    "changeSchool": "Changer d'école",
+    "signOut": "Se déconnecter",
+    "signOutEverywhere": "Se déconnecter sur tous les appareils"
+  }
+}

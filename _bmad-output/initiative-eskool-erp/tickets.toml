@@ -1,0 +1,50 @@
+# E-skool MVP epics, in build order (PRD §6.2 releases R1–R4). Re-sliced 2026-10-30 (change-narrow-mvp-cash-control).
+
+[[epic]]
+id = 1
+slug = "epic-platform-baseline"
+title = "A tenant-safe, bilingual platform is live"
+covers = ["FR-1", "FR-2", "FR-3", "FR-4", "FR-15", "FR-16", "FR-53", "FR-54", "FR-55", "FR-58"]
+
+[[epic]]
+id = 2
+slug = "epic-school-setup"
+title = "A school is set up from its Excel sheets"
+covers = ["FR-5", "FR-6", "FR-7", "FR-8", "FR-9", "FR-11", "FR-12", "FR-13", "FR-14"]
+after = [{ epic = 1, needs = "defineCommand, withSchool, Memberships, i18n and audit" }]
+
+[[epic]]
+id = 3
+slug = "epic-fees-and-payments"
+title = "The cashier takes cash and hands a stamped receipt"
+covers = ["FR-18", "FR-19", "FR-20", "FR-21", "FR-22", "FR-23", "FR-24", "FR-25", "FR-26", "FR-34", "FR-38"]
+after = [{ epic = 2, needs = "Pupils, Guardians, Enrolments and the enrolPupil workflow" }]
+
+[[epic]]
+id = 4
+slug = "epic-collection-control"
+title = "Send-home list, payment delays and cash closing"
+covers = ["FR-27", "FR-28", "FR-30", "FR-35", "FR-36", "FR-37", "FR-39", "FR-40", "FR-59", "FR-60"]
+after = [{ epic = 3, needs = "Charges, Payments, Cash sessions, ledger_lines and the dashboard" }]
+
+[[epic]]
+id = 5
+slug = "epic-report-cards"
+title = "Report cards come out in a day"
+covers = ["FR-41", "FR-42", "FR-43", "FR-44", "FR-45", "FR-46", "FR-47", "FR-48"]
+after = [{ epic = 2, needs = "Classes, Subjects and Enrolments" }]
+
+[[epic]]
+id = 6
+slug = "epic-parent-portal"
+title = "Parents follow their balance and report cards"
+covers = []
+after = []
+# Dropped 2026-10-30: parent portal removed from the MVP (see epic Notes). Table kept so id 6 is never reused.
+
+[[epic]]
+id = 7
+slug = "epic-whatsapp-records"
+title = "Parents get WhatsApp payment records and reminders"
+covers = ["FR-56", "FR-57", "FR-61", "FR-62", "FR-63", "FR-64"]
+after = [{ epic = 3, needs = "the recordPayment workflow and Receipts" }, { epic = 4, needs = "Payment delays and the Send-home confirmation" }]

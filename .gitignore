@@ -44,3 +44,15 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# bmad: rendered cache and personal overrides
+/_bmad/render/
+/_bmad/custom/*.user.toml
+
+# generated Prisma client
+/src/generated/
+
+# old local stack leftovers
+/.local/
+
+.claude/work/
